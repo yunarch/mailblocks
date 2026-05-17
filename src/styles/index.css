@@ -1,0 +1,14 @@
+@import 'tailwindcss';
+@import '@react-email/editor/themes/default.css';
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+header * {
+  @apply text-black;
+  @apply font-mono;
+  @variant dark {
+    @apply text-white;
+  }
+}
+
+/* Email Editor */

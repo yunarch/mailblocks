@@ -1,0 +1,53 @@
+import { EmailEditor, type EmailEditorRef } from '@react-email/editor';
+import { useCallback, useRef, useState } from 'react';
+import { PreviewModal } from './components/preview-modal';
+
+const defaultContent = `
+  <h1>Welcome</h1>
+  <p>
+    Start editing your email template. Select text to format it,
+    or type <strong>/</strong> for slash commands.
+  </p>
+`;
+
+export function App() {
+  const editorRef = useRef<EmailEditorRef>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [exportedHtml, setExportedHtml] = useState('');
+
+  const handlePreview = useCallback(async () => {
+    if (!editorRef.current) return;
+    const html = await editorRef.current.getEmailHTML();
+    setExportedHtml(html);
+    setShowPreview(true);
+  }, []);
+
+  return (
+    <div className="flex h-screen flex-col bg-white">
+      <header className="flex items-center justify-between bg-gray-900 px-4 py-2 text-white">
+        <div className="flex items-center gap-3">
+          <span className="text-lg font-bold tracking-tight">
+            📧 Mailblocks
+          </span>
+          <span className="text-xs text-gray-400">Email template editor</span>
+        </div>
+        <button
+          type="button"
+          onClick={handlePreview}
+          className="rounded-md bg-blue-600 px-4 py-1.5 text-sm font-medium hover:bg-blue-700"
+        >
+          Preview &amp; Export
+        </button>
+      </header>
+      <div className="flex-1 overflow-auto">
+        <EmailEditor ref={editorRef} content={defaultContent} theme="basic" />
+      </div>
+      {showPreview && (
+        <PreviewModal
+          html={exportedHtml}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
+    </div>
+  );
+}
