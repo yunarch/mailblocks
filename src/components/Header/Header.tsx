@@ -6,37 +6,53 @@ import { useTheme } from '@/hooks/useTheme';
 export const Header = () => {
   const [theme, toggleTheme] = useTheme();
   return (
-    <header className="relative mx-auto flex max-w-5xl justify-between gap-4 px-4 py-8">
-      <h1 className="flex items-center gap-3">
-        <span className="text-lg font-bold tracking-tight">📧 Mailblocks</span>
-        <span className="text-xs text-gray-400">
-          | Email template editor powered by React Email
-        </span>
-      </h1>
-      <div className="flex items-center gap-2">
-        <button
-          className={twJoin(
-            'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full p-2',
-            'transition-all duration-200 hover:bg-gray-300 dark:hover:bg-slate-600'
-          )}
-          type="button"
-          onClick={() => {
-            toggleTheme();
-          }}
-        >
-          {theme === 'dark' ? <MdDarkMode /> : <MdOutlineLightMode />}
-        </button>
-        <div className="flex items-center gap-0.5">
-          <span className="h-3 w-px bg-gray-300 dark:bg-slate-600" />
-          <a
-            href="https://github.com/yunarch/mailblocks"
+    <header
+      className={twJoin(
+        'sticky top-0 z-50 w-full border-b backdrop-blur-md',
+        'border-gray-200 bg-white/80',
+        'dark:border-white/10 dark:bg-black/80'
+      )}
+    >
+      <div className="mx-auto flex h-12 max-w-5xl items-center justify-between px-4">
+        <h1 className="flex items-center gap-2.5">
+          <span className="text-sm font-semibold tracking-tight">
+            📧 Mailblocks
+          </span>
+          <span className="hidden text-xs font-normal text-gray-400 sm:inline dark:text-neutral-500">
+            | Email template editor powered by React Email
+          </span>
+        </h1>
+        <div className="flex items-center gap-1">
+          <button
             className={twJoin(
-              'flex h-8 w-8 cursor-pointer items-center justify-center rounded-full p-2',
-              'transition-all duration-200 hover:bg-gray-300 dark:hover:bg-slate-600'
+              'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md',
+              'text-gray-600 transition-colors hover:bg-gray-100 hover:text-black',
+              'dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-white'
             )}
+            type="button"
+            onClick={() => {
+              toggleTheme();
+            }}
           >
-            <FaGithub />
-          </a>
+            {theme === 'dark' ? (
+              <MdDarkMode size={16} />
+            ) : (
+              <MdOutlineLightMode size={16} />
+            )}
+          </button>
+          <div className="flex items-center gap-0.5">
+            <span className="h-3 w-px bg-gray-300 dark:bg-slate-600" />
+            <a
+              href="https://github.com/yunarch/mailblocks"
+              className={twJoin(
+                'flex h-8 w-8 cursor-pointer items-center justify-center rounded-md',
+                'text-gray-600 transition-colors hover:bg-gray-100 hover:text-black',
+                'dark:text-neutral-400 dark:hover:bg-white/10 dark:hover:text-white'
+              )}
+            >
+              <FaGithub size={16} />
+            </a>
+          </div>
         </div>
       </div>
     </header>
