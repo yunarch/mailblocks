@@ -1,10 +1,16 @@
 import { createContext, use, useMemo, useState } from 'react';
+import { demoTemplates } from '@/templates/demoTemplates';
 import type { SetValue } from '@/utils/helpers';
 
 // Create a context
 type AppContextType = {
   templatesDrawerOpen: boolean;
   setTemplatesDrawerOpen: SetValue<boolean>;
+  emailContent: string;
+  selectedTemplate: (typeof demoTemplates)[0];
+  setSelectedTemplate: SetValue<(typeof demoTemplates)[0]>;
+  setEmailContent: SetValue<string>;
+  isDirty: boolean;
 };
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -15,14 +21,25 @@ export const AppContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [templatesDrawerOpen, setTemplatesDrawerOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(demoTemplates[0]);
+  const [emailContent, setEmailContent] = useState('');
+  const [isDirty, setIsDirty] = useState(false);
 
   // Create context
   const contextValue: AppContextType = useMemo(
     () => ({
       templatesDrawerOpen,
       setTemplatesDrawerOpen,
+      selectedTemplate,
+      setSelectedTemplate,
+      emailContent,
+      setEmailContent: (content) => {
+        setEmailContent(content);
+        setIsDirty(emailContent !== content);
+      },
+      isDirty,
     }),
-    [templatesDrawerOpen, setTemplatesDrawerOpen]
+    [templatesDrawerOpen, selectedTemplate, emailContent, isDirty]
   );
 
   // Render
