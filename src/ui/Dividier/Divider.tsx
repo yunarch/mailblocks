@@ -1,4 +1,4 @@
-import { tv, VariantProps } from 'tailwind-variants';
+import { cx, tv, VariantProps } from 'tailwind-variants';
 
 const dividerStyles = tv({
   base: 'border-t-0 bg-gray-300',
@@ -42,7 +42,7 @@ export const Divider = ({
   return (
     <Component
       ref={ref}
-      className={dividerStyles({ orientation, className })}
+      className={cx('divider', dividerStyles({ orientation, className }))}
       {...other}
     />
   );

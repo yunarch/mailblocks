@@ -1,5 +1,5 @@
 import { Children, Fragment, isValidElement, useMemo } from 'react';
-import { tv, type VariantProps } from 'tailwind-variants';
+import { cx, tv, type VariantProps } from 'tailwind-variants';
 
 /**
  * Filters and returns only the valid React elements from the given children.
@@ -80,7 +80,7 @@ export const Stack = ({
   return (
     <Component
       ref={ref}
-      className={stackStyles({ direction, className })}
+      className={cx('stack', stackStyles({ direction, className }))}
       {...other}
     >
       {clones}

@@ -1,4 +1,4 @@
-import { tv, VariantProps } from 'tailwind-variants';
+import { cx, tv, VariantProps } from 'tailwind-variants';
 
 const typographyStyles = tv({
   base: 'text-gray-950 dark:text-white',
@@ -67,11 +67,14 @@ export const Typography = <
     <Component
       {...other}
       ref={ref}
-      className={typographyStyles({
-        variant,
-        link,
-        className,
-      })}
+      className={cx(
+        'typography',
+        typographyStyles({
+          variant,
+          link,
+          className,
+        })
+      )}
     >
       {children}
     </Component>
