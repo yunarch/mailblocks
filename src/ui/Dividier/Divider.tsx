@@ -1,10 +1,14 @@
 import { twMerge } from 'tailwind-merge';
 
-export interface DividerProps extends React.HTMLAttributes<HTMLSpanElement> {
+export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
   /**
    * The component ref.
    */
-  ref?: React.Ref<HTMLSpanElement>;
+  ref?: React.Ref<HTMLHRElement>;
+  /**
+   * The HTML element to render the divider as.
+   */
+  as?: React.ElementType;
   /**
    * The className of the component.
    */
@@ -18,12 +22,14 @@ export interface DividerProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 export const Divider = ({
   ref,
+  as,
   className,
   orientation = 'horizontal',
   ...other
 }: DividerProps) => {
+  const Component = as || 'hr';
   return (
-    <span
+    <Component
       {...other}
       ref={ref}
       className={twMerge(
