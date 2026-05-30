@@ -62,7 +62,7 @@ export const Stack = ({
   return (
     <Component
       ref={ref}
-      className={cx('stack', 'flex flex-col', className)}
+      className={cx('ui-stack', 'flex flex-col', className)}
       {...other}
     >
       {clones}

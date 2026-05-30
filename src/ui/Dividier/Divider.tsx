@@ -45,7 +45,7 @@ export const Divider = ({
   return (
     <Component
       ref={ref}
-      className={cx('divider', dividerStyles({ orientation, className }))}
+      className={cx('ui-divider', dividerStyles({ orientation, className }))}
       {...other}
     />
   );

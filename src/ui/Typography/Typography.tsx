@@ -134,7 +134,7 @@ export const Typography = <
     <Component
       ref={ref}
       className={cx(
-        'typography',
+        'ui-typography',
         typographyStyles({
           variant,
           tone,

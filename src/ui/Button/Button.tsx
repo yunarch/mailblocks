@@ -82,7 +82,7 @@ export const Button = <IsLink extends boolean>({
   const props = {
     ref,
     type: isLink ? undefined : type || 'button',
-    className: cx('button', buttonStyles({ variant, size, className })),
+    className: cx('ui-button', buttonStyles({ variant, size, className })),
     ...other,
   };
   return (
