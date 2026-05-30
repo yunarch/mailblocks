@@ -1,17 +1,9 @@
 @import 'tailwindcss';
-@import '@react-email/editor/themes/default.css';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-header * {
-  @apply font-sans text-black;
-  @variant dark {
-    @apply text-white;
-  }
-}
-
-/* Email Editor */
-.node-column {
-  border: 1px dashed var(--color-gray-300);
-  border-radius: 4px;
+html,
+body,
+#root {
+  @apply bg-gray-100 text-gray-950 dark:bg-black dark:text-white;
 }
