@@ -41,9 +41,9 @@ export const Divider = ({
   const Component = as || 'hr';
   return (
     <Component
-      {...other}
       ref={ref}
       className={dividerStyles({ orientation, className })}
+      {...other}
     />
   );
 };
