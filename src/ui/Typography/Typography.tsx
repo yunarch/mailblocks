@@ -18,7 +18,6 @@ const typographyStyles = tv({
     },
   },
 });
-
 type TypographyVariants = VariantProps<typeof typographyStyles>;
 
 export interface TypographyProps<
@@ -38,6 +37,10 @@ export interface TypographyProps<
    */
   className?: string;
   /**
+   * The component to be rendered inside.
+   */
+  children?: React.ReactNode;
+  /**
    * The variant of the typography.
    */
   variant?: TypographyVariants['variant'];
@@ -54,6 +57,7 @@ export const Typography = <
   ref,
   as,
   className,
+  children,
   variant = 'p',
   link,
   ...other
@@ -68,6 +72,8 @@ export const Typography = <
         link,
         className,
       })}
-    />
+    >
+      {children}
+    </Component>
   );
 };
