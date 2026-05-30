@@ -32,6 +32,10 @@ const buttonStyles = tv({
       sm: 'h-8 px-2 text-sm',
       md: 'h-9 px-3 text-sm',
     },
+    disabled: {
+      true: 'pointer-events-none cursor-not-allowed opacity-50',
+      false: '',
+    },
   },
   defaultVariants: {
     variant: 'solid',
@@ -75,19 +79,29 @@ export const Button = <IsLink extends boolean>({
   size,
   type,
   link,
+  disabled,
   ...other
 }: ButtonProps<IsLink>) => {
   const isLink = Boolean(link);
   const Component = link ? 'a' : 'button';
-  const props = {
-    ref,
-    type: isLink ? undefined : type || 'button',
-    className: cx('ui-button', buttonStyles({ variant, size, className })),
-    ...other,
-  };
   return (
     <Component
-      {...(props as React.ComponentPropsWithRef<'a'> &
+      {...({
+        ref,
+        type: isLink ? undefined : type || 'button',
+        className: cx(
+          'ui-button',
+          buttonStyles({
+            variant,
+            size,
+            disabled,
+            className,
+          })
+        ),
+        'aria-disabled': disabled,
+        disabled,
+        ...other,
+      } as React.ComponentPropsWithRef<'a'> &
         React.ComponentPropsWithRef<'button'>)}
     >
       {children}
