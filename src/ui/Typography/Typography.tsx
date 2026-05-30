@@ -2,7 +2,6 @@ import { cx, tv, type VariantProps } from 'tailwind-variants';
 
 // Styles
 const typographyStyles = tv({
-  base: 'min-w-0',
   variants: {
     variant: {
       h1: 'text-3xl font-semibold tracking-normal',
