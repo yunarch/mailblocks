@@ -40,7 +40,7 @@ export const AppHeader = () => {
           </button>
           <span className="text-sm font-semibold">📧 Mailblocks</span>
           <span className="hidden text-xs font-normal text-gray-400 sm:inline dark:text-neutral-500">
-            | Email template editor
+            | Email template editor for developers
           </span>
         </h1>
         <div className="flex items-center gap-1">
