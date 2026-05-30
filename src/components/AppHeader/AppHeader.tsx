@@ -9,7 +9,7 @@ import { twJoin } from 'tailwind-merge';
 import { useTheme } from '@/hooks/useTheme';
 import { useAppContext } from '@/providers/AppContextProvider';
 
-export const Header = () => {
+export const AppHeader = () => {
   const [theme, toggleTheme] = useTheme();
   const { templatesDrawerOpen, setTemplatesDrawerOpen } = useAppContext();
   return (

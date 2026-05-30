@@ -1,4 +1,4 @@
-export function Footer() {
+export const AppFooter = () => {
   return (
     <footer className="border-t border-gray-200 px-4 text-xs text-gray-500 dark:border-white/10 dark:text-neutral-500">
       <div className="mx-auto flex h-12 w-full max-w-312 items-center justify-between border-x border-gray-200 px-4 dark:border-white/10">
@@ -34,4 +34,4 @@ export function Footer() {
       </div>
     </footer>
   );
-}
+};
