@@ -6,7 +6,7 @@ export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
    */
   ref?: React.Ref<HTMLHRElement>;
   /**
-   * The HTML element to render the divider as.
+   * The HTML element to render as.
    */
   as?: React.ElementType;
   /**
