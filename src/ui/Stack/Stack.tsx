@@ -1,5 +1,5 @@
 import { Children, Fragment, isValidElement, useMemo } from 'react';
-import { cx, tv, type VariantProps } from 'tailwind-variants';
+import { cx } from 'tailwind-variants';
 
 /**
  * Filters and returns only the valid React elements from the given children.
@@ -12,18 +12,6 @@ function getValidChildren(children: React.ReactNode) {
     return isValidElement(child);
   }) as React.ReactElement[];
 }
-
-// Styles
-const stackStyles = tv({
-  base: 'flex',
-  variants: {
-    direction: {
-      row: 'flex-row',
-      column: 'flex-col',
-    },
-  },
-});
-type StackVariants = VariantProps<typeof stackStyles>;
 
 // Prop types
 export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -44,11 +32,6 @@ export interface StackProps extends React.HTMLAttributes<HTMLDivElement> {
    */
   children?: React.ReactNode;
   /**
-   * The direction of the stack.
-   * @default 'column'
-   */
-  direction?: StackVariants['direction'];
-  /**
    * A React element used as a separator between children of the stack.
    */
   separator?: React.ReactElement;
@@ -60,7 +43,6 @@ export const Stack = ({
   as,
   className,
   children,
-  direction = 'column',
   separator,
   ...other
 }: StackProps) => {
@@ -80,7 +62,7 @@ export const Stack = ({
   return (
     <Component
       ref={ref}
-      className={cx('stack', stackStyles({ direction, className }))}
+      className={cx('stack', 'flex flex-col', className)}
       {...other}
     >
       {clones}
