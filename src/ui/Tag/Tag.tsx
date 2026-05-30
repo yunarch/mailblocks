@@ -13,11 +13,11 @@ export interface TagProps extends React.HtmlHTMLAttributes<HTMLSpanElement> {
   /**
    * The text content of the tag.
    */
-  text?: string;
+  label?: string;
 }
 
 // Component
-export const Tag = ({ ref, className, text, ...other }: TagProps) => {
+export const Tag = ({ ref, className, label, ...other }: TagProps) => {
   return (
     <span
       ref={ref}
@@ -29,7 +29,7 @@ export const Tag = ({ ref, className, text, ...other }: TagProps) => {
       )}
       {...other}
     >
-      {text}
+      {label}
     </span>
   );
 };
