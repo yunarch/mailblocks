@@ -1,16 +1,19 @@
 import { cx, tv, VariantProps } from 'tailwind-variants';
 
+// Styles
 const dividerStyles = tv({
   base: 'border-t-0 bg-gray-300',
   variants: {
     orientation: {
-      horizontal: 'w-full h-px',
-      vertical: 'h-full w-px',
+      horizontal: 'w-4/5 h-px',
+      vertical: 'h-4/5 w-px',
     },
   },
 });
+
 type DividerVariantProps = VariantProps<typeof dividerStyles>;
 
+// Prop types
 export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
   /**
    * The component ref.
@@ -31,6 +34,7 @@ export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
   orientation?: DividerVariantProps['orientation'];
 }
 
+// Component
 export const Divider = ({
   ref,
   as,
