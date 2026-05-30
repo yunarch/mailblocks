@@ -1,4 +1,15 @@
-import { twMerge } from 'tailwind-merge';
+import { tv, VariantProps } from 'tailwind-variants';
+
+const dividerStyles = tv({
+  base: 'border-t-0 bg-gray-300',
+  variants: {
+    orientation: {
+      horizontal: 'w-full h-px',
+      vertical: 'h-full w-px',
+    },
+  },
+});
+type DividerVariantProps = VariantProps<typeof dividerStyles>;
 
 export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
   /**
@@ -17,7 +28,7 @@ export interface DividerProps extends React.HTMLAttributes<HTMLHRElement> {
    * The orientation of the divider.
    * @default 'horizontal'
    */
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: DividerVariantProps['orientation'];
 }
 
 export const Divider = ({
@@ -32,11 +43,7 @@ export const Divider = ({
     <Component
       {...other}
       ref={ref}
-      className={twMerge(
-        'bg-gray-300 dark:bg-slate-600',
-        orientation === 'horizontal' ? 'w-full h-px' : 'h-full w-px',
-        className
-      )}
+      className={dividerStyles({ orientation, className })}
     />
   );
 };
