@@ -11,7 +11,10 @@ import { Stack } from '@/ui/Stack';
 import { Tabs } from '@/ui/Tabs';
 import { Tag } from '@/ui/Tag';
 import { Typography } from '@/ui/Typography';
-import { lintEmailCompatibility } from '@/utils/lintEmailCompatibility';
+import {
+  DEFAULT_EMAIL_CLIENTS,
+  lintEmailCompatibility,
+} from '@/utils/lintEmailCompatibility';
 import { lintEmailMarkup } from '@/utils/lintEmailMarkup';
 import { lintEmailSpam } from '@/utils/lintEmailSpam';
 import { LinterCompatibility } from './components/LinterCompatibility';
@@ -32,6 +35,9 @@ export const EmailLinterPanel = () => {
     SpamCheckingResult | undefined
   >();
   const [spamLoading, setSpamLoading] = useState(false);
+  const [selectedEmailClients, setSelectedEmailClients] = useState(
+    () => new Set(DEFAULT_EMAIL_CLIENTS)
+  );
   const isActiveTabLoading =
     (activeTab === 0 && linterLoading) ||
     (activeTab === 1 && compatibilityLoading) ||
@@ -59,11 +65,13 @@ export const EmailLinterPanel = () => {
       }
       setCompatibilityLoading(true);
       const markup = await editorRef.current.getEmailHTML();
-      setCompatibilityResults(lintEmailCompatibility(markup));
+      setCompatibilityResults(
+        lintEmailCompatibility(markup, selectedEmailClients)
+      );
     } finally {
       setCompatibilityLoading(false);
     }
-  }, [editorRef]);
+  }, [editorRef, selectedEmailClients]);
   const runLinterSpam = useCallback(async () => {
     try {
       if (!editorRef.current) {
@@ -77,6 +85,17 @@ export const EmailLinterPanel = () => {
       setSpamLoading(false);
     }
   }, [editorRef]);
+  const toggleEmailClient = useCallback((key: string) => {
+    setSelectedEmailClients((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+  }, []);
 
   // Effects
   useEffect(() => {
@@ -155,6 +174,8 @@ export const EmailLinterPanel = () => {
           <LinterCompatibility
             results={compatibilityResults}
             loading={compatibilityLoading}
+            selectedEmailClients={selectedEmailClients}
+            onToggleEmailClient={toggleEmailClient}
           />
         )}
         {activeTab === 2 && (
