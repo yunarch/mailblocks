@@ -29,7 +29,7 @@ export const EmailEditorPanel = () => {
                 setActiveViewport(viewport);
               }}
             >
-              {viewport.icon}
+              {<viewport.Icon />}
               {viewport.label}
             </Button>
           ))}
