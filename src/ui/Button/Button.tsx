@@ -96,11 +96,6 @@ export const Button = <IsLink extends boolean>({
             size,
             disabled,
             className,
-          buttonStyles({
-            variant,
-            size,
-            disabled,
-            className,
           })
         ),
         'aria-disabled': disabled || undefined,

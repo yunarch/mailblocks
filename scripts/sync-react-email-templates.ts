@@ -243,7 +243,7 @@ export const generatedReactEmailTemplates: EmailTemplate[] = ${JSON.stringify(te
 
   // Final log
   stdout.write(
-    styleText('magenta', '\nFinished syncing React Email templates.\n')
+    styleText('magenta', '\nFinished syncing React Email templates.\n\n')
   );
 };
 

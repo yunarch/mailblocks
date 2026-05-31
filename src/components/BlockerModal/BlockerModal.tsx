@@ -25,6 +25,7 @@ export function BlockerModal({
         aria-label={title}
         className="w-full max-w-sm gap-2 rounded-lg border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-neutral-950"
       >
+        <Typography as="h2" variant="h5" className="font-semibold">
           {title}
         </Typography>
         <Typography variant="body" tone="muted">
