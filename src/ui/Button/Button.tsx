@@ -96,10 +96,15 @@ export const Button = <IsLink extends boolean>({
             size,
             disabled,
             className,
+          buttonStyles({
+            variant,
+            size,
+            disabled,
+            className,
           })
         ),
-        'aria-disabled': disabled,
-        disabled,
+        'aria-disabled': disabled || undefined,
+        disabled: isLink ? undefined : disabled,
         ...other,
       } as React.ComponentPropsWithRef<'a'> &
         React.ComponentPropsWithRef<'button'>)}
