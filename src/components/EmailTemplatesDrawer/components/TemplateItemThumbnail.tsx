@@ -1,4 +1,4 @@
-import type { EmailTemplate } from '@/templates/types';
+import type { EmailTemplate } from '@/types/templates';
 
 /**
  * Creates a thumbnail document for the given content.

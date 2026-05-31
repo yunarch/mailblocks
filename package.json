@@ -30,7 +30,7 @@
     "lint:code:fix": "oxlint . --fix",
     "format": "oxfmt format --check ./",
     "format:all": "oxfmt format --write ./",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist tmp",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
