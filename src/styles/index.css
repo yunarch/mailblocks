@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import '@react-email/editor/themes/default.css';
+@import '@react-email/editor/styles/inspector.css';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
