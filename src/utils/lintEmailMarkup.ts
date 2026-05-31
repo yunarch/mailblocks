@@ -1,11 +1,6 @@
 // oxlint-disable max-lines -- This file contains a large number of lines due to the comprehensive linting checks implemented.
-import type {
-  CodeLocation,
-  LintCheck,
-  LintingRow,
-  LintStatus,
-} from '@/types/linter';
-import { isLocalhostUrl } from './helpers';
+import type { LintCheck, LintingRow, LintStatus } from '@/types/linter';
+import { findCodeLocation, isLocalhostUrl } from './helpers';
 
 const ONE_MEGABYTE = 1_048_576;
 const LARGE_HTML_THRESHOLD = 100_000;
@@ -34,25 +29,6 @@ function getDataUrlByteCount(value: string) {
     return Math.floor((data.length * 3) / 4) - padding;
   }
   return new TextEncoder().encode(decodeURIComponent(data)).byteLength;
-}
-
-/**
- * Finds the line and column number of a given needle string within the provided markup.
- * If the needle is not found, returns line 1, column 0.
- *
- * @param markup - The full HTML markup to search within.
- * @param needle - The specific string to find within the markup (e.g., a URL or tag snippet).
- * @returns An object containing the line and column number where the needle is located in the markup.
- */
-function findCodeLocation(markup: string, needle: string): CodeLocation {
-  const offset = markup.indexOf(needle);
-  if (offset === -1) return { line: 1, column: 0 };
-  const safeOffset = Math.max(0, offset);
-  const precedingContent = markup.slice(0, safeOffset);
-  const lines = precedingContent.split('\n');
-  const line = lines.length;
-  const column = lines.at(-1)?.length ?? 0;
-  return { line, column };
 }
 
 /**
