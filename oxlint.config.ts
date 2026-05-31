@@ -3,6 +3,10 @@ import yunarchOxlintConfig from './node_modules/@yunarch/config-web/dist/config.
 
 const config: OxlintConfig = defineConfig({
   ...(yunarchOxlintConfig as never as OxlintConfig),
+  ignorePatterns: [
+    ...yunarchOxlintConfig.ignorePatterns,
+    'src/utils/templates.ts',
+  ],
   overrides: [
     {
       files: ['**/*ContextProvider.tsx'],
