@@ -305,7 +305,14 @@ export function lintEmailMarkup(markup: string): LintingRow[] {
     }),
     ...lintMarkup(document, markup),
   ].filter(Boolean) as LintingRow[];
-  return rows.toSorted((a, b) => {
+  const seen = new Set<string>();
+  const uniqueRows = rows.filter((row) => {
+    const key = JSON.stringify(row);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return uniqueRows.toSorted((a, b) => {
     const statusOrder: Record<LintStatus, number> = {
       error: 0,
       warning: 1,
