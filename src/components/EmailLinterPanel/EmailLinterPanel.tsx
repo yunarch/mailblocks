@@ -1,49 +1,23 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { MdRefresh } from 'react-icons/md';
+import { useAppContext } from '@/providers/AppContextProvider';
+import { LintingRow } from '@/types/linter';
+import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Tabs } from '@/ui/Tabs';
 import { Tag } from '@/ui/Tag';
 import { Typography } from '@/ui/Typography';
+import { lintEmailMarkup } from '@/utils/lintEmailMarkup';
 import {
-  Compatibility,
-  type CompatibilityResult,
-} from './components/Compatibility';
-import { Linter, type LintingRow } from './components/Linter';
-import { Spam, type SpamCheckingResult } from './components/Spam';
+  CompatibilityResult,
+  LinterCompatibility,
+} from './components/LinterCompatibility';
+import { LinterMarkup } from './components/LinterMarkup';
+import { LinterSpam, SpamCheckingResult } from './components/LinterSpam';
 
 /* ------------------------------------------------------------------ */
 /*  Demo data                                                          */
 /* ------------------------------------------------------------------ */
-
-const lintingRows: LintingRow[] = [
-  {
-    source: 'link',
-    result: {
-      status: 'error',
-      link: 'http://example.com/unsubscribe',
-      failingCheck: { type: 'security' },
-      codeLocation: { line: 31, column: 8 },
-    },
-  },
-  {
-    source: 'image',
-    result: {
-      status: 'warning',
-      src: '/images/hero-banner.png',
-      failingCheck: { type: 'accessibility' },
-      codeLocation: { line: 12, column: 4 },
-    },
-  },
-  {
-    source: 'image',
-    result: {
-      status: 'warning',
-      src: '/images/promo-bg.jpg',
-      failingCheck: { type: 'image_size' },
-      byteCount: 1_572_864,
-      codeLocation: { line: 44, column: 2 },
-    },
-  },
-];
 
 const compatibilityResults: CompatibilityResult[] = [
   {
@@ -88,8 +62,32 @@ const spamResult: SpamCheckingResult = {
 };
 
 // Component
-export const EmailChecksPanel = () => {
+export const EmailLinterPanel = () => {
+  const { editorRef, selectedTemplate } = useAppContext();
   const [activeTab, setActiveTab] = useState(0);
+  const [lintingRows, setLintingRows] = useState<LintingRow[] | undefined>();
+  const [linterLoading, setLinterLoading] = useState(false);
+
+  const runLinter = useCallback(async () => {
+    if (!editorRef.current) {
+      setLintingRows(undefined);
+      return;
+    }
+
+    setLinterLoading(true);
+    try {
+      const markup = await editorRef.current.getEmailHTML();
+      setLintingRows(lintEmailMarkup(markup));
+    } finally {
+      setLinterLoading(false);
+    }
+  }, [editorRef]);
+
+  useEffect(() => {
+    if (activeTab !== 0) return;
+    void runLinter();
+  }, [activeTab, runLinter, selectedTemplate.id]);
+
   return (
     <Stack className="h-52 border-t border-gray-200 dark:border-white/10">
       <Stack className="flex-row items-center justify-between border-b border-gray-200 pr-4 dark:border-white/10">
@@ -97,8 +95,8 @@ export const EmailChecksPanel = () => {
           activeItem={activeTab}
           items={[
             {
-              label: 'Linter',
-              trailingContent: <Tag label={String(lintingRows.length)} />,
+              label: 'Lint Markup',
+              trailingContent: <Tag label={String(lintingRows?.length ?? 0)} />,
             },
             {
               label: 'Compatibility',
@@ -117,14 +115,31 @@ export const EmailChecksPanel = () => {
             setActiveTab(index);
           }}
         />
-        <Typography variant="bodySm" tone="muted">
-          Generated output checks
-        </Typography>
+        <Stack className="flex-row items-center gap-2">
+          <Typography variant="bodySm" tone="muted">
+            Generated output checks
+          </Typography>
+          <Button
+            aria-label="Refresh linter"
+            title="Refresh linter"
+            variant="ghost"
+            disabled={linterLoading}
+            onClick={() => {
+              void runLinter();
+            }}
+          >
+            <MdRefresh />
+          </Button>
+        </Stack>
       </Stack>
       <Stack className="flex-1 overflow-y-auto px-4 py-2">
-        {activeTab === 0 && <Linter rows={lintingRows} />}
-        {activeTab === 1 && <Compatibility results={compatibilityResults} />}
-        {activeTab === 2 && <Spam result={spamResult} />}
+        {activeTab === 0 && (
+          <LinterMarkup rows={lintingRows} loading={linterLoading} />
+        )}
+        {activeTab === 1 && (
+          <LinterCompatibility results={compatibilityResults} />
+        )}
+        {activeTab === 2 && <LinterSpam result={spamResult} />}
       </Stack>
     </Stack>
   );

@@ -2,8 +2,8 @@ import { cx } from 'tailwind-variants';
 import { AppFooter } from './components/AppFooter/AppFooter';
 import { AppHeader } from './components/AppHeader/AppHeader';
 import { BlockerModal } from './components/BlockerModal/BlockerModal';
-import { EmailChecksPanel } from './components/EmailChecksPanel/EmailChecksPanel';
 import { EmailEditorPanel } from './components/EmailEditorPanel/EmailEditorPanel';
+import { EmailLinterPanel } from './components/EmailLinterPanel/EmailLinterPanel';
 import { EmailTemplatesDrawer } from './components/EmailTemplatesDrawer/EmailTemplatesDrawer';
 import { useAppContext } from './providers/AppContextProvider';
 import { Stack } from './ui/Stack';
@@ -34,7 +34,7 @@ export const App = () => {
           <Stack className="flex-1 p-2 pb-1">
             <EmailEditorPanel />
           </Stack>
-          <EmailChecksPanel />
+          <EmailLinterPanel />
         </Stack>
       </Stack>
       <AppFooter />

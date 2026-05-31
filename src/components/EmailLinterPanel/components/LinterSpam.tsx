@@ -12,7 +12,7 @@ export type SpamCheckingResult = {
 };
 
 function sanitize(str: string): string {
-  return str.replaceAll(/_/g, ' ');
+  return str.replaceAll('_', ' ');
 }
 
 function getScoreColor(points: number): string {
@@ -34,7 +34,7 @@ interface SpamProps {
   result: SpamCheckingResult;
 }
 
-export const Spam = ({ result }: SpamProps) => {
+export const LinterSpam = ({ result }: SpamProps) => {
   const score = 10 - result.points;
   const sortedChecks = [...result.checks].toSorted(
     (a, b) => b.points - a.points

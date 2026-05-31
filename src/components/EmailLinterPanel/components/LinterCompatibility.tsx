@@ -8,14 +8,14 @@ export type CompatibilityResult = {
 };
 
 function sanitize(str: string): string {
-  return str.replaceAll(/_/g, ' ');
+  return str.replaceAll('_', ' ');
 }
 
 interface CompatibilityProps {
   results: CompatibilityResult[];
 }
 
-export const Compatibility = ({ results }: CompatibilityProps) => {
+export const LinterCompatibility = ({ results }: CompatibilityProps) => {
   if (results.length === 0) {
     return (
       <p className="px-1 py-3 text-xs text-gray-400 dark:text-neutral-500">
