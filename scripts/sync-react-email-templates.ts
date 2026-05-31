@@ -1,0 +1,200 @@
+import { mkdir, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { stderr, stdout } from 'node:process';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { render } from '@react-email/render';
+import React from 'react';
+
+// Types
+type GitTreeResponse = {
+  tree: {
+    path: string;
+    type: 'blob' | 'tree';
+  }[];
+};
+
+type RenderedTemplate = {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  content: string;
+  sourceUrl: string;
+};
+
+// Set Vercel URL for correct template source links from https://demo.react.email/
+process.env.VERCEL_URL = 'react-email-demo-6woqf4gn1-resend.vercel.app';
+
+// Configuration react-email github templates folder
+const branch = 'main';
+const treeUrl = `https://api.github.com/repos/resend/react-email/git/trees/${branch}?recursive=1`;
+const rawRoot = `https://raw.githubusercontent.com/resend/react-email/${branch}`;
+const demoRoot = 'apps/demo/emails';
+
+// Constants
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const sourceRoot = path.join(scriptDir, '..', 'tmp');
+const generatedFile = path.join(scriptDir, '../src/utils/templates.ts');
+
+// Fallback local template
+const LOCAL_DEFAULT_TEMPLATE: RenderedTemplate = {
+  id: 'local-default',
+  name: 'Mailblocks starter',
+  category: 'Local',
+  description: 'Editable starter content for a new email.',
+  content: `
+      <section style="padding: 32px;">
+        <h1>Welcome to Mailblocks</h1>
+        <p>
+          Start editing your email template. Select text to format it,
+          or type <strong>/</strong> for slash commands.
+        </p>
+        <p>
+          Use the templates sidebar to load a React Email demo as editable HTML,
+          then preview the generated email markup from the topbar.
+        </p>
+      </section>
+    `,
+  sourceUrl: 'local',
+};
+
+/**
+ * @param url - The URL to fetch JSON data from.
+ * @returns The parsed JSON data.
+ *
+ * @throws Will throw an error if the fetch operation fails or if the response is not OK.
+ */
+async function fetchJson<T>(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'application/vnd.github+json',
+      'User-Agent': '@yunarch/mailblocks-template-sync',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+/**
+ *
+ * @param url - The URL to fetch text data from.
+ * @returns The fetched text data.
+ *
+ * @throws Will throw an error if the fetch operation fails or if the response is not OK.
+ */
+async function fetchText(url: string) {
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'text/plain',
+      'User-Agent': '@yunarch/mailblocks-template-sync',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${url}: ${response.status}`);
+  }
+  return response.text();
+}
+
+/**
+ * Dynamically imports a React component from the given file path
+ * and renders it to HTML using @react-email/render.
+ *
+ * @param filePath The path to the React component file.
+ * @returns The rendered HTML string.
+ */
+async function renderTemplate(filePath: string) {
+  const imported = (await import(
+    `${pathToFileURL(filePath).href}?${Date.now()}`
+  )) as {
+    default?: React.ComponentType<Record<string, unknown>>;
+  };
+  if (typeof imported.default !== 'function') {
+    throw new TypeError('Template does not export a default React component');
+  }
+  return render(React.createElement(imported.default), {
+    pretty: true,
+  });
+}
+
+/**
+ * This script fetches React Email demo templates from the specified GitHub repository,
+ * renders them to HTML, and generates a TypeScript file exporting the templates as an array.
+ */
+const main = async () => {
+  const tree = await fetchJson<GitTreeResponse>(treeUrl);
+  const sourceFiles = tree.tree.filter((item) => {
+    return (
+      item.type === 'blob' &&
+      item.path.startsWith(`${demoRoot}/`) &&
+      /\.(tsx|ts)$/.test(item.path)
+    );
+  });
+  // Clear and recreate source directory
+  await rm(sourceRoot, { recursive: true, force: true });
+  await mkdir(sourceRoot, { recursive: true });
+  // Download source files and keep track of local paths
+  const sourcePaths = new Map<string, string>();
+  for (const file of sourceFiles) {
+    const relativePath = file.path.slice(`${demoRoot}/`.length);
+    const localPath = path.join(sourceRoot, relativePath);
+    await mkdir(path.dirname(localPath), { recursive: true });
+    await writeFile(
+      localPath,
+      await fetchText(`${rawRoot}/${file.path}`),
+      'utf8'
+    );
+    sourcePaths.set(file.path, localPath);
+  }
+  // Render templates
+  const templates: RenderedTemplate[] = [LOCAL_DEFAULT_TEMPLATE];
+  const renderableFiles = sourceFiles.filter((file) =>
+    file.path.endsWith('.tsx')
+  );
+  for (const file of renderableFiles) {
+    const localPath = sourcePaths.get(file.path);
+    if (!localPath) continue;
+    const [, category = 'Demo', filename = 'template.tsx'] =
+      file.path.match(new RegExp(`${demoRoot}/([^/]+)/(.+)$`)) ?? [];
+    try {
+      const content = await renderTemplate(localPath);
+      templates.push({
+        id: file.path
+          .replace(demoRoot, '')
+          .replace(/^\//, '')
+          .replace(/\.(tsx|ts)$/, '')
+          .toLowerCase()
+          .replaceAll(/[^a-z0-9]+/g, '-')
+          .replaceAll(/^-|-$/g, ''),
+        name: path
+          .basename(filename)
+          .replace(/^\d+-/, '')
+          .replace(/\.tsx$/, '')
+          .split(/[-_]/)
+          .filter(Boolean)
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join(' '),
+        category,
+        description: `Generated from React Email demo ${category}/${filename}.`,
+        content,
+        sourceUrl: `https://github.com/resend/react-email/blob/${branch}/${file.path}`,
+      });
+    } catch (error) {
+      stderr.write(`Skipped ${file.path}\n`);
+      stderr.write(`${String(error)}\n`);
+    }
+  }
+  // Generate output file
+  const output = `/* GENERATED - DO NOT EDIT. Re-run \`bun run gen:templates\` to update. */
+
+import type { EmailTemplate } from '@/types/templates';
+
+export const generatedReactEmailTemplates: EmailTemplate[] = ${JSON.stringify(templates)};
+`;
+  await writeFile(generatedFile, output, 'utf8');
+  stdout.write(`Generated ${templates.length} templates at ${generatedFile}\n`);
+};
+
+// Execute
+await main();
