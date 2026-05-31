@@ -1,65 +1,22 @@
 import { useCallback, useEffect, useState } from 'react';
 import { MdRefresh } from 'react-icons/md';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { LintingRow } from '@/types/linter';
+import {
+  CompatibilityResult,
+  LintingRow,
+  SpamCheckingResult,
+} from '@/types/linter';
 import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Tabs } from '@/ui/Tabs';
 import { Tag } from '@/ui/Tag';
 import { Typography } from '@/ui/Typography';
+import { lintEmailCompatibility } from '@/utils/lintEmailCompatibility';
 import { lintEmailMarkup } from '@/utils/lintEmailMarkup';
-import {
-  CompatibilityResult,
-  LinterCompatibility,
-} from './components/LinterCompatibility';
+import { lintEmailSpam } from '@/utils/lintEmailSpam';
+import { LinterCompatibility } from './components/LinterCompatibility';
 import { LinterMarkup } from './components/LinterMarkup';
-import { LinterSpam, SpamCheckingResult } from './components/LinterSpam';
-
-/* ------------------------------------------------------------------ */
-/*  Demo data                                                          */
-/* ------------------------------------------------------------------ */
-
-const compatibilityResults: CompatibilityResult[] = [
-  {
-    title: 'background-image',
-    unsupportedClients: ['Outlook 2019', 'Outlook 2021', 'Windows Mail'],
-    url: 'https://www.caniemail.com/features/css-background-image/',
-    location: { line: 18, column: 6 },
-  },
-  {
-    title: 'border-radius',
-    unsupportedClients: ['Outlook 2019', 'Outlook 2021'],
-    url: 'https://www.caniemail.com/features/css-border-radius/',
-    location: { line: 27, column: 10 },
-  },
-];
-
-const spamResult: SpamCheckingResult = {
-  checks: [
-    {
-      name: 'HTML_MESSAGE',
-      description: 'HTML included in message',
-      points: 0,
-    },
-    {
-      name: 'MIME_HTML_ONLY',
-      description: 'Message only has text/html MIME parts',
-      points: 0.1,
-    },
-    {
-      name: 'HTML_IMAGE_RATIO_02',
-      description: 'HTML has a low ratio of text to image area',
-      points: 0.7,
-    },
-    {
-      name: 'MISSING_HEADERS',
-      description: 'Missing To: header',
-      points: 0.5,
-    },
-  ],
-  isSpam: false,
-  points: 1.3,
-};
+import { LinterSpam } from './components/LinterSpam';
 
 // Component
 export const EmailLinterPanel = () => {
@@ -67,27 +24,77 @@ export const EmailLinterPanel = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [lintingRows, setLintingRows] = useState<LintingRow[] | undefined>();
   const [linterLoading, setLinterLoading] = useState(false);
+  const [compatibilityResults, setCompatibilityResults] = useState<
+    CompatibilityResult[] | undefined
+  >();
+  const [compatibilityLoading, setCompatibilityLoading] = useState(false);
+  const [spamResult, setSpamResult] = useState<
+    SpamCheckingResult | undefined
+  >();
+  const [spamLoading, setSpamLoading] = useState(false);
+  const isActiveTabLoading =
+    (activeTab === 0 && linterLoading) ||
+    (activeTab === 1 && compatibilityLoading) ||
+    (activeTab === 2 && spamLoading);
 
-  const runLinter = useCallback(async () => {
-    if (!editorRef.current) {
-      setLintingRows(undefined);
-      return;
-    }
-
-    setLinterLoading(true);
+  // Methods
+  const runLinterMarkup = useCallback(async () => {
     try {
+      if (!editorRef.current) {
+        setLintingRows(undefined);
+        return;
+      }
+      setLinterLoading(true);
       const markup = await editorRef.current.getEmailHTML();
       setLintingRows(lintEmailMarkup(markup));
     } finally {
       setLinterLoading(false);
     }
   }, [editorRef]);
+  const runLinterCompatibility = useCallback(async () => {
+    try {
+      if (!editorRef.current) {
+        setCompatibilityResults(undefined);
+        return;
+      }
+      setCompatibilityLoading(true);
+      const markup = await editorRef.current.getEmailHTML();
+      setCompatibilityResults(lintEmailCompatibility(markup));
+    } finally {
+      setCompatibilityLoading(false);
+    }
+  }, [editorRef]);
+  const runLinterSpam = useCallback(async () => {
+    try {
+      if (!editorRef.current) {
+        setSpamResult(undefined);
+        return;
+      }
+      setSpamLoading(true);
+      const email = await editorRef.current.getEmail();
+      setSpamResult(lintEmailSpam(email));
+    } finally {
+      setSpamLoading(false);
+    }
+  }, [editorRef]);
 
+  // Effects
   useEffect(() => {
     if (activeTab !== 0) return;
-    void runLinter();
-  }, [activeTab, runLinter, selectedTemplate.id]);
+    void runLinterMarkup();
+  }, [activeTab, runLinterMarkup, selectedTemplate.id]);
 
+  useEffect(() => {
+    if (activeTab !== 1) return;
+    void runLinterCompatibility();
+  }, [activeTab, runLinterCompatibility, selectedTemplate.id]);
+
+  useEffect(() => {
+    if (activeTab !== 2) return;
+    void runLinterSpam();
+  }, [activeTab, runLinterSpam, selectedTemplate.id]);
+
+  // Render
   return (
     <Stack className="h-52 border-t border-gray-200 dark:border-white/10">
       <Stack className="flex-row items-center justify-between border-b border-gray-200 pr-4 dark:border-white/10">
@@ -101,13 +108,19 @@ export const EmailLinterPanel = () => {
             {
               label: 'Compatibility',
               trailingContent: (
-                <Tag label={String(compatibilityResults.length)} />
+                <Tag label={String(compatibilityResults?.length ?? 0)} />
               ),
             },
             {
               label: 'Spam',
               trailingContent: (
-                <Tag label={`${(10 - spamResult.points).toFixed(1)}/10`} />
+                <Tag
+                  label={
+                    spamResult
+                      ? `${(10 - spamResult.points).toFixed(1)}/10`
+                      : '-'
+                  }
+                />
               ),
             },
           ]}
@@ -123,9 +136,19 @@ export const EmailLinterPanel = () => {
             aria-label="Refresh linter"
             title="Refresh linter"
             variant="ghost"
-            disabled={linterLoading}
+            disabled={isActiveTabLoading}
             onClick={() => {
-              void runLinter();
+              if (activeTab === 0) {
+                runLinterMarkup();
+                return;
+              }
+              if (activeTab === 1) {
+                runLinterCompatibility();
+                return;
+              }
+              if (activeTab === 2) {
+                runLinterSpam();
+              }
             }}
           >
             <MdRefresh />
@@ -134,12 +157,17 @@ export const EmailLinterPanel = () => {
       </Stack>
       <Stack className="flex-1 overflow-y-auto px-4 py-2">
         {activeTab === 0 && (
-          <LinterMarkup rows={lintingRows} loading={linterLoading} />
+          <LinterMarkup results={lintingRows} loading={linterLoading} />
         )}
         {activeTab === 1 && (
-          <LinterCompatibility results={compatibilityResults} />
+          <LinterCompatibility
+            results={compatibilityResults}
+            loading={compatibilityLoading}
+          />
         )}
-        {activeTab === 2 && <LinterSpam result={spamResult} />}
+        {activeTab === 2 && (
+          <LinterSpam result={spamResult} loading={spamLoading} />
+        )}
       </Stack>
     </Stack>
   );
