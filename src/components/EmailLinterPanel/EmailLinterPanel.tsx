@@ -138,17 +138,9 @@ export const EmailLinterPanel = () => {
             variant="ghost"
             disabled={isActiveTabLoading}
             onClick={() => {
-              if (activeTab === 0) {
-                runLinterMarkup();
-                return;
-              }
-              if (activeTab === 1) {
-                runLinterCompatibility();
-                return;
-              }
-              if (activeTab === 2) {
-                runLinterSpam();
-              }
+              runLinterMarkup();
+              runLinterCompatibility();
+              runLinterSpam();
             }}
           >
             <MdRefresh />
