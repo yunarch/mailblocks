@@ -3,15 +3,6 @@ import type { CompatibilityResult } from '@/types/linter';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 
-/**
- * @param str - The string to sanitize by replacing underscores with spaces.
- * @returns The sanitized string with underscores replaced by spaces.
- */
-function sanitize(str: string): string {
-  return str.replaceAll('_', ' ');
-}
-
-// Component
 export const LinterCompatibility = ({
   results,
   loading = false,
@@ -56,13 +47,13 @@ export const LinterCompatibility = ({
               className="border-b border-transparent transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
             >
               <td className="py-1.5 pr-4 align-middle">
-                <span className="flex items-center gap-2 tracking-wide text-red-400 uppercase">
+                <Stack className="flex-row items-center gap-2 tracking-wide text-red-400 uppercase">
                   <MdErrorOutline size={14} />
-                  {sanitize(result.title)}{' '}
+                  <span>{result.title}</span>
                   <span className="text-gray-400 dark:text-neutral-500">
                     {result.category}
                   </span>
-                </span>
+                </Stack>
               </td>
               <td className="py-1.5 pr-4 align-middle text-gray-700 dark:text-neutral-300">
                 {unsupportedStr.length > 0
