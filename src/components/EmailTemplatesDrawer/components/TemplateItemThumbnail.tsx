@@ -39,7 +39,7 @@ function createThumbnailDocument(content: string) {
 }
 
 // Component
-export const TemplateThumbnail = ({
+export const TemplateItemThumbnail = ({
   template,
 }: {
   template: EmailTemplate;
