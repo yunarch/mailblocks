@@ -117,7 +117,7 @@ export const EmailLinterPanel = () => {
                 <Tag
                   label={
                     spamResult
-                      ? `${(10 - spamResult.points).toFixed(1)}/10`
+                      ? `${Math.max(0, 10 - spamResult.points).toFixed(1)}/10`
                       : '-'
                   }
                 />
