@@ -24,11 +24,15 @@ type RenderedTemplate = {
   sourceUrl: string;
 };
 
+type RenderableEmailComponent = React.ComponentType<Record<string, unknown>> & {
+  PreviewProps?: Record<string, unknown>;
+};
+
 // Set Vercel URL for correct template source links from https://demo.react.email/
 process.env.VERCEL_URL = 'react-email-demo-6woqf4gn1-resend.vercel.app';
 
 // Configuration react-email github templates folder
-const branch = 'main';
+const branch = 'canary';
 const treeUrl = `https://api.github.com/repos/resend/react-email/git/trees/${branch}?recursive=1`;
 const rawRoot = `https://raw.githubusercontent.com/resend/react-email/${branch}`;
 const demoRoot = 'apps/demo/emails';
@@ -110,14 +114,17 @@ async function renderTemplate(filePath: string) {
   const imported = (await import(
     `${pathToFileURL(filePath).href}?${Date.now()}`
   )) as {
-    default?: React.ComponentType<Record<string, unknown>>;
+    default?: RenderableEmailComponent;
   };
   if (typeof imported.default !== 'function') {
     throw new TypeError('Template does not export a default React component');
   }
-  return render(React.createElement(imported.default), {
-    pretty: true,
-  });
+  return render(
+    React.createElement(imported.default, imported.default.PreviewProps ?? {}),
+    {
+      pretty: true,
+    }
+  );
 }
 
 /**
