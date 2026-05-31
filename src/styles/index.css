@@ -16,15 +16,17 @@ body,
   border-radius: 8px;
 }
 
-.mailblocks-editor-canvas > .ProseMirror {
+.mailblocks-editor-canvas .ProseMirror {
   background-color: transparent !important;
 }
 
-.mailblocks-editor-canvas > .ProseMirror > .node-container {
+.mailblocks-editor-canvas .node-container {
   margin: 0 auto;
+  width: min(var(--mailblocks-canvas-width), 100%) !important;
+  transition: width 200ms ease;
 }
 
-.mailblocks-editor-canvas > .ProseMirror > .node-container .node-column {
+.mailblocks-editor-canvas .node-column {
   border: 1px dashed var(--color-gray-300);
   border-radius: 4px;
 }

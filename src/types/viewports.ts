@@ -13,7 +13,7 @@ export type ViewportSize = {
 };
 
 export const viewportSizes: ViewportSize[] = [
-  { id: 'l', label: 'L', width: 600, Icon: MdOutlineDesktopWindows },
+  { id: 'l', label: 'L', width: 650, Icon: MdOutlineDesktopWindows },
   { id: 'm', label: 'M', width: 480, Icon: MdTabletMac },
   { id: 's', label: 'S', width: 375, Icon: MdPhoneIphone },
 ];
