@@ -9,3 +9,9 @@ body,
 #root {
   @apply bg-gray-100 text-gray-950 dark:bg-black dark:text-white;
 }
+
+/* Email editor */
+.mailblocks-editor-canvas .node-column {
+  border: 1px dashed var(--color-gray-300);
+  border-radius: 4px;
+}
