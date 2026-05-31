@@ -128,15 +128,13 @@ const main = async () => {
   stdout.write(styleText('magenta', '\n📦 sync-react-email-templates\n\n'));
 
   // Clear and recreate source directory
-  stdout.write(styleText('cyan', '⏳ Setting up tmp directory...\n'));
+  stdout.write(styleText('cyan', '▸ Setting up tmp directory...\n'));
   await rm(sourceRoot, { recursive: true, force: true });
   await mkdir(sourceRoot, { recursive: true });
-  stdout.write(
-    styleText('green', `   Ready ${styleText('dim', sourceRoot)}\n`)
-  );
+  stdout.write(styleText('green', `  Ready ${styleText('dim', sourceRoot)}\n`));
 
   // Fetch template file tree from GitHub
-  stdout.write(styleText('cyan', '⏳ Fetching template tree from GitHub...\n'));
+  stdout.write(styleText('cyan', '▸ Fetching template tree from GitHub...\n'));
   const tree = await fetchJson<GitTreeResponse>(treeUrl);
   const sourceFiles = tree.tree.filter((item) => {
     return (
@@ -148,12 +146,12 @@ const main = async () => {
   stdout.write(
     styleText(
       'green',
-      `   Found ${styleText('bold', String(sourceFiles.length))} source files.\n`
+      `  Found ${styleText('bold', String(sourceFiles.length))} source files.\n`
     )
   );
 
   // Download source files and keep track of local paths
-  stdout.write(styleText('cyan', '⏳ Downloading source files...\n'));
+  stdout.write(styleText('cyan', '▸ Copying template sources to tmp...\n'));
   const sourcePaths = new Map<string, string>();
   for (const file of sourceFiles) {
     const relativePath = file.path.slice(`${demoRoot}/`.length);
@@ -169,12 +167,12 @@ const main = async () => {
   stdout.write(
     styleText(
       'green',
-      `   Downloaded ${styleText('bold', String(sourceFiles.length))} files.\n`
+      `  Copied ${styleText('bold', String(sourceFiles.length))} files.\n`
     )
   );
 
   // Render templates
-  stdout.write(styleText('cyan', '⏳ Rendering templates...\n'));
+  stdout.write(styleText('cyan', '▸ Rendering templates...\n'));
   const templates: RenderedTemplate[] = [LOCAL_DEFAULT_TEMPLATE];
   const renderableFiles = sourceFiles.filter((file) =>
     file.path.endsWith('.tsx')
@@ -211,19 +209,19 @@ const main = async () => {
     } catch (error) {
       skipped++;
       stderr.write(
-        styleText('yellow', `   ⚠️  Skipped ${styleText('dim', file.path)}\n`)
+        styleText('yellow', `  ⚠️  Skipped ${styleText('dim', file.path)}\n`)
       );
-      stderr.write(styleText('dim', `      ${String(error)}\n`));
+      stderr.write(styleText('dim', `     ${String(error)}\n`));
     }
   }
   if (skipped > 0) {
     stdout.write(
-      styleText('yellow', `   ${skipped} template(s) skipped due to errors.\n`)
+      styleText('yellow', `  ${skipped} template(s) skipped due to errors.\n`)
     );
   }
 
   // Generate output file
-  stdout.write(styleText('cyan', '⏳ Writing generated templates file...\n'));
+  stdout.write(styleText('cyan', '▸ Writing generated templates file...\n'));
   const output = `/* GENERATED - DO NOT EDIT. Re-run \`bun run gen:templates\` to update. */
 
 import type { EmailTemplate } from '@/types/templates';
@@ -234,14 +232,14 @@ export const generatedReactEmailTemplates: EmailTemplate[] = ${JSON.stringify(te
   stdout.write(
     styleText(
       'green',
-      `   Generated ${styleText('bold', String(templates.length))} templates at ${styleText('dim', generatedFile)}\n`
+      `  Generated ${styleText('bold', String(templates.length))} templates at ${styleText('dim', generatedFile)}\n`
     )
   );
 
   // Cleanup
-  stdout.write(styleText('cyan', '⏳ Cleaning up tmp directory...\n'));
+  stdout.write(styleText('cyan', '▸ Cleaning up tmp directory...\n'));
   await rm(sourceRoot, { recursive: true, force: true });
-  stdout.write(styleText('green', '   Done.\n'));
+  stdout.write(styleText('green', '  Done.\n'));
 
   // Final log
   stdout.write(
