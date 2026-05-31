@@ -50,8 +50,19 @@ export function EmailPreview({ editorRef }: { editorRef: EmailEditorRef }) {
       </Stack>
       <Stack className="relative flex-1">
         <div className="absolute h-full w-full overflow-auto">
-          <pre className="p-4 text-sm leading-6 text-gray-800 dark:text-neutral-200">
-            <code>{content}</code>
+          <pre className="p-4 text-sm leading-6">
+            <code>
+              {content.split('\n').map((line, i) => (
+                <span key={i} className="flex">
+                  <span className="inline-block w-12 shrink-0 pr-4 text-right text-gray-400 select-none dark:text-neutral-600">
+                    {i + 1}
+                  </span>
+                  <span className="text-gray-800 dark:text-neutral-200">
+                    {line}
+                  </span>
+                </span>
+              ))}
+            </code>
           </pre>
         </div>
       </Stack>
