@@ -22,7 +22,7 @@ export const AppContextProvider = ({
 }) => {
   const [templatesDrawerOpen, setTemplatesDrawerOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(demoTemplates[0]);
-  const [emailContent, setEmailContent] = useState('');
+  const [emailContent, setEmailContent] = useState(selectedTemplate.content);
   const [isDirty, setIsDirty] = useState(false);
 
   // Create context
