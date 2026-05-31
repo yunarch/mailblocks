@@ -1,19 +1,17 @@
 import { twJoin } from 'tailwind-merge';
 import { useAppContext } from '@/providers/AppContextProvider';
+import { demoTemplates } from '@/templates/demoTemplates';
 import type { EmailTemplate } from '@/templates/types';
 import { TemplateThumbnail } from './components/TemplateThumbnail';
 
-export const EmailTemplatesDrawer = ({
-  templates,
-  selectedTemplateId,
-  onSelectTemplate,
-}: {
-  templates: EmailTemplate[];
-  selectedTemplateId: string;
-  onSelectTemplate: (template: EmailTemplate) => void;
-}) => {
-  const { templatesDrawerOpen: isOpen } = useAppContext();
-  const groups = templates.reduce<Record<string, EmailTemplate[]>>(
+export const EmailTemplatesDrawer = () => {
+  const {
+    templatesDrawerOpen: isOpen,
+    selectedTemplate,
+    setSelectedTemplate,
+    setEmailContent,
+  } = useAppContext();
+  const groups = demoTemplates.reduce<Record<string, EmailTemplate[]>>(
     (acc, template) => {
       acc[template.category] ??= [];
       acc[template.category].push(template);
@@ -59,7 +57,7 @@ export const EmailTemplatesDrawer = ({
                 </h3>
                 <div className="grid gap-2">
                   {categoryTemplates.map((template) => {
-                    const isSelected = template.id === selectedTemplateId;
+                    const isSelected = template.id === selectedTemplate.id;
                     return (
                       <button
                         key={template.id}
@@ -71,7 +69,8 @@ export const EmailTemplatesDrawer = ({
                             : 'border-gray-200 bg-white text-gray-950 hover:border-gray-300 hover:bg-gray-50 dark:border-white/10 dark:bg-white/3 dark:text-white dark:hover:border-white/20 dark:hover:bg-white/6'
                         )}
                         onClick={() => {
-                          onSelectTemplate(template);
+                          setSelectedTemplate(template);
+                          setEmailContent(template.content);
                         }}
                       >
                         <TemplateThumbnail template={template} />
