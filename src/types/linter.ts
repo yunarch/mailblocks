@@ -1,24 +1,3 @@
-type LinkLintResult = {
-  status: LintStatus;
-  link: string;
-  codeLocation: CodeLocation;
-  checks: LintCheck[];
-};
-
-type ImageLintResult = {
-  status: LintStatus;
-  source: string;
-  codeLocation: CodeLocation;
-  checks: LintCheck[];
-};
-
-type MarkupLintResult = {
-  status: LintStatus;
-  label: string;
-  codeLocation: CodeLocation;
-  checks: LintCheck[];
-};
-
 export type CodeLocation = {
   line: number;
   column: number;
@@ -44,13 +23,37 @@ export type LintCheck = {
 export type LintingRow =
   | {
       source: 'link';
-      result: LinkLintResult;
+      result: {
+        status: LintStatus;
+        link: string;
+        codeLocation: CodeLocation;
+        checks: LintCheck[];
+      };
     }
   | {
       source: 'image';
-      result: ImageLintResult;
+      result: {
+        status: LintStatus;
+        source: string;
+        codeLocation: CodeLocation;
+        checks: LintCheck[];
+      };
     }
   | {
       source: 'markup';
-      result: MarkupLintResult;
+      result: {
+        status: LintStatus;
+        label: string;
+        codeLocation: CodeLocation;
+        checks: LintCheck[];
+      };
     };
+
+export type CompatibilityResult = {
+  title: string;
+  category: 'css' | 'html' | 'image' | 'others';
+  unsupportedClients: string[];
+  url: string;
+  source: string;
+  location: CodeLocation;
+};
