@@ -12,6 +12,8 @@
   },
   "include": [
     "./src",
+    "./scripts",
+    "./reset.d.ts",
     "./oxfmt.config.ts",
     "./oxlint.config.ts",
     "./vite.config.ts"
