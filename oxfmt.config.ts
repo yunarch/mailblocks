@@ -3,5 +3,9 @@ import yunarchOxfmtConfig from './node_modules/@yunarch/config-web/dist/config.o
 
 export default defineConfig({
   ...(yunarchOxfmtConfig as OxfmtConfig),
+  ignorePatterns: [
+    ...yunarchOxfmtConfig.ignorePatterns,
+    'src/utils/templates.ts',
+  ],
   sortTailwindcss: true,
 });

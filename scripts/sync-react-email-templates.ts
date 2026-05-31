@@ -1,7 +1,9 @@
+// oxlint-disable no-console
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { stderr, stdout } from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { styleText } from 'node:util';
 import { render } from '@react-email/render';
 import React from 'react';
 
@@ -123,6 +125,18 @@ async function renderTemplate(filePath: string) {
  * renders them to HTML, and generates a TypeScript file exporting the templates as an array.
  */
 const main = async () => {
+  stdout.write(styleText('magenta', '\n📦 sync-react-email-templates\n\n'));
+
+  // Clear and recreate source directory
+  stdout.write(styleText('cyan', '⏳ Setting up tmp directory...\n'));
+  await rm(sourceRoot, { recursive: true, force: true });
+  await mkdir(sourceRoot, { recursive: true });
+  stdout.write(
+    styleText('green', `   Ready ${styleText('dim', sourceRoot)}\n`)
+  );
+
+  // Fetch template file tree from GitHub
+  stdout.write(styleText('cyan', '⏳ Fetching template tree from GitHub...\n'));
   const tree = await fetchJson<GitTreeResponse>(treeUrl);
   const sourceFiles = tree.tree.filter((item) => {
     return (
@@ -131,10 +145,15 @@ const main = async () => {
       /\.(tsx|ts)$/.test(item.path)
     );
   });
-  // Clear and recreate source directory
-  await rm(sourceRoot, { recursive: true, force: true });
-  await mkdir(sourceRoot, { recursive: true });
+  stdout.write(
+    styleText(
+      'green',
+      `   Found ${styleText('bold', String(sourceFiles.length))} source files.\n`
+    )
+  );
+
   // Download source files and keep track of local paths
+  stdout.write(styleText('cyan', '⏳ Downloading source files...\n'));
   const sourcePaths = new Map<string, string>();
   for (const file of sourceFiles) {
     const relativePath = file.path.slice(`${demoRoot}/`.length);
@@ -147,11 +166,20 @@ const main = async () => {
     );
     sourcePaths.set(file.path, localPath);
   }
+  stdout.write(
+    styleText(
+      'green',
+      `   Downloaded ${styleText('bold', String(sourceFiles.length))} files.\n`
+    )
+  );
+
   // Render templates
+  stdout.write(styleText('cyan', '⏳ Rendering templates...\n'));
   const templates: RenderedTemplate[] = [LOCAL_DEFAULT_TEMPLATE];
   const renderableFiles = sourceFiles.filter((file) =>
     file.path.endsWith('.tsx')
   );
+  let skipped = 0;
   for (const file of renderableFiles) {
     const localPath = sourcePaths.get(file.path);
     if (!localPath) continue;
@@ -181,11 +209,21 @@ const main = async () => {
         sourceUrl: `https://github.com/resend/react-email/blob/${branch}/${file.path}`,
       });
     } catch (error) {
-      stderr.write(`Skipped ${file.path}\n`);
-      stderr.write(`${String(error)}\n`);
+      skipped++;
+      stderr.write(
+        styleText('yellow', `   ⚠️  Skipped ${styleText('dim', file.path)}\n`)
+      );
+      stderr.write(styleText('dim', `      ${String(error)}\n`));
     }
   }
+  if (skipped > 0) {
+    stdout.write(
+      styleText('yellow', `   ${skipped} template(s) skipped due to errors.\n`)
+    );
+  }
+
   // Generate output file
+  stdout.write(styleText('cyan', '⏳ Writing generated templates file...\n'));
   const output = `/* GENERATED - DO NOT EDIT. Re-run \`bun run gen:templates\` to update. */
 
 import type { EmailTemplate } from '@/types/templates';
@@ -193,7 +231,12 @@ import type { EmailTemplate } from '@/types/templates';
 export const generatedReactEmailTemplates: EmailTemplate[] = ${JSON.stringify(templates)};
 `;
   await writeFile(generatedFile, output, 'utf8');
-  stdout.write(`Generated ${templates.length} templates at ${generatedFile}\n`);
+  stdout.write(
+    styleText(
+      'green',
+      `\n✅ Generated ${styleText('bold', String(templates.length))} templates at ${styleText('dim', generatedFile)}\n\n`
+    )
+  );
 };
 
 // Execute
