@@ -1,21 +1,20 @@
 import { cx } from 'tailwind-variants';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { demoTemplates } from '@/templates/demoTemplates';
-import type { EmailTemplate } from '@/templates/types';
+import type { EmailTemplate } from '@/types/templates';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
+import { generatedReactEmailTemplates } from '@/utils/templates';
 import { TemplateItem } from './components/TemplateItem';
 
 export const EmailTemplatesDrawer = () => {
   const { templatesDrawerOpen: isOpen } = useAppContext();
-  const groups = demoTemplates.reduce<Record<string, EmailTemplate[]>>(
-    (acc, template) => {
-      acc[template.category] ??= [];
-      acc[template.category].push(template);
-      return acc;
-    },
-    {}
-  );
+  const groups = generatedReactEmailTemplates.reduce<
+    Record<string, EmailTemplate[]>
+  >((acc, template) => {
+    acc[template.category] ??= [];
+    acc[template.category].push(template);
+    return acc;
+  }, {});
 
   // Render
   return (

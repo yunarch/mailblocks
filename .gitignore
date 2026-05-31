@@ -88,5 +88,5 @@ build
 # MSW
 mockServiceWorker.js
 
-# Others
-src/**/eslint/typegen.d.ts
+# Temp (downloaded React Email sources)
+tmp/

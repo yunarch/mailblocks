@@ -7,9 +7,9 @@ import {
   useRef,
   useState,
 } from 'react';
-import { demoTemplates } from '@/templates/demoTemplates';
-import type { EmailTemplate } from '@/templates/types';
+import { EmailTemplate } from '@/types/templates';
 import type { SetValue } from '@/utils/helpers';
+import { generatedReactEmailTemplates } from '@/utils/templates';
 
 // Create a context
 type AppContextType = {
@@ -37,7 +37,9 @@ export const AppContextProvider = ({
 }) => {
   const editorRef = useRef<EmailEditorRef>(null);
   const [templatesDrawerOpen, setTemplatesDrawerOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState(demoTemplates[0]);
+  const [selectedTemplate, setSelectedTemplate] = useState(
+    generatedReactEmailTemplates[0]
+  );
   const [emailContent, setEmailContent] = useState(selectedTemplate.content);
   const [pendingTemplate, setPendingTemplate] = useState<EmailTemplate | null>(
     null
