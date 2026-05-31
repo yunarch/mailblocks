@@ -1,4 +1,4 @@
-import { Divider } from '@/ui/Dividier';
+import { Divider } from '@/ui/Divider';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 

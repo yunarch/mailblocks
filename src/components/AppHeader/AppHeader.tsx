@@ -8,7 +8,7 @@ import {
 import { useTheme } from '@/hooks/useTheme';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Button } from '@/ui/Button';
-import { Divider } from '@/ui/Dividier';
+import { Divider } from '@/ui/Divider';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 
