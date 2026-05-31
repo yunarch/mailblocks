@@ -1,52 +1,56 @@
 import { MdOutlineShield } from 'react-icons/md';
-import { twJoin } from 'tailwind-merge';
+import { cx } from 'tailwind-variants';
+import type { SpamCheckingResult } from '@/types/linter';
+import { Typography } from '@/ui/Typography';
 
-export type SpamCheckingResult = {
-  checks: {
-    name: string;
-    description: string;
-    points: number;
-  }[];
-  isSpam: boolean;
-  points: number;
-};
-
-function sanitize(str: string): string {
-  return str.replaceAll('_', ' ');
-}
-
-function getScoreColor(points: number): string {
+// Utility functions
+const getScoreColor = (points: number): string => {
   if (points >= 5) return 'text-red-400';
   if (points > 3) return 'text-orange-400';
   if (points > 1.5) return 'text-yellow-200';
   if (points === 0) return 'text-emerald-400';
   return '';
-}
-
-function getCheckColor(points: number): string {
+};
+const getCheckColor = (points: number): string => {
   if (points > 3) return 'text-red-400';
   if (points > 2) return 'text-orange-400';
   if (points > 1) return 'text-yellow-200';
   return '';
-}
+};
 
-interface SpamProps {
-  result: SpamCheckingResult;
-}
-
-export const LinterSpam = ({ result }: SpamProps) => {
+// Component
+export const LinterSpam = ({
+  result,
+  loading = false,
+}: {
+  result: SpamCheckingResult | undefined;
+  loading?: boolean;
+}) => {
+  if (loading) {
+    return (
+      <Typography variant="caption" tone="info">
+        Running client-side spam checks...
+      </Typography>
+    );
+  }
+  if (result === undefined) {
+    return (
+      <Typography variant="label" tone="muted">
+        Open or refresh spam checks to score the current email.
+      </Typography>
+    );
+  }
   const score = 10 - result.points;
   const sortedChecks = [...result.checks].toSorted(
     (a, b) => b.points - a.points
   );
-
   return (
     <table className="w-full border-collapse text-left text-xs">
       <tbody>
         <tr className="sticky top-0 border-b border-gray-200 bg-white dark:border-white/10 dark:bg-black">
           <td className="py-1.5 pr-4 align-middle uppercase">
             <span
-              className={twJoin(
+              className={cx(
                 'flex items-center gap-2',
                 getScoreColor(result.points)
               )}
@@ -61,7 +65,7 @@ export const LinterSpam = ({ result }: SpamProps) => {
               : 'Higher scores are better'}
           </td>
           <td className="py-1.5 text-right align-middle font-bold tracking-tighter">
-            <span className={twJoin('text-2xl', getScoreColor(result.points))}>
+            <span className={cx('text-2xl', getScoreColor(result.points))}>
               {score.toFixed(1)}
             </span>{' '}
             <span className="text-base text-gray-400 dark:text-neutral-500">
@@ -76,7 +80,7 @@ export const LinterSpam = ({ result }: SpamProps) => {
           >
             <td className="py-1.5 pr-4 align-middle">
               <span
-                className={twJoin(
+                className={cx(
                   'flex items-center gap-2 uppercase tracking-wide',
                   getCheckColor(check.points)
                 )}
@@ -85,14 +89,14 @@ export const LinterSpam = ({ result }: SpamProps) => {
                   size={14}
                   className={getCheckColor(check.points)}
                 />
-                {sanitize(check.name)}
+                {check.name}
               </span>
             </td>
             <td className="py-1.5 pr-4 align-middle text-gray-700 dark:text-neutral-300">
               {check.description}
             </td>
             <td
-              className={twJoin(
+              className={cx(
                 'py-1.5 text-right align-middle font-mono tracking-tighter',
                 getCheckColor(check.points)
               )}

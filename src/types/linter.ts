@@ -57,3 +57,13 @@ export type CompatibilityResult = {
   source: string;
   location: CodeLocation;
 };
+
+export type SpamCheckingResult = {
+  checks: {
+    name: string;
+    description: string;
+    points: number;
+  }[];
+  isSpam: boolean;
+  points: number;
+};
