@@ -40,7 +40,7 @@ export const LinterSpam = ({
       </Typography>
     );
   }
-  const score = 10 - result.points;
+  const score = Math.max(0, 10 - result.points);
   const sortedChecks = [...result.checks].toSorted(
     (a, b) => b.points - a.points
   );
