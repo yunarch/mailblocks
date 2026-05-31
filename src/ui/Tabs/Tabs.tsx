@@ -48,6 +48,7 @@ export const Tabs = ({
   return (
     <div
       ref={ref}
+      role="tablist"
       className={cx('ui-tabs', 'flex shrink-0', className)}
       {...other}
     >
