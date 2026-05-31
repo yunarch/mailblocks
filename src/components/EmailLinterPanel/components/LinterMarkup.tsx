@@ -5,7 +5,7 @@ import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 import { formatBytes } from '@/utils/helpers';
 
-const descriptions: Record<LintCheck['type'], string> = {
+const DESCRIPTIONS: Record<LintCheck['type'], string> = {
   accessibility: 'Missing alt text',
   client_limit: 'Cannot verify this from a browser-only GitHub Pages app',
   email_best_practice: 'Email client support issue',
@@ -14,25 +14,11 @@ const descriptions: Record<LintCheck['type'], string> = {
   syntax: 'Invalid or missing value',
 };
 
-function sanitize(str: string): string {
-  return str.replaceAll('_', ' ');
-}
-
-function getSourceLabel(row: LintingRow) {
-  if (row.source === 'link') return row.result.link;
-  if (row.source === 'image') return row.result.source;
-  return row.result.label;
-}
-
-function getFailingCheck(row: LintingRow) {
-  return row.result.checks.find((check) => !check.passed);
-}
-
-function getDescription(check: LintCheck | undefined) {
-  if (!check) return '';
-  return check.metadata?.detail ?? descriptions[check.type];
-}
-
+/**
+ *
+ * @param row - The linting row to extract metadata from
+ * @returns A string representation of the metadata
+ */
 function getMetadata(row: LintingRow) {
   const metadata = row.result.checks.flatMap((check) => {
     if (check.metadata?.byteCount) {
@@ -40,14 +26,43 @@ function getMetadata(row: LintingRow) {
     }
     return [];
   });
-
   metadata.push(
     `html:${row.result.codeLocation.line}:${row.result.codeLocation.column}`
   );
-
   return metadata.join(' · ');
 }
 
+/**
+ *
+ * @param row - The linting row to extract the source label from
+ * @returns A string representation of the source label
+ */
+function getSourceLabel(row: LintingRow) {
+  if (row.source === 'link') return row.result.link;
+  if (row.source === 'image') return row.result.source;
+  return row.result.label;
+}
+
+/**
+ *
+ * @param row - The linting row to find the failing check for
+ * @returns The first failing lint check, or undefined if all checks passed
+ */
+function getFailingCheck(row: LintingRow) {
+  return row.result.checks.find((check) => !check.passed);
+}
+
+/**
+ *
+ * @param check - The lint check to get the description for
+ * @returns A string representation of the description
+ */
+function getDescription(check: LintCheck | undefined) {
+  if (!check) return '';
+  return check.metadata?.detail ?? DESCRIPTIONS[check.type];
+}
+
+// Icons for different linting statuses
 const StatusIcon = ({ status }: { status: Exclude<LintStatus, 'success'> }) => {
   if (status === 'error') return <MdErrorOutline size={14} />;
   if (status === 'info') return <MdInfoOutline size={14} />;
@@ -56,10 +71,10 @@ const StatusIcon = ({ status }: { status: Exclude<LintStatus, 'success'> }) => {
 
 // Component
 export const LinterMarkup = ({
-  rows,
+  results,
   loading = false,
 }: {
-  rows: LintingRow[] | undefined;
+  results: LintingRow[] | undefined;
   loading?: boolean;
 }) => {
   if (loading) {
@@ -69,14 +84,14 @@ export const LinterMarkup = ({
       </Typography>
     );
   }
-  if (rows === undefined) {
+  if (results === undefined) {
     return (
       <Typography variant="label" tone="muted">
         Open or refresh the linter to check the current email.
       </Typography>
     );
   }
-  if (rows.length === 0) {
+  if (results.length === 0) {
     return (
       <Stack className="gap-1">
         <Typography variant="h3" tone="success">
@@ -91,7 +106,7 @@ export const LinterMarkup = ({
   return (
     <table className="w-full border-collapse text-left text-xs">
       <tbody>
-        {rows.map((row, i) => {
+        {results.map((row, i) => {
           const failingCheck = getFailingCheck(row);
           const sourceLabel = getSourceLabel(row);
           const status =
@@ -111,7 +126,7 @@ export const LinterMarkup = ({
                   )}
                 >
                   <StatusIcon status={status} />
-                  {sanitize(failingCheck?.type ?? row.source)}
+                  {failingCheck?.type ?? row.source}
                 </span>
               </td>
               <td className="py-1.5 pr-4 align-middle text-gray-700 dark:text-neutral-300">
