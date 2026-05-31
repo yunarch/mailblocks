@@ -115,7 +115,7 @@ export const EmailLinterPanel = () => {
 
   // Render
   return (
-    <Stack className="h-52 border-t border-gray-200 dark:border-white/10">
+    <Stack className="h-56 border-t border-gray-200 dark:border-white/10">
       <Stack className="flex-row items-center justify-between border-b border-gray-200 pr-4 dark:border-white/10">
         <Tabs
           activeItem={activeTab}

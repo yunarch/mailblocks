@@ -150,45 +150,48 @@ export const LinterCompatibility = ({
         selectedEmailClients={selectedEmailClients}
         onToggleEmailClient={onToggleEmailClient}
       />
-      <table className="w-full border-collapse text-left text-xs">
-        <tbody>
-          {results.map((result, i) => {
-            const unsupportedStr = result.unsupportedClients.join(', ');
-            return (
-              <tr
-                key={i}
-                className="border-b border-transparent transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
-              >
-                <td className="py-1.5 pr-4 align-middle">
-                  <Stack className="flex-row items-center gap-2 tracking-wide text-red-400 uppercase">
-                    <MdErrorOutline size={14} />
-                    <span>{result.title}</span>
-                    <span className="text-gray-400 dark:text-neutral-500">
-                      {result.category}
-                    </span>
-                  </Stack>
-                </td>
-                <td className="py-1.5 pr-4 align-middle text-gray-700 dark:text-neutral-300">
-                  {unsupportedStr.length > 0
-                    ? `Not supported in ${unsupportedStr}`
-                    : null}
-                  <a
-                    href={result.url}
-                    className="ml-2 text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                  >
-                    More ↗
-                  </a>
-                </td>
-                <td className="py-1.5 text-right align-middle font-mono text-gray-400 dark:text-neutral-500">
-                  html:{result.location.line}:{result.location.column}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <div className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-x-4 gap-y-0 text-xs">
+        {results.map((result, i) => {
+          const unsupportedStr = result.unsupportedClients.join(', ');
+          return (
+            <div
+              key={i}
+              className="col-span-4 grid grid-cols-subgrid border-b border-transparent py-1.5 transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
+            >
+              <div>
+                <Typography
+                  variant="label"
+                  tone="danger"
+                  uppercase
+                  className="flex flex-row items-center gap-2"
+                >
+                  <MdErrorOutline size={14} />
+                  <span>{result.title}</span>
+                </Typography>
+              </div>
+              <Typography variant="label" tone="subtle" uppercase>
+                {result.category}
+              </Typography>
+              <Typography variant="bodySm">
+                {unsupportedStr.length > 0
+                  ? `Not supported in ${unsupportedStr}`
+                  : null}
+                <a
+                  href={result.url}
+                  className="ml-2 text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  More ↗
+                </a>
+              </Typography>
+              <Typography variant="caption" tone="muted">
+                html:{result.location.line}:{result.location.column}
+              </Typography>
+            </div>
+          );
+        })}
+      </div>
     </Stack>
   );
 };
