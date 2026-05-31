@@ -12,8 +12,7 @@ export const TemplateItem = ({
   category: string;
   categoryTemplates: EmailTemplate[];
 }) => {
-  const { selectedTemplate, setSelectedTemplate, setEmailContent } =
-    useAppContext();
+  const { selectedTemplate, selectTemplate } = useAppContext();
   return (
     <Stack className="gap-2">
       <Typography as="h3" variant="label" tone="subtle" uppercase>
@@ -33,8 +32,7 @@ export const TemplateItem = ({
                   : 'border-transparent hover:border-gray-300 dark:hover:border-white/50'
               )}
               onClick={() => {
-                setSelectedTemplate(template);
-                setEmailContent(template.content);
+                selectTemplate(template);
               }}
             >
               <TemplateItemThumbnail template={template} />

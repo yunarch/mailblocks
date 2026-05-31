@@ -15,7 +15,7 @@ export const EmailEditor = ({
   editorRef: React.RefObject<EmailEditorRef | null>;
   viewportWidth: ViewportSize['width'];
 }) => {
-  const { selectedTemplate, emailContent } = useAppContext();
+  const { selectedTemplate, emailContent, markEmailDirty } = useAppContext();
   return (
     <Stack className="relative flex-1">
       <div className="absolute h-full w-full">
@@ -32,6 +32,7 @@ export const EmailEditor = ({
             className={cx('mailblocks-editor-canvas', 'overflow-auto')}
             content={emailContent}
             theme="basic"
+            onUpdate={markEmailDirty}
             onUploadImage={async (file) => ({
               url: URL.createObjectURL(file),
             })}
