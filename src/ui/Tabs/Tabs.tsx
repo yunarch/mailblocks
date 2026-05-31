@@ -58,6 +58,10 @@ export const Tabs = ({
         return (
           <button
             key={id}
+            id={id}
+            role="tab"
+            aria-selected={isActive}
+            tabIndex={isActive ? 0 : -1}
             type="button"
             className={cx(
               'ui-tabs__item',
