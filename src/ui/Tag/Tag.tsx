@@ -1,7 +1,7 @@
 import { cx } from 'tailwind-variants';
 
 // Prop types
-export interface TagProps extends React.HtmlHTMLAttributes<HTMLSpanElement> {
+export interface TagProps extends React.HTMLAttributes<HTMLSpanElement> {
   /**
    * The component ref.
    */

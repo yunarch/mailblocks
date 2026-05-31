@@ -3,7 +3,7 @@ import { Typography } from '../Typography';
 
 // Prop types
 export interface TabsProps extends Omit<
-  React.HtmlHTMLAttributes<HTMLDivElement>,
+  React.HTMLAttributes<HTMLDivElement>,
   'onChange'
 > {
   /**
