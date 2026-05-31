@@ -29,7 +29,7 @@ export const EmailEditor = ({
           <ReactEmailEditor
             key={`${selectedTemplate.id}-${1}`}
             ref={editorRef}
-            className={cx('mailblocks-editor-canvas', 'overflow-auto')}
+            className={cx('mailblocks-editor-canvas', 'mr-2 overflow-auto')}
             content={emailContent}
             theme="basic"
             onUpdate={markEmailDirty}

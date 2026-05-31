@@ -53,7 +53,7 @@ export const EmailEditorPanel = () => {
           </Button>
         </ButtonGroup>
       </Stack>
-      <Stack className={'flex-1 p-2'}>
+      <Stack className="flex-1 p-2">
         <Stack className={mode === 'editor' ? 'flex-1' : 'hidden'}>
           <EmailEditor
             editorRef={editorRef}
