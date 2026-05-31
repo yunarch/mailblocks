@@ -1,35 +1,55 @@
 import { MdErrorOutline } from 'react-icons/md';
+import type { CompatibilityResult } from '@/types/linter';
+import { Stack } from '@/ui/Stack';
+import { Typography } from '@/ui/Typography';
 
-export type CompatibilityResult = {
-  title: string;
-  unsupportedClients: string[];
-  url: string;
-  location: { line: number; column: number };
-};
-
+/**
+ * @param str - The string to sanitize by replacing underscores with spaces.
+ * @returns The sanitized string with underscores replaced by spaces.
+ */
 function sanitize(str: string): string {
   return str.replaceAll('_', ' ');
 }
 
-interface CompatibilityProps {
-  results: CompatibilityResult[];
-}
-
-export const LinterCompatibility = ({ results }: CompatibilityProps) => {
-  if (results.length === 0) {
+// Component
+export const LinterCompatibility = ({
+  results,
+  loading = false,
+}: {
+  results: CompatibilityResult[] | undefined;
+  loading?: boolean;
+}) => {
+  if (loading) {
     return (
-      <p className="px-1 py-3 text-xs text-gray-400 dark:text-neutral-500">
-        No compatibility issues found.
-      </p>
+      <Typography variant="caption" tone="info">
+        Running compatibility checks...
+      </Typography>
     );
   }
-
+  if (results === undefined) {
+    return (
+      <Typography variant="label" tone="muted">
+        Open or refresh compatibility to check the current email.
+      </Typography>
+    );
+  }
+  if (results.length === 0) {
+    return (
+      <Stack className="gap-1">
+        <Typography variant="h3" tone="success">
+          All good
+        </Typography>
+        <Typography variant="bodySm" tone="subtle">
+          No compatibility issues found.
+        </Typography>
+      </Stack>
+    );
+  }
   return (
     <table className="w-full border-collapse text-left text-xs">
       <tbody>
         {results.map((result, i) => {
           const unsupportedStr = result.unsupportedClients.join(', ');
-
           return (
             <tr
               key={i}
@@ -38,7 +58,10 @@ export const LinterCompatibility = ({ results }: CompatibilityProps) => {
               <td className="py-1.5 pr-4 align-middle">
                 <span className="flex items-center gap-2 tracking-wide text-red-400 uppercase">
                   <MdErrorOutline size={14} />
-                  {sanitize(result.title)}
+                  {sanitize(result.title)}{' '}
+                  <span className="text-gray-400 dark:text-neutral-500">
+                    {result.category}
+                  </span>
                 </span>
               </td>
               <td className="py-1.5 pr-4 align-middle text-gray-700 dark:text-neutral-300">
@@ -55,7 +78,7 @@ export const LinterCompatibility = ({ results }: CompatibilityProps) => {
                 </a>
               </td>
               <td className="py-1.5 text-right align-middle font-mono text-gray-400 dark:text-neutral-500">
-                react:{result.location.line}:{result.location.column}
+                html:{result.location.line}:{result.location.column}
               </td>
             </tr>
           );
