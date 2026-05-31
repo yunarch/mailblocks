@@ -62,7 +62,7 @@ export const LinterCompatibility = ({
                 <a
                   href={result.url}
                   className="ml-2 text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   target="_blank"
                 >
                   More ↗
