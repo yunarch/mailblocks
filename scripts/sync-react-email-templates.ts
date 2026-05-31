@@ -234,8 +234,18 @@ export const generatedReactEmailTemplates: EmailTemplate[] = ${JSON.stringify(te
   stdout.write(
     styleText(
       'green',
-      `\n✅ Generated ${styleText('bold', String(templates.length))} templates at ${styleText('dim', generatedFile)}\n\n`
+      `   Generated ${styleText('bold', String(templates.length))} templates at ${styleText('dim', generatedFile)}\n`
     )
+  );
+
+  // Cleanup
+  stdout.write(styleText('cyan', '⏳ Cleaning up tmp directory...\n'));
+  await rm(sourceRoot, { recursive: true, force: true });
+  stdout.write(styleText('green', '   Done.\n'));
+
+  // Final log
+  stdout.write(
+    styleText('magenta', '\nFinished syncing React Email templates.\n')
   );
 };
 
