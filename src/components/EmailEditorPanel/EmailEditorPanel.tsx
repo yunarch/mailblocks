@@ -30,7 +30,14 @@ export const EmailEditorPanel = () => {
               }}
             >
               {<viewport.Icon />}
-              {viewport.label}
+              <Stack className="flex-row gap-1">
+                <Typography variant="bodySm" tone="subtle">
+                  {viewport.label}
+                </Typography>
+                <Typography variant="caption" tone="muted">
+                  ({viewport.width}px)
+                </Typography>
+              </Stack>
             </Button>
           ))}
         </ButtonGroup>
