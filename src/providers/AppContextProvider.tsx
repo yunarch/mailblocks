@@ -1,10 +1,19 @@
-import { createContext, use, useCallback, useMemo, useState } from 'react';
+import type { EmailEditorRef } from '@react-email/editor';
+import {
+  createContext,
+  use,
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { demoTemplates } from '@/templates/demoTemplates';
 import type { EmailTemplate } from '@/templates/types';
 import type { SetValue } from '@/utils/helpers';
 
 // Create a context
 type AppContextType = {
+  editorRef: React.RefObject<EmailEditorRef | null>;
   templatesDrawerOpen: boolean;
   setTemplatesDrawerOpen: SetValue<boolean>;
   selectedTemplate: EmailTemplate;
@@ -26,6 +35,7 @@ export const AppContextProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const editorRef = useRef<EmailEditorRef>(null);
   const [templatesDrawerOpen, setTemplatesDrawerOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(demoTemplates[0]);
   const [emailContent, setEmailContent] = useState(selectedTemplate.content);
@@ -66,6 +76,7 @@ export const AppContextProvider = ({
   // Create context
   const contextValue: AppContextType = useMemo(
     () => ({
+      editorRef,
       templatesDrawerOpen,
       setTemplatesDrawerOpen,
       selectedTemplate,
@@ -80,6 +91,7 @@ export const AppContextProvider = ({
       confirmTemplateSwitch,
     }),
     [
+      editorRef,
       templatesDrawerOpen,
       selectedTemplate,
       pendingTemplate,

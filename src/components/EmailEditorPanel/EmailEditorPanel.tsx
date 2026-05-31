@@ -1,7 +1,7 @@
-import type { EmailEditorRef } from '@react-email/editor';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { MdOutlineDesktopWindows } from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
+import { useAppContext } from '@/providers/AppContextProvider';
 import { viewportSizes } from '@/types/viewports';
 import { Button, ButtonGroup } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
@@ -10,7 +10,7 @@ import { EmailEditor } from './components/EmailEditor';
 import { EmailPreview } from './components/EmailPreview';
 
 export const EmailEditorPanel = () => {
-  const editorRef = useRef<EmailEditorRef>(null);
+  const { editorRef } = useAppContext();
   const [mode, setMode] = useState<'editor' | 'preview'>('editor');
   const [activeViewport, setActiveViewport] = useState(viewportSizes[0]);
   return (
