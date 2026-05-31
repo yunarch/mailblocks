@@ -1,17 +1,49 @@
 @import 'tailwindcss';
 @import '@react-email/editor/themes/default.css';
+@import '@react-email/editor/styles/inspector.css';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-header * {
-  @apply font-sans text-black;
-  @variant dark {
-    @apply text-white;
-  }
+html,
+body,
+#root {
+  @apply bg-gray-100 text-gray-950 dark:bg-black dark:text-white;
 }
 
-/* Email Editor */
-.node-column {
+/* Email editor */
+.mailblocks-editor-canvas {
+  background-color: var(--color-gray-500);
+  border-radius: 8px;
+}
+
+.mailblocks-editor-canvas .ProseMirror {
+  background-color: transparent !important;
+}
+
+.mailblocks-editor-canvas .node-container {
+  margin: 0 auto;
+  width: var(--mailblocks-canvas-width) !important;
+  transition: width 200ms ease;
+}
+
+.mailblocks-editor-canvas .node-column {
   border: 1px dashed var(--color-gray-300);
   border-radius: 4px;
+}
+
+/* Email editor inspector */
+.mailblocks-inspector {
+  --re-border: rgb(38 38 38);
+  --re-text: rgb(245 245 245);
+  --re-text-muted: rgb(163 163 163);
+  --re-bg-hover: rgb(255 255 255 / 0.08);
+  --re-bg-active: rgb(255 255 255 / 0.12);
+}
+
+[data-theme='light'] .mailblocks-inspector {
+  --re-border: rgb(229 231 235);
+  --re-text: rgb(17 24 39);
+  --re-text-muted: rgb(107 114 128);
+  --re-bg-hover: rgb(243 244 246);
+  --re-bg-active: rgb(229 231 235);
 }

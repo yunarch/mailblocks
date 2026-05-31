@@ -26,6 +26,9 @@
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
 
+  // Tailwind CSS IntelliSense
+  "tailwindCSS.classFunctions": ["tv", "cva"],
+
   // Customize AI responses
   "github.copilot.chat.commitMessageGeneration.instructions": [
     { "file": ".github/instructions/commit-messages.md" }

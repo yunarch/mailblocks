@@ -10,7 +10,7 @@ export type ThemeType = 'light' | 'dark';
  *
  * @returns A tuple of the current theme and a function to toggle it.
  */
-export const useTheme = () => {
+export function useTheme() {
   const [theme, setTheme] = useState<ThemeType>(() => {
     return (document.documentElement.dataset.theme as ThemeType) ?? 'dark';
   });
@@ -23,4 +23,4 @@ export const useTheme = () => {
     [theme]
   );
   return [theme, toggleTheme] as const;
-};
+}
