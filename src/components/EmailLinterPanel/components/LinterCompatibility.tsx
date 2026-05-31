@@ -1,4 +1,4 @@
-import { MdErrorOutline } from 'react-icons/md';
+import { MdErrorOutline, MdArrowDropDown } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
 import type { CompatibilityResult } from '@/types/linter';
 import { Stack } from '@/ui/Stack';
@@ -34,7 +34,7 @@ const EmailClientsSelect = ({
     selectedEmailClientLabels.length - selectedPreview.length;
   return (
     <details className="group rounded-md border border-gray-200 bg-gray-50/70 dark:border-white/10 dark:bg-white/4">
-      <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center gap-3 px-3 py-2 select-none [&::-webkit-details-marker]:hidden">
         <Stack className="flex-1 gap-1">
           <Stack className="flex-row items-center gap-2">
             <Typography variant="label">Email clients</Typography>
@@ -57,7 +57,7 @@ const EmailClientsSelect = ({
           </Stack>
         </Stack>
         <span className="shrink-0 text-xs text-gray-400 transition-transform group-open:rotate-180 dark:text-neutral-500">
-          v
+          <MdArrowDropDown size={20} />
         </span>
       </summary>
       <div className="grid grid-cols-2 gap-1.5 border-t border-gray-200 p-2 sm:grid-cols-4 lg:grid-cols-6 dark:border-white/10">
