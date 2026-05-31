@@ -22,7 +22,7 @@ body,
 
 .mailblocks-editor-canvas .node-container {
   margin: 0 auto;
-  width: min(var(--mailblocks-canvas-width), 100%) !important;
+  width: var(--mailblocks-canvas-width) !important;
   transition: width 200ms ease;
 }
 
