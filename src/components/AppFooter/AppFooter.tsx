@@ -31,7 +31,7 @@ export const AppFooter = () => {
             </Typography>
             <Typography
               link
-              href="https://github.com/resend/react-email/tree/main/apps/demo/emails"
+              href="https://react.email/templates"
               target="_blank"
               rel="noopener noreferrer"
               variant="bodySm"
