@@ -4,41 +4,6 @@ import type { CompatibilityResult } from '@/types/linter';
 import { findCodeLocation } from './helpers';
 
 // Data
-const clientLabels: Record<string, string> = {
-  aol: 'AOL',
-  'apple-mail': 'Apple Mail',
-  fastmail: 'Fastmail',
-  'free-fr': 'Free.fr',
-  gmail: 'Gmail',
-  gmx: 'GMX',
-  hey: 'HEY',
-  'ionos-1and1': 'IONOS 1&1',
-  laposte: 'La Poste',
-  'mail-ru': 'Mail.ru',
-  orange: 'Orange',
-  outlook: 'Outlook',
-  protonmail: 'Proton Mail',
-  rainloop: 'RainLoop',
-  'samsung-email': 'Samsung Email',
-  sfr: 'SFR',
-  't-online-de': 'T-Online.de',
-  thunderbird: 'Thunderbird',
-  'web-de': 'WEB.DE',
-  'wp-pl': 'WP.pl',
-  yahoo: 'Yahoo! Mail',
-};
-
-const platformLabels: Record<string, string> = {
-  android: 'Android',
-  'desktop-webmail': 'Desktop Webmail',
-  ios: 'iOS',
-  macos: 'macOS',
-  'mobile-webmail': 'Mobile Webmail',
-  'outlook-com': 'Outlook.com',
-  windows: 'Windows',
-  'windows-mail': 'Windows Mail',
-};
-
 const featuresByTitle = new Map(
   (caniemailData.data as unknown as CaniemailFeature[]).map((feature) => [
     feature.title,
@@ -273,25 +238,6 @@ function parseStyleTagDeclarations(css: string): CssDeclaration[] {
 }
 
 /**
- * @param client - The email client being checked.
- * @param platform - The platform of the email client.
- * @param status - The support status of the feature for the client and platform.
- * @returns A formatted label for the client and platform, including the support status.
- */
-function getClientLabel(
-  client: string,
-  platform: string,
-  status: string
-): string {
-  const label = `${clientLabels[client] ?? client} ${
-    platformLabels[platform] ?? platform
-  }`;
-  if (status === 'a') return `${label} (partial)`;
-  if (status === 'u') return `${label} (unknown)`;
-  return label;
-}
-
-/**
  * @param feature - The Caniemail feature being checked.
  * @returns An array of client labels that do not fully support the feature.
  */
@@ -301,7 +247,10 @@ function getUnsupportedClients(feature: CaniemailFeature): string[] {
       return Object.entries(platforms).flatMap(([platform, versions]) => {
         const status = Object.values(versions).at(-1)?.charAt(0);
         if (status === undefined || status === 'y') return [];
-        return getClientLabel(client, platform, status);
+        const label = `${client} ${platform}`;
+        if (status === 'a') return `${label} (partial)`;
+        if (status === 'u') return `${label} (unknown)`;
+        return label;
       });
     }
   );
