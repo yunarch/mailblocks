@@ -7,7 +7,12 @@ import { cx } from 'tailwind-variants';
 import { useAppContext } from '@/providers/AppContextProvider';
 import type { ViewportSize } from '@/types/viewports';
 import { Stack } from '@/ui/Stack';
+import { buildReactEmailSlashCommands } from './commands';
 
+// Build react-email slash commands
+buildReactEmailSlashCommands();
+
+// Component
 export const EmailEditor = ({
   editorRef,
   viewportWidth,
