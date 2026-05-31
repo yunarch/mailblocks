@@ -8,6 +8,11 @@ const config: OxlintConfig = defineConfig({
       files: ['**/*ContextProvider.tsx'],
       rules: {
         'react/only-export-components': 'off',
+      },
+    },
+    {
+      files: ['**/*.ts', '**/*.tsx'],
+      rules: {
         'require-param-type': 'off',
         'require-returns-type': 'off',
       },
