@@ -25,7 +25,7 @@
     "lint:code:fix": "eslint --fix .",
     "format": "oxfmt --check",
     "format:fix": "oxfmt",
-    "clean": "rimraf dist tmp",
+    "clean": "rimraf dist tmp .eslintcache .vitest",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",

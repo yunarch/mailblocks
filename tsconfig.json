@@ -2,20 +2,13 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@yunarch/config-web/tsconfig-base",
   "compilerOptions": {
-    "target": "ES2023",
-    "lib": ["ES2023", "DOM"],
+    "target": "es2024",
+    "lib": ["ES2024", "DOM"],
     "jsx": "react-jsx",
     "paths": {
       "@/*": ["./src/*"]
     },
     "types": ["node", "vite/client"]
   },
-  "include": [
-    "./src",
-    "./scripts",
-    "./reset.d.ts",
-    "./oxfmt.config.ts",
-    "./oxlint.config.ts",
-    "./vite.config.ts"
-  ]
+  "include": ["./src", "./scripts", "./reset.d.ts", "./*.config.ts"]
 }
