@@ -17,10 +17,20 @@ import { createLinkedImageExtension } from '@/extensions/linkedImageExtension';
 import { useAppContext } from '@/providers/AppContextProvider';
 import type { EmailTemplate } from '@/types/templates';
 import type { ViewportSize } from '@/types/viewports';
+import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
 
 // Build react-email slash commands
 buildReactEmailSlashCommands();
+
+/**
+ * Computes the maximum inspector width so the canvas keeps usable space.
+ *
+ * @returns The maximum inspector width in pixels.
+ */
+function getMaxInspectorWidth() {
+  return Math.min(640, window.innerWidth * 0.45);
+}
 
 /**
  * Imported templates are fully styled, so they use the minimal theme (the basic
@@ -135,7 +145,7 @@ export const EmailEditor = ({
         <div
           className={cx(
             'mailblocks-edit-grid',
-            'flex-1 h-full grid grid-cols-[minmax(0,1fr)_320px]'
+            'flex-1 h-full grid grid-cols-[minmax(0,1fr)_auto]'
           )}
           style={{
             '--mailblocks-canvas-width': `${viewportWidth}px`,
@@ -157,53 +167,62 @@ export const EmailEditor = ({
               onReady?.(ref);
             }}
           >
-            <Inspector.Root
-              className={cx(
-                'mailblocks-inspector',
-                'w-[320px] flex flex-col overflow-auto border-l border-gray-200 dark:border-white/10'
-              )}
+            <ResizablePanel
+              edge="left"
+              defaultSize={320}
+              minSize={260}
+              maxSize={getMaxInspectorWidth}
+              handleLabel="Resize inspector"
+              className="min-h-0"
             >
-              <div className="flex h-12 shrink-0 items-center border-b border-gray-200 px-4 dark:border-white/10">
-                <div>
-                  <p className="text-sm font-semibold text-gray-950 dark:text-white">
-                    Inspector
-                  </p>
-                  <div className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-500">
-                    <Inspector.Breadcrumb />
+              <Inspector.Root
+                className={cx(
+                  'mailblocks-inspector',
+                  'h-full flex flex-col overflow-auto border-l border-gray-200 dark:border-white/10'
+                )}
+              >
+                <div className="flex h-12 shrink-0 items-center border-b border-gray-200 px-4 dark:border-white/10">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-950 dark:text-white">
+                      Inspector
+                    </p>
+                    <div className="mt-0.5 truncate text-xs text-gray-500 dark:text-neutral-500">
+                      <Inspector.Breadcrumb />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex-1 overflow-auto px-4 py-2 text-sm text-gray-900 dark:text-neutral-200">
-                <Inspector.Text>
-                  {(context) => {
-                    return (
-                      <>
-                        <Inspector.Typography {...context} />
-                        <Inspector.Link {...context} />
-                      </>
-                    );
-                  }}
-                </Inspector.Text>
-                <Inspector.Node>
-                  {(context) => {
-                    return (
-                      <>
-                        <Inspector.Attributes {...context} />
-                        <Inspector.Background {...context} />
-                        <Inspector.Size {...context} />
-                        <Inspector.Padding {...context} />
-                        <Inspector.Border {...context} />
-                        <Inspector.ColumnSpacing {...context} />
-                      </>
-                    );
-                  }}
-                </Inspector.Node>
-                <div className="border-t border-gray-200 py-4 text-xs leading-5 text-gray-500 dark:border-white/10 dark:text-neutral-500">
-                  Select an element or highlight text to edit its properties
-                  here.
+                <div className="flex-1 overflow-auto px-4 py-2 text-sm text-gray-900 dark:text-neutral-200">
+                  <Inspector.Text>
+                    {(context) => {
+                      return (
+                        <>
+                          <Inspector.Typography {...context} />
+                          <Inspector.Link {...context} />
+                        </>
+                      );
+                    }}
+                  </Inspector.Text>
+                  <Inspector.Node>
+                    {(context) => {
+                      return (
+                        <>
+                          <Inspector.Attributes {...context} />
+                          <Inspector.Background {...context} />
+                          <Inspector.Size {...context} />
+                          <Inspector.Padding {...context} />
+                          <Inspector.Border {...context} />
+                          <Inspector.ColumnSpacing {...context} />
+                        </>
+                      );
+                    }}
+                  </Inspector.Node>
+                  <div className="border-t border-gray-200 py-4 text-xs leading-5 text-gray-500 dark:border-white/10 dark:text-neutral-500">
+                    Select an element or highlight text to edit its properties
+                    here.
+                  </div>
                 </div>
-              </div>
-            </Inspector.Root>
+              </Inspector.Root>
+            </ResizablePanel>
           </ReactEmailEditor>
         </div>
       </div>

@@ -7,6 +7,7 @@ import type {
   SpamCheckingResult,
 } from '@/types/linter';
 import { Button } from '@/ui/Button';
+import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
 import { Tabs } from '@/ui/Tabs';
 import { Tag } from '@/ui/Tag';
@@ -20,6 +21,15 @@ import { lintEmailSpam } from '@/utils/lintEmailSpam';
 import { LinterCompatibility } from './components/LinterCompatibility';
 import { LinterMarkup } from './components/LinterMarkup';
 import { LinterSpam } from './components/LinterSpam';
+
+/**
+ * Computes the maximum panel height so the editor above keeps usable space.
+ *
+ * @returns The maximum panel height in pixels.
+ */
+function getMaxPanelHeight() {
+  return window.innerHeight * 0.7;
+}
 
 // Component
 export const EmailLinterPanel = () => {
@@ -112,7 +122,14 @@ export const EmailLinterPanel = () => {
 
   // Render
   return (
-    <Stack className="h-56 border-t border-gray-200 dark:border-white/10">
+    <ResizablePanel
+      edge="top"
+      defaultSize={224}
+      minSize={120}
+      maxSize={getMaxPanelHeight}
+      handleLabel="Resize checks panel"
+      className="flex flex-col border-t border-gray-200 dark:border-white/10"
+    >
       <Stack className="flex-row items-center justify-between border-b border-gray-200 pr-4 dark:border-white/10">
         <Tabs
           activeItem={activeTab}
@@ -179,6 +196,6 @@ export const EmailLinterPanel = () => {
           <LinterSpam result={spamResult} loading={spamLoading} />
         )}
       </Stack>
-    </Stack>
+    </ResizablePanel>
   );
 };
