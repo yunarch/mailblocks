@@ -8,11 +8,11 @@ import { Inspector } from '@react-email/editor/ui';
 import Placeholder from '@tiptap/extension-placeholder';
 import { useMemo } from 'react';
 import { cx } from 'tailwind-variants';
+import { buildReactEmailSlashCommands } from '@/extensions/commands';
+import { createLinkedImageExtension } from '@/extensions/linkedImageExtension';
 import { useAppContext } from '@/providers/AppContextProvider';
 import type { ViewportSize } from '@/types/viewports';
 import { Stack } from '@/ui/Stack';
-import { buildReactEmailSlashCommands } from './commands';
-import { createLinkedImageExtension } from './linkedImageExtension';
 
 // Build react-email slash commands
 buildReactEmailSlashCommands();

@@ -1,6 +1,6 @@
 import { config } from '@yunarch/config-web/eslint';
 
-export default config(
+const eslintConfig: ReturnType<typeof config> = config(
   {
     ignores: ['./src/utils/templates.ts'],
     typescript: {
@@ -23,3 +23,5 @@ export default config(
     },
   }
 );
+
+export default eslintConfig;

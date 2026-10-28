@@ -18,15 +18,6 @@ type ImageAttributes = {
   width?: string | null;
 };
 
-declare module '@tiptap/core' {
-  interface Commands<ReturnType> {
-    image: {
-      setImage: (attrs: ImageAttributes) => ReturnType;
-      uploadImage: () => ReturnType;
-    };
-  }
-}
-
 /**
  * Converts an inline CSS string into a React style object.
  *
@@ -35,7 +26,6 @@ declare module '@tiptap/core' {
  */
 function cssTextToReactStyle(cssText?: string | null) {
   if (!cssText) return;
-
   return Object.fromEntries(
     cssText
       .split(';')
@@ -70,7 +60,6 @@ function getImageAttributes(element: HTMLElement): ImageAttributes {
     element.parentElement?.tagName.toLowerCase() === 'a'
       ? element.parentElement
       : null;
-
   return {
     alt: element.getAttribute('alt') ?? '',
     height: element.getAttribute('height') ?? 'auto',
@@ -145,7 +134,6 @@ function removeEmptyAttributes(
 function updateImagesBySrc(editor: Editor, src: string, newSrc?: string) {
   const { state, view } = editor;
   const transaction = state.tr;
-
   state.doc.descendants((node, pos) => {
     if (node.type.name !== 'image' || node.attrs.src !== src) return;
     if (newSrc) {
@@ -155,7 +143,6 @@ function updateImagesBySrc(editor: Editor, src: string, newSrc?: string) {
       transaction.delete(mappedPos, mappedPos + node.nodeSize);
     }
   });
-
   if (transaction.docChanged) {
     view.dispatch(transaction);
   }
@@ -236,7 +223,7 @@ export function createLinkedImageExtension(options: LinkedImageOptions) {
     },
     renderHTML({ node }) {
       const attrs = node.attrs as ImageAttributes;
-      const image = ['img', getImageHtmlAttributes(attrs)];
+      const image = ['img', getImageHtmlAttributes(attrs)] as const;
 
       if (attrs.href) {
         return ['a', getLinkHtmlAttributes(attrs), image];
