@@ -1,4 +1,4 @@
-import { MdArrowDropDown, MdErrorOutline } from 'react-icons/md';
+import { MdArrowDropDown, MdInfoOutline, MdWarningAmber } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
 import type { CompatibilityResult } from '@/types/linter';
 import { Stack } from '@/ui/Stack';
@@ -152,7 +152,7 @@ export const LinterCompatibility = ({
       />
       <div className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-x-4 gap-y-0 text-xs">
         {results.map((result, i) => {
-          const unsupportedStr = result.unsupportedClients.join(', ');
+          const isWarning = result.severity === 'warning';
           return (
             <div
               key={`${result.title}-${String(i)}`}
@@ -161,33 +161,53 @@ export const LinterCompatibility = ({
               <div>
                 <Typography
                   variant="label"
-                  tone="danger"
+                  tone={isWarning ? 'warning' : 'info'}
                   uppercase
                   className="flex flex-row items-center gap-2"
                 >
-                  <MdErrorOutline size={14} />
+                  {isWarning ? (
+                    <MdWarningAmber size={14} />
+                  ) : (
+                    <MdInfoOutline size={14} />
+                  )}
                   <span>{result.title}</span>
                 </Typography>
               </div>
               <Typography variant="label" tone="subtle" uppercase>
                 {result.category}
               </Typography>
-              <Typography variant="bodySm">
-                {unsupportedStr.length > 0
-                  ? `Not supported in ${unsupportedStr}`
-                  : null}
+              <Stack className="gap-0.5">
+                <Typography variant="bodySm">
+                  {result.unsupportedClients.length > 0 && (
+                    <span className="block">
+                      Not supported in {result.unsupportedClients.join(', ')}
+                    </span>
+                  )}
+                  {result.partialClients.length > 0 && (
+                    <span className="block">
+                      Partially supported in {result.partialClients.join(', ')}
+                    </span>
+                  )}
+                </Typography>
+                {result.notes.length > 0 && (
+                  <Typography variant="caption" tone="muted">
+                    {result.notes.join(' ')}
+                  </Typography>
+                )}
+              </Stack>
+              <Stack className="items-end gap-0.5">
                 <a
                   href={result.url}
-                  className="ml-2 text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
+                  className="text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
                   rel="noopener noreferrer"
                   target="_blank"
                 >
                   More ↗
                 </a>
-              </Typography>
-              <Typography variant="caption" tone="muted">
-                html:{result.location.line}:{result.location.column}
-              </Typography>
+                <Typography variant="caption" tone="muted">
+                  html:{result.location.line}:{result.location.column}
+                </Typography>
+              </Stack>
             </div>
           );
         })}

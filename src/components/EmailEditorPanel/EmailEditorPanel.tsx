@@ -12,6 +12,7 @@ import { EmailPreview } from './components/EmailPreview';
 export const EmailEditorPanel = () => {
   const { editorRef } = useAppContext();
   const [mode, setMode] = useState<'editor' | 'preview'>('editor');
+  const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null);
   const [activeViewport, setActiveViewport] = useState(viewportSizes[0]);
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 dark:border-white/10">
@@ -53,6 +54,7 @@ export const EmailEditorPanel = () => {
           <Button
             variant="ghost"
             onClick={() => {
+              setPreviewHtml(editorRef.current?.getEmailHTML() ?? null);
               setMode('preview');
             }}
           >
@@ -67,7 +69,7 @@ export const EmailEditorPanel = () => {
             viewportWidth={activeViewport.width}
           />
         </Stack>
-        {editorRef.current && mode === 'preview' && (
+        {previewHtml && mode === 'preview' && (
           <Suspense
             fallback={
               <Typography variant="caption" tone="info">
@@ -75,7 +77,7 @@ export const EmailEditorPanel = () => {
               </Typography>
             }
           >
-            <EmailPreview editorRef={editorRef.current} />
+            <EmailPreview html={previewHtml} />
           </Suspense>
         )}
       </Stack>

@@ -1,4 +1,3 @@
-import type { EmailEditorRef } from '@react-email/editor';
 import { use, useEffect, useRef, useState } from 'react';
 import { MdCheck, MdContentCopy } from 'react-icons/md';
 import { Button } from '@/ui/Button';
@@ -38,8 +37,8 @@ const CopyButton = ({ content }: { content: string }) => {
   );
 };
 
-export const EmailPreview = ({ editorRef }: { editorRef: EmailEditorRef }) => {
-  const content = use(editorRef.getEmailHTML());
+export const EmailPreview = ({ html }: { html: Promise<string> }) => {
+  const content = use(html);
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-neutral-900">
       <Stack className="flex-row items-center justify-between border-b border-gray-200 px-4 py-1 dark:border-white/10">

@@ -14,6 +14,7 @@ export type LintCheck = {
     | 'image_size'
     | 'security'
     | 'syntax';
+  status?: Exclude<LintStatus, 'success'>;
   metadata?: {
     byteCount?: number;
     detail?: string;
@@ -52,7 +53,10 @@ export type LintingRow =
 export type CompatibilityResult = {
   title: string;
   category: 'css' | 'html' | 'image' | 'others';
+  severity: 'warning' | 'info';
   unsupportedClients: string[];
+  partialClients: string[];
+  notes: string[];
   url: string;
   source: string;
   location: CodeLocation;

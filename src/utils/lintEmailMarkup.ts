@@ -1,20 +1,29 @@
 /* eslint-disable max-lines */
 import type { LintCheck, LintingRow, LintStatus } from '@/types/linter';
-import { findCodeLocation, isLocalhostUrl } from './helpers';
+import {
+  findCodeLocation,
+  formatBytes,
+  getByteLength,
+  GMAIL_CLIP_BYTES,
+  isLocalhostUrl,
+} from './helpers';
 
-const ONE_MEGABYTE = 1_048_576;
-const LARGE_HTML_THRESHOLD = 100_000;
+// Placeholders replaced by email service providers ({{x}}, *|x|*, %%x%%, [[x]])
+const MERGE_TAG_PATTERN = /\{\{.*\}\}|\*\|.*\|\*|%%.*%%|\[\[.*\]\]/;
 
 /**
- * @param checks - A list of lint checks that were performed on an element.
+ * @param checks - The failing lint checks of an element.
  * @returns The overall lint status for the element, determined by the most severe failing check.
  */
 function getStatusFromChecks(
   checks: LintCheck[]
 ): Exclude<LintStatus, 'success'> {
-  if (checks.some((check) => !check.passed && check.type === 'syntax')) {
+  if (
+    checks.some((check) => check.status === 'error' || check.type === 'syntax')
+  ) {
     return 'error';
   }
+  if (checks.every((check) => check.status === 'info')) return 'info';
   return 'warning';
 }
 
@@ -28,7 +37,120 @@ function getDataUrlByteCount(value: string) {
     const padding = data.endsWith('==') ? 2 : data.endsWith('=') ? 1 : 0;
     return Math.floor((data.length * 3) / 4) - padding;
   }
-  return new TextEncoder().encode(decodeURIComponent(data)).byteLength;
+  try {
+    return getByteLength(decodeURIComponent(data));
+  } catch {
+    return getByteLength(data);
+  }
+}
+
+/**
+ * @param detail - The message describing the failing check.
+ * @param type - The type of the failing check.
+ * @param status - An optional status overriding the one derived from the type.
+ * @returns A failing lint check.
+ */
+function fail(
+  detail: string,
+  type: LintCheck['type'],
+  status?: LintCheck['status']
+): LintCheck {
+  return { passed: false, type, status, metadata: { detail } };
+}
+
+/**
+ * Checks a link or image URL for issues that prevent it from working for recipients.
+ *
+ * Checks:
+ *  - relative or invalid URLs.
+ *  - `javascript:` URLs.
+ *  - temporary `blob:` URLs (e.g. images uploaded in this browser).
+ *  - `data:` images (blocked by Gmail and most Outlook versions).
+ *  - HTTP URLs.
+ *  - localhost URLs.
+ *  - invalid mailto addresses.
+ *
+ * @param value - The URL to check.
+ * @param kind - Whether the URL belongs to a link or an image.
+ * @returns The failing checks for the URL.
+ */
+function checkUrl(value: string, kind: 'link' | 'image'): LintCheck[] {
+  if (MERGE_TAG_PATTERN.test(value)) return [];
+  if (kind === 'link' && value.startsWith('#')) return [];
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    const isRelative = !/^[a-z][a-z\d+.-]*:/i.test(value);
+    return [
+      fail(
+        isRelative
+          ? 'Relative URLs do not work in email, use an absolute https:// URL'
+          : `Invalid ${kind === 'image' ? 'image source' : 'URL syntax'}`,
+        'syntax'
+      ),
+    ];
+  }
+  const checks: LintCheck[] = [];
+  // eslint-disable-next-line no-script-url -- Detecting script URLs, not executing them.
+  if (url.protocol === 'javascript:') {
+    checks.push(
+      // eslint-disable-next-line no-script-url -- Message text only.
+      fail('javascript: URLs are blocked by email clients', 'security', 'error')
+    );
+  }
+  if (url.protocol === 'blob:') {
+    checks.push(
+      fail(
+        kind === 'image'
+          ? 'Temporary image only available in this browser, host it on a public URL'
+          : 'Temporary blob: URL only available in this browser',
+        'email_best_practice',
+        'error'
+      )
+    );
+  }
+  if (url.protocol === 'data:' && kind === 'image') {
+    checks.push({
+      passed: false,
+      type: 'email_best_practice',
+      metadata: {
+        detail:
+          'Embedded images are blocked by Gmail and most Outlook versions, host it on a public URL',
+        byteCount: getDataUrlByteCount(value),
+      },
+    });
+  }
+  if (isLocalhostUrl(url)) {
+    checks.push(
+      fail(
+        kind === 'image'
+          ? 'Local images will not work for recipients'
+          : 'Local URLs will not work for recipients',
+        'email_best_practice'
+      )
+    );
+  }
+  if (url.protocol === 'http:') {
+    checks.push(fail('Use HTTPS instead of HTTP', 'security'));
+  }
+  if (url.protocol === 'mailto:' && !url.pathname.includes('@')) {
+    checks.push(fail('Invalid mailto address', 'syntax'));
+  }
+  return checks;
+}
+
+/**
+ * @param anchor - The anchor element to check.
+ * @returns Whether the link has text that screen readers and spam filters can read.
+ */
+function hasAccessibleText(anchor: HTMLAnchorElement): boolean {
+  if (anchor.textContent.trim()) return true;
+  if (anchor.getAttribute('aria-label')?.trim()) return true;
+  if (anchor.getAttribute('title')?.trim()) return true;
+  return [...anchor.querySelectorAll('img')].some((image) =>
+    image.getAttribute('alt')?.trim()
+  );
 }
 
 /**
@@ -54,13 +176,7 @@ function createMarkupRow({
       status: type === 'client_limit' ? 'info' : 'warning',
       label,
       codeLocation: findCodeLocation(markup, needle),
-      checks: [
-        {
-          passed: false,
-          type,
-          metadata: { detail },
-        },
-      ],
+      checks: [fail(detail, type)],
     },
   };
 }
@@ -70,10 +186,8 @@ function createMarkupRow({
  *
  * Checks:
  *  - missing href.
- *  - invalid URL syntax.
- *  - use of HTTP URLs.
- *  - localhost URLs.
- *  - missing rel="noopener noreferrer" on links with target="_blank".
+ *  - URL issues (see `checkUrl`).
+ *  - links without accessible text.
  *
  * @param anchor - The anchor element to lint.
  * @param markup - The HTML markup containing the anchor element.
@@ -84,64 +198,19 @@ function lintLink(
   markup: string
 ): LintingRow | null {
   const link = anchor.getAttribute('href')?.trim() ?? '';
-  const checks: LintCheck[] = [];
-  if (link) {
-    try {
-      const url = new URL(link);
-      checks.push({ passed: true, type: 'syntax' });
-      if (isLocalhostUrl(url)) {
-        checks.push({
-          passed: false,
-          type: 'email_best_practice',
-          metadata: { detail: 'Local URLs will not work for recipients' },
-        });
-      }
-      if (url.protocol === 'http:') {
-        checks.push({
-          passed: false,
-          type: 'security',
-          metadata: { detail: 'Use HTTPS instead of HTTP' },
-        });
-      }
-      if (url.protocol === 'mailto:' && !url.pathname.includes('@')) {
-        checks.push({
-          passed: false,
-          type: 'syntax',
-          metadata: { detail: 'Invalid mailto address' },
-        });
-      }
-    } catch {
-      checks.push({
-        passed: false,
-        type: 'syntax',
-        metadata: { detail: 'Invalid URL syntax' },
-      });
-    }
-  } else {
-    checks.push({
-      passed: false,
-      type: 'syntax',
-      metadata: { detail: 'Missing href' },
-    });
+  const checks = link
+    ? checkUrl(link, 'link')
+    : [fail('Missing href', 'syntax')];
+  if (!hasAccessibleText(anchor)) {
+    checks.push(
+      fail('Link has no text, add text or image alt text', 'accessibility')
+    );
   }
-  if (anchor.target === '_blank') {
-    const rel = anchor.rel.toLowerCase();
-    if (!rel.includes('noopener') || !rel.includes('noreferrer')) {
-      checks.push({
-        passed: false,
-        type: 'security',
-        metadata: {
-          detail: 'Add rel="noopener noreferrer" to external links',
-        },
-      });
-    }
-  }
-  const failingChecks = checks.filter((check) => !check.passed);
-  if (failingChecks.length === 0) return null;
+  if (checks.length === 0) return null;
   return {
     source: 'link',
     result: {
-      status: getStatusFromChecks(failingChecks),
+      status: getStatusFromChecks(checks),
       link: link || '(missing href)',
       codeLocation: findCodeLocation(markup, link || '<a'),
       checks,
@@ -154,10 +223,9 @@ function lintLink(
  *
  * Checks:
  *  - missing alt text.
+ *  - missing width attribute (Outlook ignores CSS width).
  *  - missing src.
- *  - use of HTTP URLs.
- *  - localhost URLs.
- *  - data URLs that exceed size limits.
+ *  - URL issues (see `checkUrl`).
  *
  * @param image - The image element to lint.
  * @param markup - The HTML markup containing the image element.
@@ -165,62 +233,27 @@ function lintLink(
  */
 function lintImage(image: HTMLImageElement, markup: string): LintingRow | null {
   const source = image.getAttribute('src')?.trim() ?? '';
-  const checks: LintCheck[] = [];
+  const checks = source
+    ? checkUrl(source, 'image')
+    : [fail('Missing image source', 'syntax')];
   if (image.getAttribute('alt') === null) {
-    checks.push({
-      passed: false,
-      type: 'accessibility',
-      metadata: { detail: 'Missing alt text' },
-    });
+    checks.push(fail('Missing alt text', 'accessibility'));
   }
-  if (source) {
-    try {
-      checks.push({ passed: true, type: 'syntax' });
-      const url = new URL(source);
-      if (isLocalhostUrl(url)) {
-        checks.push({
-          passed: false,
-          type: 'email_best_practice',
-          metadata: { detail: 'Local images will not work for recipients' },
-        });
-      }
-      if (url.protocol === 'http:') {
-        checks.push({
-          passed: false,
-          type: 'security',
-          metadata: { detail: 'Use HTTPS instead of HTTP' },
-        });
-      }
-      if (url.protocol === 'data:') {
-        const byteCount = getDataUrlByteCount(source);
-        checks.push({
-          passed: byteCount < ONE_MEGABYTE,
-          type: 'image_size',
-          metadata: { byteCount },
-        });
-      }
-    } catch {
-      checks.push({
-        passed: false,
-        type: 'syntax',
-        metadata: { detail: 'Invalid image source' },
-      });
-    }
-  } else {
-    checks.push({
-      passed: false,
-      type: 'syntax',
-      metadata: { detail: 'Missing image source' },
-    });
+  if (!image.hasAttribute('width')) {
+    checks.push(
+      fail(
+        'Missing width attribute, Outlook ignores CSS width and shows the image at full size',
+        'email_best_practice'
+      )
+    );
   }
-  const failingChecks = checks.filter((check) => !check.passed);
-  if (failingChecks.length === 0) return null;
+  if (checks.length === 0) return null;
   return {
     source: 'image',
     result: {
-      status: getStatusFromChecks(failingChecks),
+      status: getStatusFromChecks(checks),
       source: source || '(missing source)',
-      codeLocation: findCodeLocation(markup, source || '<img'),
+      codeLocation: findCodeLocation(markup, source.slice(0, 64) || '<img'),
       checks,
     },
   };
@@ -230,7 +263,7 @@ function lintImage(image: HTMLImageElement, markup: string): LintingRow | null {
  * Lints the overall markup of the email for common issues that may affect rendering in email clients.
  *
  * Checks:
- * - overall HTML size that may be clipped by email clients.
+ * - overall HTML size that may be clipped by Gmail.
  * - presence of &lt;script> tags which are not supported in email clients.
  * - presence of &lt;form> tags which have poor support in email clients.
  * - presence of external stylesheets which are not reliable in email clients.
@@ -241,13 +274,13 @@ function lintImage(image: HTMLImageElement, markup: string): LintingRow | null {
  */
 function lintMarkup(document: Document, markup: string) {
   const rows: LintingRow[] = [];
-  if (markup.length > LARGE_HTML_THRESHOLD) {
+  const byteCount = getByteLength(markup);
+  if (byteCount > GMAIL_CLIP_BYTES) {
     rows.push(
       createMarkupRow({
         markup,
         label: 'html size',
-        detail:
-          'Rendered HTML is large and may be clipped by some email clients',
+        detail: `HTML is ${formatBytes(byteCount)}, Gmail clips messages over ${formatBytes(GMAIL_CLIP_BYTES)}`,
         type: 'email_best_practice',
         needle: '<html',
       })
@@ -307,7 +340,7 @@ export function lintEmailMarkup(markup: string): LintingRow[] {
       return lintImage(image, markup);
     }),
     ...lintMarkup(document, markup),
-  ].filter(Boolean);
+  ].filter((row) => row !== null);
   const seen = new Set<string>();
   const uniqueRows = rows.filter((row) => {
     const key = JSON.stringify(row);
@@ -315,13 +348,13 @@ export function lintEmailMarkup(markup: string): LintingRow[] {
     seen.add(key);
     return true;
   });
-  return uniqueRows.toSorted((a, b) => {
-    const statusOrder: Record<LintStatus, number> = {
-      error: 0,
-      warning: 1,
-      info: 2,
-      success: 3,
-    };
-    return statusOrder[a.result.status] - statusOrder[b.result.status];
-  });
+  const statusOrder: Record<LintStatus, number> = {
+    error: 0,
+    warning: 1,
+    info: 2,
+    success: 3,
+  };
+  return uniqueRows.toSorted(
+    (a, b) => statusOrder[a.result.status] - statusOrder[b.result.status]
+  );
 }

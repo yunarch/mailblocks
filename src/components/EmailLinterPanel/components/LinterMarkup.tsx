@@ -9,7 +9,7 @@ const DESCRIPTIONS: Record<LintCheck['type'], string> = {
   accessibility: 'Missing alt text',
   client_limit: 'Cannot verify this from a browser-only GitHub Pages app',
   email_best_practice: 'Email client support issue',
-  image_size: 'This image is too large, keep it under 1mb',
+  image_size: 'This image is too large',
   security: 'Security or delivery risk',
   syntax: 'Invalid or missing value',
 };
@@ -42,19 +42,18 @@ function getSourceLabel(row: LintingRow) {
 }
 
 /**
- * @param row - The linting row to find the failing check for
- * @returns The first failing lint check, or undefined if all checks passed
+ * @param row - The linting row to get the failing checks for
+ * @returns The failing lint checks of the row
  */
-function getFailingCheck(row: LintingRow) {
-  return row.result.checks.find((check) => !check.passed);
+function getFailingChecks(row: LintingRow) {
+  return row.result.checks.filter((check) => !check.passed);
 }
 
 /**
  * @param check - The lint check to get the description for
  * @returns A string representation of the description
  */
-function getDescription(check: LintCheck | undefined) {
-  if (!check) return '';
+function getDescription(check: LintCheck) {
   return check.metadata?.detail ?? DESCRIPTIONS[check.type];
 }
 
@@ -103,7 +102,7 @@ export const LinterMarkup = ({
     <table className="w-full border-collapse text-left text-xs">
       <tbody>
         {results.map((row, i) => {
-          const failingCheck = getFailingCheck(row);
+          const failingChecks = getFailingChecks(row);
           const sourceLabel = getSourceLabel(row);
           const status =
             row.result.status === 'success' ? 'info' : row.result.status;
@@ -122,11 +121,11 @@ export const LinterMarkup = ({
                   )}
                 >
                   <StatusIcon status={status} />
-                  {failingCheck?.type ?? row.source}
+                  {failingChecks[0]?.type ?? row.source}
                 </span>
               </td>
               <td className="py-1.5 pr-4 align-middle text-gray-700 dark:text-neutral-300">
-                {getDescription(failingCheck)}
+                {failingChecks.map((check) => getDescription(check)).join('. ')}
                 <span className="ml-2 max-w-[30ch] overflow-hidden text-nowrap text-ellipsis text-gray-400 dark:text-neutral-500">
                   {sourceLabel}
                 </span>

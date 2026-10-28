@@ -4,6 +4,17 @@ import type { CodeLocation } from '@/types/linter';
 // Types
 export type SetValue<T> = Dispatch<SetStateAction<T>>;
 
+// Gmail clips messages whose HTML exceeds ~102KB.
+export const GMAIL_CLIP_BYTES = 102_400;
+
+/**
+ * @param value - The string to measure.
+ * @returns The UTF-8 byte length of the string.
+ */
+export function getByteLength(value: string): number {
+  return new TextEncoder().encode(value).byteLength;
+}
+
 /**
  * @param url - The URL to check
  * @returns true if the URL is a localhost URL, false otherwise
@@ -33,20 +44,30 @@ export function formatBytes(bytes: number): string {
 }
 
 /**
+ * @param markup - The full HTML markup.
+ * @param offset - A character offset within the markup.
+ * @returns The line and column number of the offset.
+ */
+export function getCodeLocation(markup: string, offset: number): CodeLocation {
+  const lines = markup.slice(0, Math.max(0, offset)).split('\n');
+  return { line: lines.length, column: lines.at(-1)?.length ?? 0 };
+}
+
+/**
  * Finds the line and column number of a given needle string within the provided markup.
  * If the needle is not found, returns line 1, column 0.
  *
  * @param markup - The full HTML markup to search within.
  * @param needle - The specific string to find within the markup (e.g., a URL or tag snippet).
+ * @param fromIndex - The offset to start searching from.
  * @returns An object containing the line and column number where the needle is located in the markup.
  */
-export function findCodeLocation(markup: string, needle: string): CodeLocation {
-  const offset = markup.indexOf(needle);
+export function findCodeLocation(
+  markup: string,
+  needle: string,
+  fromIndex = 0
+): CodeLocation {
+  const offset = markup.indexOf(needle, fromIndex);
   if (offset === -1) return { line: 1, column: 0 };
-  const safeOffset = Math.max(0, offset);
-  const precedingContent = markup.slice(0, safeOffset);
-  const lines = precedingContent.split('\n');
-  const line = lines.length;
-  const column = lines.at(-1)?.length ?? 0;
-  return { line, column };
+  return getCodeLocation(markup, offset);
 }

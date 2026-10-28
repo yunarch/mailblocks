@@ -1,6 +1,10 @@
 import type { SpamCheckingResult } from '@/types/linter';
+import { getByteLength, GMAIL_CLIP_BYTES } from './helpers';
 
 type SpamCheck = SpamCheckingResult['checks'][number];
+
+const UNSUBSCRIBE_PATTERN =
+  /unsubscribe|opt[-\s]?out|manage (?:your )?preferences|email preferences/i;
 
 const spammyPhrases = [
   'act now',
@@ -131,25 +135,25 @@ export function lintEmailSpam({
   const words = getWords(plainText);
   const links = [...document.querySelectorAll<HTMLAnchorElement>('a[href]')];
   const images = [...document.querySelectorAll<HTMLImageElement>('img')];
+  const contentImages = images.filter((image) => !hasTrackingPixel(image));
   const checks: SpamCheck[] = [];
-  if (html.trim().length > 0 && plainText.length < 80) {
-    checks.push({
-      name: 'MIME_HTML_ONLY',
-      description: 'Message has little or no plain-text readable content.',
-      points: 0.4,
-    });
-  }
-  if (images.length > 0 && words.length / images.length < 45) {
+  if (contentImages.length > 0 && words.length / contentImages.length < 45) {
     checks.push({
       name: 'HTML_IMAGE_RATIO_02',
       description: 'HTML has a low ratio of text to images.',
-      points: images.length >= 3 ? 1.2 : 0.7,
+      points: contentImages.length >= 3 ? 1.2 : 0.7,
     });
   }
-  if (!/unsubscribe|manage preferences|email preferences/i.test(plainText)) {
+  if (
+    links.every(
+      (link) =>
+        !UNSUBSCRIBE_PATTERN.test(link.textContent) &&
+        !UNSUBSCRIBE_PATTERN.test(link.getAttribute('href') ?? '')
+    )
+  ) {
     checks.push({
       name: 'MISSING_UNSUBSCRIBE',
-      description: 'No unsubscribe or email preferences text was found.',
+      description: 'No unsubscribe or email preferences link was found.',
       points: 0.8,
     });
   }
@@ -180,7 +184,7 @@ export function lintEmailSpam({
     });
   }
   const phraseMatches = spammyPhrases.filter((phrase) =>
-    lowerText.includes(phrase)
+    new RegExp(String.raw`\b${phrase}\b`).test(lowerText)
   );
   if (phraseMatches.length > 0) {
     checks.push({
@@ -190,7 +194,8 @@ export function lintEmailSpam({
     });
   }
   const uppercaseWords = words.filter(
-    (word) => word.length > 3 && word === word.toUpperCase()
+    (word) =>
+      word.length > 3 && /[a-z]/i.test(word) && word === word.toUpperCase()
   );
   if (words.length > 20 && uppercaseWords.length / words.length > 0.18) {
     checks.push({
@@ -206,7 +211,7 @@ export function lintEmailSpam({
       points: 0.4,
     });
   }
-  if (html.length > 102_400) {
+  if (getByteLength(html) > GMAIL_CLIP_BYTES) {
     checks.push({
       name: 'HTML_TOO_LARGE',
       description: 'HTML is large enough to risk clipping in mailbox clients.',
