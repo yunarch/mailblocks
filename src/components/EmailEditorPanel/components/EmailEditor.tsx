@@ -13,6 +13,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import { useMemo } from 'react';
 import { cx } from 'tailwind-variants';
 import { buildReactEmailSlashCommands } from '@/extensions/commands';
+import { LinkClickGuard } from '@/extensions/linkClickGuardExtension';
 import { createLinkedImageExtension } from '@/extensions/linkedImageExtension';
 import { useAppContext } from '@/providers/AppContextProvider';
 import type { EmailTemplate } from '@/types/templates';
@@ -153,6 +154,7 @@ export const EmailEditor = ({
         },
       }),
       EmailTheming.configure({ theme }),
+      LinkClickGuard,
       createLinkedImageExtension({
         uploadImage: async (file) => {
           await Promise.resolve();
