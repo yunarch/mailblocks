@@ -1,18 +1,18 @@
 import { Suspense, useState } from 'react';
-import { MdOutlineEdit, MdOutlineRemoveRedEye } from 'react-icons/md';
+import { MdOutlineDesktopWindows, MdOutlineRemoveRedEye } from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { viewportSizes } from '@/types/viewports';
 import { Button, ButtonGroup } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
+import { Switch } from '@/ui/Switch';
 import { Typography } from '@/ui/Typography';
 import { EmailEditor } from './components/EmailEditor';
 import { EmailPreview } from './components/EmailPreview';
 import { EmailRender } from './components/EmailRender';
 
 const MODES = [
-  { id: 'editor', label: 'Edit', Icon: MdOutlineEdit },
-  { id: 'render', label: 'Rendered email', Icon: MdOutlineRemoveRedEye },
+  { id: 'editor', label: 'Editor', Icon: MdOutlineDesktopWindows },
   { id: 'code', label: 'HTML code', Icon: PiCodeBold },
 ] as const;
 type Mode = (typeof MODES)[number]['id'];
@@ -20,15 +20,19 @@ type Mode = (typeof MODES)[number]['id'];
 export const EmailEditorPanel = () => {
   const { editorRef } = useAppContext();
   const [mode, setMode] = useState<Mode>('editor');
-  const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from the editor so `use()` receives a stable promise.
+  const [preview, setPreview] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from editing so `use()` receives a stable promise.
   const [activeViewport, setActiveViewport] = useState(viewportSizes[0]);
+  const isEditing = mode === 'editor' && !preview;
 
   // Methods
-  const changeMode = (next: Mode) => {
-    if (next !== 'editor' && mode === 'editor') {
+  const changeView = (nextMode: Mode, nextPreview: boolean) => {
+    const willEdit = nextMode === 'editor' && !nextPreview;
+    if (isEditing && !willEdit) {
       setPreviewHtml(editorRef.current?.getEmailHTML() ?? null);
     }
-    setMode(next);
+    setMode(nextMode);
+    setPreview(nextPreview);
   };
 
   // Render
@@ -60,30 +64,46 @@ export const EmailEditorPanel = () => {
             </Button>
           ))}
         </ButtonGroup>
-        <ButtonGroup activeItem={MODES.findIndex((m) => m.id === mode)}>
-          {MODES.map(({ id, label, Icon }) => (
-            <Button
-              key={id}
-              variant="ghost"
-              aria-label={label}
-              title={label}
-              onClick={() => {
-                changeMode(id);
-              }}
-            >
-              <Icon />
-            </Button>
-          ))}
-        </ButtonGroup>
+        <Stack className="flex-row items-center gap-3">
+          <Switch
+            checked={preview}
+            disabled={mode !== 'editor'}
+            title="Show the rendered email instead of the editor"
+            label={
+              <span className="flex items-center gap-1.5">
+                <MdOutlineRemoveRedEye />
+                Preview
+              </span>
+            }
+            onChange={(checked) => {
+              changeView(mode, checked);
+            }}
+          />
+          <ButtonGroup activeItem={MODES.findIndex((m) => m.id === mode)}>
+            {MODES.map(({ id, label, Icon }) => (
+              <Button
+                key={id}
+                variant="ghost"
+                aria-label={label}
+                title={label}
+                onClick={() => {
+                  changeView(id, preview);
+                }}
+              >
+                <Icon />
+              </Button>
+            ))}
+          </ButtonGroup>
+        </Stack>
       </Stack>
       <Stack className="flex-1 p-2">
-        <Stack className={mode === 'editor' ? 'flex-1' : 'hidden'}>
+        <Stack className={isEditing ? 'flex-1' : 'hidden'}>
           <EmailEditor
             editorRef={editorRef}
             viewportWidth={activeViewport.width}
           />
         </Stack>
-        {previewHtml && mode !== 'editor' && (
+        {previewHtml && !isEditing && (
           <Suspense
             fallback={
               <Typography variant="caption" tone="info">
@@ -91,7 +111,7 @@ export const EmailEditorPanel = () => {
               </Typography>
             }
           >
-            {mode === 'render' ? (
+            {mode === 'editor' ? (
               <EmailRender
                 html={previewHtml}
                 viewportWidth={activeViewport.width}
