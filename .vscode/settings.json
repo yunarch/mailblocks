@@ -27,6 +27,9 @@
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
+  "[yaml]": {
+    "editor.defaultFormatter": "oxc.oxc-vscode"
+  },
 
   // Customize AI
   "github.copilot.chat.commitMessageGeneration.instructions": [
