@@ -3,8 +3,8 @@ import path from 'node:path';
 import { stderr, stdout } from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { styleText } from 'node:util';
-import { render } from '@react-email/render';
 import React from 'react';
+import { render } from 'react-email';
 
 // Types
 type GitTreeResponse = {
@@ -106,7 +106,7 @@ async function fetchText(url: string) {
 }
 
 /**
- * Dynamically imports a React component from the given file path and renders it to HTML using `@react-email/render`.
+ * Dynamically imports a React component from the given file path and renders it to HTML using `react-email`.
  *
  * @param filePath - The path to the React component file.
  * @returns The rendered HTML string.
