@@ -7,6 +7,7 @@ export default defineConfig({
     tsconfigPaths: true,
   },
   plugins: [react(), tailwindcss()],
+  base: '/mailblocks/',
   server: {
     port: 3000,
   },
