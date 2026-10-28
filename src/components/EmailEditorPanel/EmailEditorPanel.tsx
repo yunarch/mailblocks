@@ -1,3 +1,4 @@
+import type { EmailEditorRef } from '@react-email/editor';
 import { Suspense, useState } from 'react';
 import { MdOutlineDesktopWindows, MdOutlineRemoveRedEye } from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
@@ -33,6 +34,9 @@ export const EmailEditorPanel = () => {
     }
     setMode(nextMode);
     setPreview(nextPreview);
+  };
+  const handleEditorReady = (ref: EmailEditorRef) => {
+    if (!isEditing) setPreviewHtml(ref.getEmailHTML());
   };
 
   // Render
@@ -101,6 +105,7 @@ export const EmailEditorPanel = () => {
           <EmailEditor
             editorRef={editorRef}
             viewportWidth={activeViewport.width}
+            onReady={handleEditorReady}
           />
         </Stack>
         {previewHtml && !isEditing && (

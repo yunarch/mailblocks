@@ -88,9 +88,11 @@ function prepareTemplateContent(template: EmailTemplate, content: string) {
 export const EmailEditor = ({
   editorRef,
   viewportWidth,
+  onReady,
 }: {
   editorRef: React.RefObject<EmailEditorRef | null>;
   viewportWidth: ViewportSize['width'];
+  onReady?: (ref: EmailEditorRef) => void;
 }) => {
   const { selectedTemplate, emailContent, markEmailDirty, markEditorReady } =
     useAppContext();
@@ -150,7 +152,10 @@ export const EmailEditor = ({
             content={content}
             extensions={editorExtensions}
             onUpdate={markEmailDirty}
-            onReady={markEditorReady}
+            onReady={(ref) => {
+              markEditorReady();
+              onReady?.(ref);
+            }}
           >
             <Inspector.Root
               className={cx(
