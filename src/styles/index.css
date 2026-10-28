@@ -136,6 +136,31 @@ body,
   border-spacing: 0;
 }
 
+/*
+ * Legacy `align` attributes (imported as `alignment`). The editor maps them to
+ * a plain `text-align`, but email clients treat them like the HTML attribute:
+ * on tables it only positions the table, on cells it also aligns block
+ * children such as images.
+ */
+.mailblocks-editor-canvas table[alignment] {
+  text-align: inherit;
+}
+
+.mailblocks-editor-canvas :is(td, th)[alignment='left'] {
+  text-align: -moz-left;
+  text-align: -webkit-left;
+}
+
+.mailblocks-editor-canvas :is(td, th)[alignment='center'] {
+  text-align: -moz-center;
+  text-align: -webkit-center;
+}
+
+.mailblocks-editor-canvas :is(td, th)[alignment='right'] {
+  text-align: -moz-right;
+  text-align: -webkit-right;
+}
+
 /* Email editor inspector */
 .mailblocks-inspector {
   --re-border: rgb(38 38 38);
