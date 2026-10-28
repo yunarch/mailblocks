@@ -21,7 +21,8 @@ import type { EmailTemplate } from '@/types/templates';
 import type { ViewportSize } from '@/types/viewports';
 import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
-import { InspectedNodeHighlight } from './InspectedNodeHighlight';
+import { EmailEditorInspectedNodeHighlight } from './EmailEditorInspectedNodeHighlight';
+import { EmailEditorInspectorBlockActions } from './EmailEditorInspectorBlockActions';
 
 // Build react-email slash commands
 buildReactEmailSlashCommands();
@@ -239,9 +240,12 @@ export const EmailEditor = ({
                     {(context) => {
                       return (
                         <>
-                          <InspectedNodeHighlight
+                          <EmailEditorInspectedNodeHighlight
                             nodeType={context.nodeType}
                             pos={context.nodePos.pos}
+                          />
+                          <EmailEditorInspectorBlockActions
+                            nodePos={context.nodePos.pos}
                           />
                           <Inspector.Attributes {...context} />
                           <Inspector.Background {...context} />

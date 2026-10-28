@@ -12,7 +12,7 @@ import { setInspectedNode } from '@/extensions/hoverHighlightExtension';
  * @param props.pos - The position right before the inspected node.
  * @returns Nothing, the highlight is drawn by the editor extension.
  */
-export const InspectedNodeHighlight = ({
+export const EmailEditorInspectedNodeHighlight = ({
   nodeType,
   pos,
 }: {
