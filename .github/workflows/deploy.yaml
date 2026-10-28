@@ -63,14 +63,16 @@ jobs:
         id: changelog
         uses: TriPSs/conventional-changelog-action@469f0e5e35831fbd1962706f29f65daf0a5723f2 # v6.5.0
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           output-file: 'false'
           skip-commit: 'true'
           skip-on-empty: 'false'
+          skip-git-pull: 'true'
+          skip-tag: 'true'
+          git-push: 'false'
       - name: 🆕 Create Release
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.changelog.outputs.tag }}
           NOTES: ${{ steps.changelog.outputs.clean_changelog }}
-        run: gh release create "$TAG" --title "$TAG" --notes "$NOTES"
+        run: gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --notes "$NOTES"
