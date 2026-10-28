@@ -15,7 +15,7 @@ const FIELD_CLASS_NAME = [
 ].join(' ');
 
 /**
- * Image source panel for the inspector: the image URL, its alt text and a
+ * Image panel for the inspector: the image URL, its alt text, its link and a
  * button to replace the image with an uploaded file. The section header uses
  * the inspector's own markup; the fields are full width so URLs stay readable.
  *
@@ -31,8 +31,10 @@ export const EmailEditorInspectorImage = ({
   const [collapsed, setCollapsed] = useState(false);
   const srcAttr = getAttr('src');
   const altAttr = getAttr('alt');
+  const hrefAttr = getAttr('href');
   const src = typeof srcAttr === 'string' ? srcAttr : '';
   const alt = typeof altAttr === 'string' ? altAttr : '';
+  const href = typeof hrefAttr === 'string' ? hrefAttr : '';
   const isLocalOnly = src.startsWith('blob:') || isLocalhostUrl(src);
 
   // Render
@@ -102,6 +104,22 @@ export const EmailEditorInspectorImage = ({
               value={alt}
               onChange={(event) => {
                 setAttr('alt', event.target.value);
+              }}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label data-re-inspector-label="" htmlFor="mailblocks-image-href">
+              Link
+            </label>
+            <input
+              id="mailblocks-image-href"
+              className={FIELD_CLASS_NAME}
+              type="url"
+              placeholder="Optional, e.g. https://example.com"
+              spellCheck={false}
+              value={href}
+              onChange={(event) => {
+                setAttr('href', event.target.value || null);
               }}
             />
           </div>
