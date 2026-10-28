@@ -1,5 +1,5 @@
 import { Suspense, useState } from 'react';
-import { MdOutlineDesktopWindows } from 'react-icons/md';
+import { MdOutlineEdit, MdOutlineRemoveRedEye } from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { viewportSizes } from '@/types/viewports';
@@ -8,12 +8,30 @@ import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 import { EmailEditor } from './components/EmailEditor';
 import { EmailPreview } from './components/EmailPreview';
+import { EmailRender } from './components/EmailRender';
+
+const MODES = [
+  { id: 'editor', label: 'Edit', Icon: MdOutlineEdit },
+  { id: 'render', label: 'Rendered email', Icon: MdOutlineRemoveRedEye },
+  { id: 'code', label: 'HTML code', Icon: PiCodeBold },
+] as const;
+type Mode = (typeof MODES)[number]['id'];
 
 export const EmailEditorPanel = () => {
   const { editorRef } = useAppContext();
-  const [mode, setMode] = useState<'editor' | 'preview'>('editor');
-  const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null);
+  const [mode, setMode] = useState<Mode>('editor');
+  const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from the editor so `use()` receives a stable promise.
   const [activeViewport, setActiveViewport] = useState(viewportSizes[0]);
+
+  // Methods
+  const changeMode = (next: Mode) => {
+    if (next !== 'editor' && mode === 'editor') {
+      setPreviewHtml(editorRef.current?.getEmailHTML() ?? null);
+    }
+    setMode(next);
+  };
+
+  // Render
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 dark:border-white/10">
       <Stack className="flex-row items-center justify-between border-b border-gray-200 px-3 py-2 dark:border-white/10">
@@ -42,24 +60,20 @@ export const EmailEditorPanel = () => {
             </Button>
           ))}
         </ButtonGroup>
-        <ButtonGroup activeItem={mode === 'editor' ? 0 : 1}>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setMode('editor');
-            }}
-          >
-            <MdOutlineDesktopWindows />
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setPreviewHtml(editorRef.current?.getEmailHTML() ?? null);
-              setMode('preview');
-            }}
-          >
-            <PiCodeBold />
-          </Button>
+        <ButtonGroup activeItem={MODES.findIndex((m) => m.id === mode)}>
+          {MODES.map(({ id, label, Icon }) => (
+            <Button
+              key={id}
+              variant="ghost"
+              aria-label={label}
+              title={label}
+              onClick={() => {
+                changeMode(id);
+              }}
+            >
+              <Icon />
+            </Button>
+          ))}
         </ButtonGroup>
       </Stack>
       <Stack className="flex-1 p-2">
@@ -69,7 +83,7 @@ export const EmailEditorPanel = () => {
             viewportWidth={activeViewport.width}
           />
         </Stack>
-        {previewHtml && mode === 'preview' && (
+        {previewHtml && mode !== 'editor' && (
           <Suspense
             fallback={
               <Typography variant="caption" tone="info">
@@ -77,7 +91,14 @@ export const EmailEditorPanel = () => {
               </Typography>
             }
           >
-            <EmailPreview html={previewHtml} />
+            {mode === 'render' ? (
+              <EmailRender
+                html={previewHtml}
+                viewportWidth={activeViewport.width}
+              />
+            ) : (
+              <EmailPreview html={previewHtml} />
+            )}
           </Suspense>
         )}
       </Stack>

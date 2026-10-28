@@ -11,12 +11,13 @@ body,
 }
 
 /*
- * Email editor
- * The canvas is the workspace (not part of the email). The ProseMirror root is
- * the email <body>: the theme paints the real body background on it, so it is
- * shown as an artboard at the selected viewport width.
+ * Email workspace (editor and rendered preview)
+ * The workspace is not part of the email. The email itself is shown as an
+ * artboard at the selected viewport width: in the editor this is the
+ * ProseMirror root (the theme paints the real <body> background on it), in the
+ * rendered preview it is the iframe.
  */
-.mailblocks-editor-canvas {
+.mailblocks-workspace {
   --mailblocks-workspace-bg: var(--color-gray-100);
   --mailblocks-workspace-dot: var(--color-gray-300);
   --mailblocks-artboard-ring: rgb(0 0 0 / 0.08);
@@ -34,7 +35,7 @@ body,
   padding: 0 24px 32px;
 }
 
-[data-theme='dark'] .mailblocks-editor-canvas {
+[data-theme='dark'] .mailblocks-workspace {
   --mailblocks-workspace-bg: var(--color-neutral-900);
   --mailblocks-workspace-dot: rgb(255 255 255 / 0.08);
   --mailblocks-artboard-ring: rgb(255 255 255 / 0.12);
@@ -42,7 +43,7 @@ body,
 }
 
 /* Artboard label, e.g. "Email · 650px" */
-.mailblocks-editor-canvas::before {
+.mailblocks-workspace::before {
   content: var(--mailblocks-canvas-label);
   display: block;
   width: var(--mailblocks-canvas-width);
@@ -53,16 +54,22 @@ body,
   transition: width 200ms ease;
 }
 
+.mailblocks-artboard,
 .mailblocks-editor-canvas .ProseMirror {
+  display: block;
   width: var(--mailblocks-canvas-width);
-  margin: 0 auto !important;
-  min-height: 0 !important;
+  margin: 0 auto;
   box-shadow:
     0 0 0 1px var(--mailblocks-artboard-ring),
     0 12px 32px -12px rgb(0 0 0 / 0.35);
   transition: width 200ms ease;
 }
 
+/* Override the theme's body reset so the artboard stays centered and fits its content */
+.mailblocks-editor-canvas .ProseMirror {
+  margin: 0 auto !important;
+  min-height: 0 !important;
+}
 .mailblocks-editor-canvas .node-container {
   margin: 0 auto;
   max-width: 100% !important;
@@ -73,7 +80,7 @@ body,
   width: 100% !important;
 }
 
-/* Trailing empty line kept by the editor to type after the last block (not exported) */
+/* Trailing empty line kept by the editor to add content after the last block (not exported while empty) */
 .mailblocks-editor-canvas
   :is(.ProseMirror, .ProseMirror > .node-container:last-child)
   > .node-paragraph:last-child:has(> .ProseMirror-trailingBreak:only-child) {
@@ -84,7 +91,7 @@ body,
   opacity: 0.8;
 
   &::after {
-    content: 'Editor only · not exported';
+    content: 'Editor · Click to add content';
     position: absolute;
     top: 50%;
     right: 8px;
@@ -92,6 +99,11 @@ body,
     color: var(--mailblocks-hint);
     font-size: 10px;
     pointer-events: none;
+  }
+
+  /* Focused: the editor placeholder ("Press '/' for commands") takes over */
+  &.is-empty::after {
+    content: none;
   }
 }
 
