@@ -69,20 +69,21 @@ export const EmailEditorPanel = () => {
           ))}
         </ButtonGroup>
         <Stack className="flex-row items-center gap-3">
-          <Switch
-            checked={preview}
-            disabled={mode !== 'editor'}
-            title="Show the rendered email instead of the editor"
-            label={
-              <span className="flex items-center gap-1.5">
-                <MdOutlineRemoveRedEye />
-                Preview
-              </span>
-            }
-            onChange={(checked) => {
-              changeView(mode, checked);
-            }}
-          />
+          {mode === 'editor' && (
+            <Switch
+              checked={preview}
+              title="Show the rendered email instead of the editor"
+              label={
+                <span className="flex items-center gap-1.5">
+                  <MdOutlineRemoveRedEye />
+                  Preview
+                </span>
+              }
+              onChange={(checked) => {
+                changeView(mode, checked);
+              }}
+            />
+          )}
           <ButtonGroup activeItem={MODES.findIndex((m) => m.id === mode)}>
             {MODES.map(({ id, label, Icon }) => (
               <Button
