@@ -1,13 +1,5 @@
 # Security Policy
 
-## Supported Versions
-
-Please check the table below for the supported versions of `@yunarch/mailblocks` that currently receive security updates.
-
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.x.x   | :white_check_mark: |
-
 ## Reporting a Vulnerability
 
 We take the security of our project seriously. If you discover a security vulnerability in `@yunarch/mailblocks`, please **DO NOT** open a public issue.
