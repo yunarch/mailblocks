@@ -1,0 +1,32 @@
+name: GitHub Actions Security Analysis with zizmor 🌈
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions: {}
+
+jobs:
+  zizmor:
+    name: GitHub Actions Analysis
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write # Required to upload SARIF results to the Security tab (only used on push to main).
+      contents: read # Only needed for private repos. Needed to clone the repo.
+      actions: read # Only needed for private repos. Needed for the SARIF upload to read workflow run info.
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: 🌈 Run zizmor
+        uses: zizmorcore/zizmor-action@70fb788f84895a7701f5643d103d587e460b5c99
+        with:
+          # On push to main, upload results to the Security tab.
+          # On pull requests, print results to the console so the job actually fails on findings.
+          advanced-security: ${{ github.event_name == 'push' }}
+          # Findings below this severity are ignored: unknown | informational | low | medium | high
+          min-severity: low

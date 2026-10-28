@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+env:
+  CI: true
+  DO_NOT_TRACK: 1
+  HUSKY: 0
+
+permissions: {}
+
+jobs:
+  lint:
+    name: 🔍 Lint
+    permissions:
+      contents: read
+    uses: $/.github/workflows/template_lint.yaml
