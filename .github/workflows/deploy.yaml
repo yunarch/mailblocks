@@ -1,0 +1,75 @@
+name: Deploy & Release
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: read
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: 🔧 Setup Bun
+        uses: oven-sh/setup-bun@v2
+      - name: 📦 Install dependencies
+        run: bun install --frozen-lockfile
+      - name: 🏗️ Build
+        run: bun run build
+      - name: ⚙️ Setup Pages
+        uses: actions/configure-pages@v5
+      - name: 📤 Upload artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: './dist'
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 🚀 Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions:
+      contents: write
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: 📝 Generate changelog
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          output-file: 'false'
+          skip-commit: 'true'
+          skip-on-empty: 'false'
+      - name: 🆕 Create Release
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.changelog.outputs.tag }}
+          NOTES: ${{ steps.changelog.outputs.clean_changelog }}
+        run: gh release create "$TAG" --title "$TAG" --notes "$NOTES"
