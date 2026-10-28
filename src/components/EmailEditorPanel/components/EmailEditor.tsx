@@ -33,6 +33,28 @@ function getMaxInspectorWidth() {
 }
 
 /**
+ * Browsers serialize inline colors as `rgb()`, but the inspector color inputs
+ * expect hex values.
+ *
+ * @param color - The CSS color value.
+ * @returns The color as hex when it is an opaque `rgb()` value, otherwise unchanged.
+ */
+function toHexColor(color: string) {
+  const match = /^rgb\(\s*(?<r>\d+),\s*(?<g>\d+),\s*(?<b>\d+)\s*\)$/.exec(
+    color
+  );
+  if (!match?.groups) return color;
+  const { r, g, b } = match.groups;
+  return `#${[r, g, b]
+    .map((channel) => Number(channel).toString(16).padStart(2, '0'))
+    .join('')}`;
+}
+
+/**
+ * Local templates start from the basic theme laid out as a white card on a light
+ * page, so the page (body) and card (container) are visibly distinct and both
+ * can be styled from the inspector.
+ *
  * Imported templates are fully styled, so they use the minimal theme (the basic
  * theme adds its own paragraph padding, image radius and white body on top).
  * The template's own body background becomes the email body background, and the
@@ -42,16 +64,21 @@ function getMaxInspectorWidth() {
  * @returns The editor theme for the template.
  */
 function getTemplateTheme(template: EmailTemplate): EditorThemeInput {
-  if (template.category === 'Local') return 'basic';
+  if (template.category === 'Local') {
+    return extendTheme('basic', {
+      body: { backgroundColor: '#f3f4f6', padding: '32px' },
+    });
+  }
   const { body } = new DOMParser().parseFromString(
     template.content,
     'text/html'
   );
   return extendTheme('minimal', {
     body: {
-      backgroundColor:
+      backgroundColor: toHexColor(
         body.style.backgroundColor ||
-        (body.getAttribute('bgcolor') ?? '#ffffff'),
+          (body.getAttribute('bgcolor') ?? '#ffffff')
+      ),
     },
     // The root container only wraps the template: no background or width of its own
     container: {
@@ -192,6 +219,7 @@ export const EmailEditor = ({
                   </div>
                 </div>
                 <div className="flex-1 overflow-auto px-4 py-2 text-sm text-gray-900 dark:text-neutral-200">
+                  <Inspector.Document />
                   <Inspector.Text>
                     {(context) => {
                       return (
@@ -218,7 +246,8 @@ export const EmailEditor = ({
                   </Inspector.Node>
                   <div className="border-t border-gray-200 py-4 text-xs leading-5 text-gray-500 dark:border-white/10 dark:text-neutral-500">
                     Select an element or highlight text to edit its properties
-                    here.
+                    here. Click outside the email, or on Body in the breadcrumb,
+                    to edit the page background and container.
                   </div>
                 </div>
               </Inspector.Root>

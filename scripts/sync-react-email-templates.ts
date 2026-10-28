@@ -58,6 +58,10 @@ const LOCAL_DEFAULT_TEMPLATE: RenderedTemplate = {
           Use the templates sidebar to load a React Email demo as editable HTML,
           then preview the generated email markup from the topbar.
         </p>
+        <p>
+          Click outside the email to change the page background and the
+          width, color and padding of this card.
+        </p>
       </section>
     `,
   sourceUrl: 'local',
