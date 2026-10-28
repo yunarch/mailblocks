@@ -160,7 +160,8 @@ body,
   opacity: 0.5;
 }
 
-.mailblocks-hover-overlay--hovered {
+.mailblocks-hover-overlay--hovered,
+.mailblocks-hover-overlay--inspected {
   outline: 1px solid var(--mailblocks-guide-active);
   outline-offset: -1px;
 
@@ -176,6 +177,18 @@ body,
     font-size: 10px;
     line-height: 16px;
     white-space: nowrap;
+  }
+}
+
+/* The node shown in the inspector: stays visible while its properties are edited */
+.mailblocks-hover-overlay--inspected {
+  --mailblocks-guide-active: rgb(14 165 233);
+  outline-width: 2px;
+  outline-offset: -2px;
+
+  &::before {
+    left: 0;
+    font-weight: 600;
   }
 }
 

@@ -5,6 +5,10 @@ import { Plugin, PluginKey } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 
 type HoverTarget = { node: ProseMirrorNode; pos: number };
+type InspectedNode = { nodeType: string; pos: number };
+
+// Keyed by view: the editor can mount more than one view over its lifetime
+const highlights = new WeakMap<EditorView, HoverHighlightView>();
 
 /**
  * Mirrors the inspector: text nodes, the document and non-selectable nodes are
@@ -118,14 +122,30 @@ function placeOverlay(overlay: HTMLElement, rect?: DOMRect) {
 }
 
 /**
- * Owns the hover overlays of one editor view and keeps them in sync with the
- * pointer, the document and the canvas scroll position.
+ * Marks the node shown in the inspector, so it stays highlighted while its
+ * properties are edited, even when the pointer is elsewhere.
+ *
+ * @param view - The editor view that renders the node.
+ * @param inspected - The inspected node, or `null` to clear the highlight.
+ */
+export function setInspectedNode(
+  view: EditorView,
+  inspected: InspectedNode | null
+) {
+  highlights.get(view)?.setInspected(inspected);
+}
+
+/**
+ * Owns the highlight overlays of one editor view and keeps them in sync with
+ * the pointer, the inspected node, the document and the canvas scroll position.
  */
 class HoverHighlightView {
   private frame = 0;
+  private inspected: InspectedNode | null = null;
   private pointer: { left: number; top: number } | null = null;
   private readonly host: HTMLElement;
   private readonly hoveredOverlay: HTMLElement;
+  private readonly inspectedOverlay: HTMLElement;
   private readonly parentOverlay: HTMLElement;
   private readonly resizeObserver: ResizeObserver;
   private readonly view: EditorView;
@@ -148,17 +168,43 @@ class HoverHighlightView {
       host,
       'mailblocks-hover-overlay mailblocks-hover-overlay--hovered'
     );
+    this.inspectedOverlay = createOverlay(
+      host,
+      'mailblocks-hover-overlay mailblocks-hover-overlay--inspected'
+    );
     this.resizeObserver = new ResizeObserver(this.schedule);
     this.resizeObserver.observe(view.dom);
     host.addEventListener('scroll', this.schedule, { passive: true });
   }
 
+  private getInspectedTarget(): HoverTarget | undefined {
+    if (!this.inspected) return;
+    const { pos, nodeType } = this.inspected;
+    if (pos < 0 || pos >= this.view.state.doc.content.size) return;
+    const node = this.view.state.doc.nodeAt(pos);
+    // The position can be briefly stale after an edit, until the inspector re-renders
+    return node?.type.name === nodeType ? { node, pos } : undefined;
+  }
+
   private refresh() {
+    const inspected = this.getInspectedTarget();
+    const inspectedRect = getTargetRect(this.view, inspected);
+    if (inspected) {
+      this.inspectedOverlay.dataset.label = getNodeMeta(
+        inspected.node.type.name
+      ).label;
+    }
+    placeOverlay(this.inspectedOverlay, inspectedRect);
+
     const targets = this.pointer
       ? getHoverTargets(this.view, this.pointer)
       : [];
     const hovered = targets.at(0);
-    const hoveredRect = getTargetRect(this.view, hovered);
+    // The inspected outline already marks this node
+    const hoveredRect =
+      hovered && hovered.pos !== inspected?.pos
+        ? getTargetRect(this.view, hovered)
+        : undefined;
     // Skip wrappers that share the hovered box (e.g. table > row > cell)
     const parentRect = hoveredRect
       ? targets
@@ -175,6 +221,11 @@ class HoverHighlightView {
     placeOverlay(this.parentOverlay, parentRect);
   }
 
+  setInspected(inspected: InspectedNode | null) {
+    this.inspected = inspected;
+    this.schedule();
+  }
+
   setPointer(pointer: { left: number; top: number } | null) {
     this.pointer = pointer;
     this.schedule();
@@ -186,13 +237,15 @@ class HoverHighlightView {
     this.host.removeEventListener('scroll', this.schedule);
     this.parentOverlay.remove();
     this.hoveredOverlay.remove();
+    this.inspectedOverlay.remove();
   }
 }
 
 /**
  * Highlights the editor node under the pointer with a labelled outline, and
  * its closest visible container with a fainter one, so the structure of the
- * email is visible without clicking around.
+ * email is visible without clicking around. The node shown in the inspector
+ * (see `setInspectedNode`) keeps a stronger outline.
  *
  * The overlays are appended to the editor's parent element, which must be
  * positioned (e.g. `position: relative`).
@@ -200,8 +253,6 @@ class HoverHighlightView {
 export const HoverHighlight = Extension.create({
   name: 'hoverHighlight',
   addProseMirrorPlugins() {
-    // Keyed by view: the editor can mount more than one view over its lifetime
-    const highlights = new WeakMap<EditorView, HoverHighlightView>();
     return [
       new Plugin({
         key: new PluginKey('hoverHighlight'),
