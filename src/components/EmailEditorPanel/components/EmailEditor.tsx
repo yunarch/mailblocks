@@ -23,6 +23,7 @@ import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
 import { EmailEditorInspectedNodeHighlight } from './EmailEditorInspectedNodeHighlight';
 import { EmailEditorInspectorBlockActions } from './EmailEditorInspectorBlockActions';
+import { EmailEditorInspectorDocument } from './EmailEditorInspectorDocument';
 import { EmailEditorInspectorImage } from './EmailEditorInspectorImage';
 
 // Build react-email slash commands
@@ -226,7 +227,9 @@ export const EmailEditor = ({
                   </div>
                 </div>
                 <div className="flex-1 overflow-auto px-4 py-2 text-sm text-gray-900 dark:text-neutral-200">
-                  <Inspector.Document />
+                  <Inspector.Document>
+                    {(context) => <EmailEditorInspectorDocument {...context} />}
+                  </Inspector.Document>
                   <Inspector.Text>
                     {(context) => {
                       return (
