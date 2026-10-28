@@ -2,6 +2,17 @@ name: Deploy & Release
 
 on:
   workflow_dispatch:
+    inputs:
+      release-version:
+        description: The type of release to prepare
+        type: choice
+        options:
+          - conventional
+          - major
+          - minor
+          - patch
+        default: conventional
+        required: true
 
 permissions: {}
 
@@ -69,10 +80,33 @@ jobs:
           skip-git-pull: 'true'
           skip-tag: 'true'
           git-push: 'false'
-      - name: 🆕 Create Release
+      - name: 🏷️ Get version
+        id: version
+        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+        env:
+          RELEASE_VERSION: ${{ inputs.release-version }}
+          OLD_VERSION: ${{ steps.changelog.outputs.old_version }}
+          CONVENTIONAL_TAG: ${{ steps.changelog.outputs.tag }}
+        run: |
+          if [ "$RELEASE_VERSION" = "conventional" ]; then
+            TAG="$CONVENTIONAL_TAG"
+          else
+            CURRENT="${OLD_VERSION:-0.0.0}"
+            IFS=. read -r MAJOR MINOR PATCH <<< "${CURRENT%%[-+]*}"
+            case "$RELEASE_VERSION" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              patch) PATCH=$((PATCH + 1)) ;;
+              *) echo "Unknown release type: $RELEASE_VERSION" >&2; exit 1 ;;
+            esac
+            TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          fi
+          echo "Releasing $TAG"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+      - name: 🔖 Create Release
         if: ${{ steps.changelog.outputs.skipped == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.changelog.outputs.tag }}
+          TAG: ${{ steps.version.outputs.tag }}
           NOTES: ${{ steps.changelog.outputs.clean_changelog }}
         run: gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --notes "$NOTES"
