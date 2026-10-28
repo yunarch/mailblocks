@@ -23,7 +23,7 @@ import { LinterSpam } from './components/LinterSpam';
 
 // Component
 export const EmailLinterPanel = () => {
-  const { editorRef, selectedTemplate } = useAppContext();
+  const { editorRef, editorVersion } = useAppContext();
   const [activeTab, setActiveTab] = useState(0);
   const [lintingRows, setLintingRows] = useState<LintingRow[] | undefined>();
   const [linterLoading, setLinterLoading] = useState(false);
@@ -46,7 +46,7 @@ export const EmailLinterPanel = () => {
   // Methods
   const runLinterMarkup = useCallback(async () => {
     try {
-      if (!editorRef.current) {
+      if (!editorRef.current?.editor) {
         setLintingRows(undefined);
         return;
       }
@@ -59,7 +59,7 @@ export const EmailLinterPanel = () => {
   }, [editorRef]);
   const runLinterCompatibility = useCallback(async () => {
     try {
-      if (!editorRef.current) {
+      if (!editorRef.current?.editor) {
         setCompatibilityResults(undefined);
         return;
       }
@@ -74,7 +74,7 @@ export const EmailLinterPanel = () => {
   }, [editorRef, selectedEmailClients]);
   const runLinterSpam = useCallback(async () => {
     try {
-      if (!editorRef.current) {
+      if (!editorRef.current?.editor) {
         setSpamResult(undefined);
         return;
       }
@@ -99,19 +99,16 @@ export const EmailLinterPanel = () => {
 
   // Effects
   useEffect(() => {
-    if (activeTab !== 0) return;
     void runLinterMarkup();
-  }, [activeTab, runLinterMarkup, selectedTemplate.id]);
+  }, [runLinterMarkup, editorVersion]);
 
   useEffect(() => {
-    if (activeTab !== 1) return;
     void runLinterCompatibility();
-  }, [activeTab, runLinterCompatibility, selectedTemplate.id]);
+  }, [runLinterCompatibility, editorVersion]);
 
   useEffect(() => {
-    if (activeTab !== 2) return;
     void runLinterSpam();
-  }, [activeTab, runLinterSpam, selectedTemplate.id]);
+  }, [runLinterSpam, editorVersion]);
 
   // Render
   return (

@@ -25,7 +25,8 @@ export const EmailEditor = ({
   editorRef: React.RefObject<EmailEditorRef | null>;
   viewportWidth: ViewportSize['width'];
 }) => {
-  const { selectedTemplate, emailContent, markEmailDirty } = useAppContext();
+  const { selectedTemplate, emailContent, markEmailDirty, markEditorReady } =
+    useAppContext();
   const editorExtensions = useMemo(
     () => [
       StarterKit.configure(),
@@ -68,6 +69,7 @@ export const EmailEditor = ({
             content={emailContent}
             extensions={editorExtensions}
             onUpdate={markEmailDirty}
+            onReady={markEditorReady}
           >
             <Inspector.Root
               className={cx(

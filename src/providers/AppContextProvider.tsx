@@ -14,6 +14,8 @@ import { generatedReactEmailTemplates } from '@/utils/templates';
 // Create a context
 type AppContextType = {
   editorRef: React.RefObject<EmailEditorRef | null>;
+  editorVersion: number;
+  markEditorReady: () => void;
   templatesDrawerOpen: boolean;
   setTemplatesDrawerOpen: SetValue<boolean>;
   selectedTemplate: EmailTemplate;
@@ -36,6 +38,7 @@ export const AppContextProvider = ({
   children: React.ReactNode;
 }) => {
   const editorRef = useRef<EmailEditorRef>(null);
+  const [editorVersion, setEditorVersion] = useState(0); // Incremented each time an editor instance becomes ready (initial mount and template switches).
   const [templatesDrawerOpen, setTemplatesDrawerOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(
     generatedReactEmailTemplates[0]
@@ -47,6 +50,9 @@ export const AppContextProvider = ({
   const [isDirty, setIsDirty] = useState(false);
 
   // Methods
+  const markEditorReady = useCallback(() => {
+    setEditorVersion((version) => version + 1);
+  }, []);
   const loadTemplate = useCallback((template: EmailTemplate) => {
     setSelectedTemplate(template);
     setEmailContent(template.content);
@@ -79,6 +85,8 @@ export const AppContextProvider = ({
   const contextValue: AppContextType = useMemo(
     () => ({
       editorRef,
+      editorVersion,
+      markEditorReady,
       templatesDrawerOpen,
       setTemplatesDrawerOpen,
       selectedTemplate,
@@ -94,6 +102,8 @@ export const AppContextProvider = ({
     }),
     [
       editorRef,
+      editorVersion,
+      markEditorReady,
       templatesDrawerOpen,
       selectedTemplate,
       pendingTemplate,
