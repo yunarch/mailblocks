@@ -2,14 +2,14 @@
   // Formatter
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "oxc.oxc-vscode",
-  "prettier.requireConfig": true,
+
+  // Linter
   "oxc.requireConfig": true,
 
   // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit",
     "source.fixAll.oxc": "explicit",
-    "source.removeUnusedImports": "explicit",
+    "source.removeUnusedImports": "never",
     "source.organizeImports": "never"
   },
   "files.trimTrailingWhitespace": true,
@@ -18,21 +18,18 @@
   "explorer.sortOrder": "type",
   "editor.bracketPairColorization.enabled": true,
   "editor.guides.bracketPairs": "active",
+  "editor.semanticHighlighting.enabled": true,
   "workbench.editor.highlightModifiedTabs": true,
   "problems.decorations.enabled": true,
+  "explorer.compactFolders": false,
 
   // Overrides specific languages
   "[javascript]": {
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
 
-  // Tailwind CSS IntelliSense
-  "tailwindCSS.classFunctions": ["tv", "cva"],
-
-  // Customize AI responses
+  // Customize AI
   "github.copilot.chat.commitMessageGeneration.instructions": [
-    { "file": ".github/instructions/commit-messages.md" }
-  ],
-  "chat.useAgentsMdFile": true,
-  "chat.useAgentSkills": true
+    { "file": ".github/instructions/commit-messages.instructions.md" }
+  ]
 }
