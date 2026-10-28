@@ -3,7 +3,7 @@ import { Suspense, useState } from 'react';
 import { MdOutlineDesktopWindows, MdOutlineRemoveRedEye } from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { viewportSizes } from '@/types/viewports';
+import { DEFAULT_VIEWPORT_SIZE, viewportSizes } from '@/types/viewports';
 import { Button, ButtonGroup } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Switch } from '@/ui/Switch';
@@ -23,7 +23,7 @@ export const EmailEditorPanel = () => {
   const [mode, setMode] = useState<Mode>('editor');
   const [preview, setPreview] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from editing so `use()` receives a stable promise.
-  const [activeViewport, setActiveViewport] = useState(viewportSizes[0]);
+  const [activeViewport, setActiveViewport] = useState(DEFAULT_VIEWPORT_SIZE);
   const isEditing = mode === 'editor' && !preview;
 
   // Methods
