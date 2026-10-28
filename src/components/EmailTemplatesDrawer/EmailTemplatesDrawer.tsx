@@ -8,13 +8,12 @@ import { TemplateItem } from './components/TemplateItem';
 
 export const EmailTemplatesDrawer = () => {
   const { templatesDrawerOpen: isOpen } = useAppContext();
-  const groups = generatedReactEmailTemplates.reduce<
-    Record<string, EmailTemplate[]>
-  >((acc, template) => {
-    acc[template.category] ??= [];
-    acc[template.category].push(template);
-    return acc;
-  }, {});
+  const groups = Object.entries(
+    Object.groupBy(
+      generatedReactEmailTemplates,
+      (template) => template.category
+    )
+  ).filter((entry): entry is [string, EmailTemplate[]] => Boolean(entry[1]));
 
   // Render
   return (
@@ -45,7 +44,7 @@ export const EmailTemplatesDrawer = () => {
           </Stack>
         </Stack>
         <Stack className="flex-1 gap-4 overflow-y-auto px-4">
-          {Object.entries(groups).map(([category, categoryTemplates]) => (
+          {groups.map(([category, categoryTemplates]) => (
             <TemplateItem
               key={category}
               category={category}

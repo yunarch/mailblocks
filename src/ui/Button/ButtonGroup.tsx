@@ -1,5 +1,18 @@
-import { Children, Fragment, isValidElement } from 'react';
+import { Children, Fragment, isValidElement, useMemo } from 'react';
 import { cx, tv, type VariantProps } from 'tailwind-variants';
+
+/**
+ * Filters and returns only the valid React elements from the given children.
+ *
+ * @param children - The React children nodes to filter.
+ * @returns An array of valid React elements.
+ */
+function getValidChildren(children: React.ReactNode) {
+  // eslint-disable-next-line react/no-children-to-array -- No alternative, we need to convert to array to filter.
+  return Children.toArray(children).filter((child) => {
+    return isValidElement(child);
+  }) as React.ReactElement[];
+}
 
 // Styles
 const buttonGroupStyles = tv({
@@ -58,9 +71,25 @@ export const ButtonGroup = ({
   activeItem,
   ...other
 }: ButtonGroupProps) => {
-  const validChildren = Children.toArray(children).filter((child) => {
-    return isValidElement(child);
-  });
+  const clones = useMemo(() => {
+    return getValidChildren(children).map((child, index) => {
+      return (
+        <Fragment key={child.key}>
+          <span
+            className={cx(
+              'ui-button-group__item contents *:rounded-none *:border-0',
+              index === activeItem &&
+                '*:bg-white *:shadow-sm dark:*:bg-white/10'
+            )}
+          >
+            {child}
+          </span>
+        </Fragment>
+      );
+    });
+  }, [children, activeItem]);
+
+  // Render
   return (
     <div
       ref={ref}
@@ -70,21 +99,7 @@ export const ButtonGroup = ({
       )}
       {...other}
     >
-      {validChildren.map((child, index) => {
-        const isActive = index === activeItem;
-        return (
-          <Fragment key={child.key ?? index}>
-            <span
-              className={cx(
-                'ui-button-group__item contents *:rounded-none *:border-0',
-                isActive && '*:bg-white *:shadow-sm dark:*:bg-white/10'
-              )}
-            >
-              {child}
-            </span>
-          </Fragment>
-        );
-      })}
+      {clones}
     </div>
   );
 };

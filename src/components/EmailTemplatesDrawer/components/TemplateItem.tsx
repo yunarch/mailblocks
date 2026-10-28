@@ -1,6 +1,6 @@
 import { cx } from 'tailwind-variants';
 import { useAppContext } from '@/providers/AppContextProvider';
-import { EmailTemplate } from '@/types/templates';
+import type { EmailTemplate } from '@/types/templates';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 import { TemplateItemThumbnail } from './TemplateItemThumbnail';

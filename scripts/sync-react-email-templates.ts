@@ -1,4 +1,3 @@
-// oxlint-disable no-console
 import { mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { stderr, stdout } from 'node:process';
@@ -68,7 +67,7 @@ const LOCAL_DEFAULT_TEMPLATE: RenderedTemplate = {
  * @param url - The URL to fetch JSON data from.
  * @returns The parsed JSON data.
  *
- * @throws Will throw an error if the fetch operation fails or if the response is not OK.
+ * @throws {Error} Will throw an error if the fetch operation fails or if the response is not OK.
  */
 async function fetchJson<T>(url: string) {
   const response = await fetch(url, {
@@ -84,11 +83,10 @@ async function fetchJson<T>(url: string) {
 }
 
 /**
- *
  * @param url - The URL to fetch text data from.
  * @returns The fetched text data.
  *
- * @throws Will throw an error if the fetch operation fails or if the response is not OK.
+ * @throws {Error} Will throw an error if the fetch operation fails or if the response is not OK.
  */
 async function fetchText(url: string) {
   const response = await fetch(url, {
@@ -104,10 +102,9 @@ async function fetchText(url: string) {
 }
 
 /**
- * Dynamically imports a React component from the given file path
- * and renders it to HTML using @react-email/render.
+ * Dynamically imports a React component from the given file path and renders it to HTML using `@react-email/render`.
  *
- * @param filePath The path to the React component file.
+ * @param filePath - The path to the React component file.
  * @returns The rendered HTML string.
  */
 async function renderTemplate(filePath: string) {
@@ -147,7 +144,7 @@ const main = async () => {
     return (
       item.type === 'blob' &&
       item.path.startsWith(`${demoRoot}/`) &&
-      /\.(tsx|ts)$/.test(item.path)
+      /\.(?:tsx|ts)$/.test(item.path)
     );
   });
   stdout.write(
@@ -189,14 +186,14 @@ const main = async () => {
     const localPath = sourcePaths.get(file.path);
     if (!localPath) continue;
     const [, category = 'Demo', filename = 'template.tsx'] =
-      file.path.match(new RegExp(`${demoRoot}/([^/]+)/(.+)$`)) ?? [];
+      new RegExp(`${demoRoot}/([^/]+)/(.+)$`).exec(file.path) ?? [];
     try {
       const content = await renderTemplate(localPath);
       templates.push({
         id: file.path
           .replace(demoRoot, '')
           .replace(/^\//, '')
-          .replace(/\.(tsx|ts)$/, '')
+          .replace(/\.(?:tsx|ts)$/, '')
           .toLowerCase()
           .replaceAll(/[^a-z0-9]+/g, '-')
           .replaceAll(/^-|-$/g, ''),

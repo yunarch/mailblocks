@@ -8,6 +8,7 @@ import { cx } from 'tailwind-variants';
  * @returns An array of valid React elements.
  */
 function getValidChildren(children: React.ReactNode) {
+  // eslint-disable-next-line react/no-children-to-array -- No alternative, we need to convert to array to filter.
   return Children.toArray(children).filter((child) => {
     return isValidElement(child);
   }) as React.ReactElement[];
@@ -46,7 +47,7 @@ export const Stack = ({
   separator,
   ...other
 }: StackProps) => {
-  const Component = as || 'div';
+  const Component = as ?? 'div';
   const clones = useMemo(() => {
     if (!separator) return children;
     return getValidChildren(children).map((child, index, arr) => {

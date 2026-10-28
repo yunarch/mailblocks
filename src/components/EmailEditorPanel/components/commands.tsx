@@ -1,7 +1,7 @@
 import {
+  defaultSlashCommands,
   ImageIcon,
   type SlashCommandItem,
-  defaultSlashCommands,
 } from '@react-email/editor/ui';
 
 // Command definitions

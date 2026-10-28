@@ -2,12 +2,17 @@ import {
   EmailEditor as ReactEmailEditor,
   type EmailEditorRef,
 } from '@react-email/editor';
+import { StarterKit } from '@react-email/editor/extensions';
+import { EmailTheming } from '@react-email/editor/plugins';
 import { Inspector } from '@react-email/editor/ui';
+import Placeholder from '@tiptap/extension-placeholder';
+import { useMemo } from 'react';
 import { cx } from 'tailwind-variants';
 import { useAppContext } from '@/providers/AppContextProvider';
 import type { ViewportSize } from '@/types/viewports';
 import { Stack } from '@/ui/Stack';
 import { buildReactEmailSlashCommands } from './commands';
+import { createLinkedImageExtension } from './linkedImageExtension';
 
 // Build react-email slash commands
 buildReactEmailSlashCommands();
@@ -21,6 +26,31 @@ export const EmailEditor = ({
   viewportWidth: ViewportSize['width'];
 }) => {
   const { selectedTemplate, emailContent, markEmailDirty } = useAppContext();
+  const editorExtensions = useMemo(
+    () => [
+      StarterKit.configure(),
+      Placeholder.configure({
+        includeChildren: true,
+        placeholder: ({ node }) => {
+          if (node.type.name === 'heading')
+            return `Heading ${node.attrs.level}`;
+          return "Press '/' for commands";
+        },
+      }),
+      EmailTheming.configure({ theme: 'basic' }),
+      createLinkedImageExtension({
+        uploadImage: async (file) => {
+          await Promise.resolve();
+          return {
+            url: URL.createObjectURL(file),
+          };
+        },
+      }),
+    ],
+    []
+  );
+
+  // Render
   return (
     <Stack className="relative flex-1">
       <div className="absolute h-full w-full">
@@ -32,15 +62,12 @@ export const EmailEditor = ({
           style={{ '--mailblocks-canvas-width': `${viewportWidth}px` }}
         >
           <ReactEmailEditor
-            key={`${selectedTemplate.id}-${1}`}
+            key={`${selectedTemplate.id}-1`}
             ref={editorRef}
             className={cx('mailblocks-editor-canvas', 'mr-2 overflow-auto')}
             content={emailContent}
-            theme="basic"
+            extensions={editorExtensions}
             onUpdate={markEmailDirty}
-            onUploadImage={async (file) => ({
-              url: URL.createObjectURL(file),
-            })}
           >
             <Inspector.Root
               className={cx(

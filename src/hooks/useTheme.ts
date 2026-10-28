@@ -12,7 +12,10 @@ export type ThemeType = 'light' | 'dark';
  */
 export function useTheme() {
   const [theme, setTheme] = useState<ThemeType>(() => {
-    return (document.documentElement.dataset.theme as ThemeType) ?? 'dark';
+    return (
+      (document.documentElement.dataset.theme as ThemeType | undefined) ??
+      'dark'
+    );
   });
   const toggleTheme = useCallback(
     (t?: ThemeType) => {

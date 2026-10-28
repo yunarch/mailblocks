@@ -2,7 +2,7 @@ import type { EmailTemplate } from '@/types/templates';
 
 /**
  * Creates a thumbnail document for the given content.
- * If the content already contains an <html> tag, it returns the content as is.
+ * If the content already contains an `html` tag, it returns the content as is.
  * Otherwise, it wraps the content in a basic HTML structure with some default styles
  * to ensure it displays correctly in the thumbnail iframe.
  *

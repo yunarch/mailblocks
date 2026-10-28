@@ -74,7 +74,7 @@ function deriveHtmlSelector(slug: string): string | null {
     'html-comments': null,
     'html-doctype': null,
   };
-  if (slug in HTML_SELECTORS) return HTML_SELECTORS[slug];
+  if (Object.hasOwn(HTML_SELECTORS, slug)) return HTML_SELECTORS[slug];
   const name = slug.slice('html-'.length);
   if (name.startsWith('input-'))
     return `input[type="${name.slice('input-'.length)}"]`;
@@ -96,16 +96,22 @@ function deriveCssPattern(slug: string): RegExp | null {
     const name = slug.slice('css-at-'.length);
     if (name.startsWith('media-')) {
       const feature = name.slice('media-'.length);
-      return new RegExp(`@media[^{]*\\b${feature}\\b`, 'i');
+      return new RegExp(String.raw`@media[^{]*\b${feature}\b`, 'i');
     }
-    return new RegExp(`@${name.replace('-', '-')}\\b`, 'i');
+    return new RegExp(String.raw`@${name.replace('-', '-')}\b`, 'i');
   }
   // css-pseudo-class-{name}
   if (slug.startsWith('css-pseudo-class-'))
-    return new RegExp(`:${slug.slice('css-pseudo-class-'.length)}\\b`, 'i');
+    return new RegExp(
+      String.raw`:${slug.slice('css-pseudo-class-'.length)}\b`,
+      'i'
+    );
   // css-pseudo-element-{name}
   if (slug.startsWith('css-pseudo-element-'))
-    return new RegExp(`::?${slug.slice('css-pseudo-element-'.length)}\\b`, 'i');
+    return new RegExp(
+      String.raw`::?${slug.slice('css-pseudo-element-'.length)}\b`,
+      'i'
+    );
   // css-nesting
   if (slug === 'css-nesting') return /&/;
   // css-variables
@@ -115,7 +121,7 @@ function deriveCssPattern(slug: string): RegExp | null {
   // css-display-{value}
   if (slug.startsWith('css-display-')) {
     const value = slug.slice('css-display-'.length);
-    return new RegExp(`display\\s*:[^;]*\\b(inline-)?${value}\\b`, 'i');
+    return new RegExp(String.raw`display\s*:[^;]*\b(inline-)?${value}\b`, 'i');
   }
   // css-unit-{unit}
   if (slug.startsWith('css-unit-')) {
@@ -123,18 +129,18 @@ function deriveCssPattern(slug: string): RegExp | null {
     if (unit === 'percent') return /%/;
     if (unit === 'initial') return /\binitial\b/;
     if (unit === 'calc') return /calc\(/;
-    return new RegExp(`[\\d.]${unit}\\b`, 'i');
+    return new RegExp(String.raw`[\d.]${unit}\b`, 'i');
   }
   // css-function-{fn}
   if (slug.startsWith('css-function-')) {
     const fn = slug.slice('css-function-'.length);
-    return new RegExp(`\\b${fn}\\(`, 'i');
+    return new RegExp(String.raw`\b${fn}\(`, 'i');
   }
   // css-selector-* — too structural for a simple regex, skip
   if (slug.startsWith('css-selector-')) return null;
   // Default css-{property} — match the property name in CSS text
   const property = slug.slice('css-'.length);
-  return new RegExp(`\\b${property}\\s*:`, 'i');
+  return new RegExp(String.raw`\b${property}\s*:`, 'i');
 }
 
 /**
@@ -180,9 +186,7 @@ export function lintEmailCompatibility(
     ...[...document.querySelectorAll<HTMLElement>('[style]')].map(
       (el) => el.getAttribute('style') ?? ''
     ),
-    ...[...document.querySelectorAll('style')].map(
-      (el) => el.textContent ?? ''
-    ),
+    ...[...document.querySelectorAll('style')].map((el) => el.textContent),
   ];
   const allCss = cssTexts.join('\n');
   for (const feature of CANIEMAIL_FEATURES) {

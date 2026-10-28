@@ -1,6 +1,6 @@
 import { MdErrorOutline, MdInfoOutline, MdWarningAmber } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
-import { LintCheck, LintingRow, LintStatus } from '@/types/linter';
+import type { LintCheck, LintingRow, LintStatus } from '@/types/linter';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 import { formatBytes } from '@/utils/helpers';
@@ -15,7 +15,6 @@ const DESCRIPTIONS: Record<LintCheck['type'], string> = {
 };
 
 /**
- *
  * @param row - The linting row to extract metadata from
  * @returns A string representation of the metadata
  */
@@ -33,7 +32,6 @@ function getMetadata(row: LintingRow) {
 }
 
 /**
- *
  * @param row - The linting row to extract the source label from
  * @returns A string representation of the source label
  */
@@ -44,7 +42,6 @@ function getSourceLabel(row: LintingRow) {
 }
 
 /**
- *
  * @param row - The linting row to find the failing check for
  * @returns The first failing lint check, or undefined if all checks passed
  */
@@ -53,7 +50,6 @@ function getFailingCheck(row: LintingRow) {
 }
 
 /**
- *
  * @param check - The lint check to get the description for
  * @returns A string representation of the description
  */
@@ -113,7 +109,7 @@ export const LinterMarkup = ({
             row.result.status === 'success' ? 'info' : row.result.status;
           return (
             <tr
-              key={`${row.source}-${sourceLabel}-${i}`}
+              key={`${row.source}-${sourceLabel}-${String(i)}`}
               className="group/result border-b border-transparent transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
             >
               <td className="py-1.5 pr-4 align-middle">

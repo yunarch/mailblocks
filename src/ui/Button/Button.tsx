@@ -88,7 +88,7 @@ export const Button = <IsLink extends boolean>({
     <Component
       {...({
         ref,
-        type: isLink ? undefined : type || 'button',
+        type: isLink ? undefined : (type ?? 'button'),
         className: cx(
           'ui-button',
           buttonStyles({
@@ -98,7 +98,7 @@ export const Button = <IsLink extends boolean>({
             className,
           })
         ),
-        'aria-disabled': disabled || undefined,
+        'aria-disabled': disabled ?? undefined,
         disabled: isLink ? undefined : disabled,
         ...other,
       } as React.ComponentPropsWithRef<'a'> &

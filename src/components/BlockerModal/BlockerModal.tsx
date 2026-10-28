@@ -2,7 +2,7 @@ import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 
-export function BlockerModal({
+export const BlockerModal = ({
   title,
   message,
   cancelText = 'Cancel',
@@ -16,7 +16,7 @@ export function BlockerModal({
   confirmText?: string;
   onCancel: () => void;
   onConfirm: () => void;
-}) {
+}) => {
   return (
     <Stack className="fixed inset-0 z-50 items-center justify-center bg-black/60 p-4">
       <Stack
@@ -42,4 +42,4 @@ export function BlockerModal({
       </Stack>
     </Stack>
   );
-}
+};

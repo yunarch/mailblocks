@@ -129,7 +129,7 @@ export const Typography = <
   uppercase,
   ...other
 }: TypographyProps<As, IsLink>) => {
-  const Component = link ? 'a' : as || defaultElementByVariant[variant];
+  const Component = link ? 'a' : (as ?? defaultElementByVariant[variant]);
   return (
     <Component
       ref={ref}

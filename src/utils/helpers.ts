@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from 'react';
-import { CodeLocation } from '@/types/linter';
+import type { CodeLocation } from '@/types/linter';
 
 // Types
 export type SetValue<T> = Dispatch<SetStateAction<T>>;

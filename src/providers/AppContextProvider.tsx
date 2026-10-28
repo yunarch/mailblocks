@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { EmailTemplate } from '@/types/templates';
+import type { EmailTemplate } from '@/types/templates';
 import type { SetValue } from '@/utils/helpers';
 import { generatedReactEmailTemplates } from '@/utils/templates';
 

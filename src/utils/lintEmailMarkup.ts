@@ -1,4 +1,4 @@
-// oxlint-disable max-lines -- This file contains a large number of lines due to the comprehensive linting checks implemented.
+/* eslint-disable max-lines */
 import type { LintCheck, LintingRow, LintStatus } from '@/types/linter';
 import { findCodeLocation, isLocalhostUrl } from './helpers';
 
@@ -67,12 +67,13 @@ function createMarkupRow({
 
 /**
  * Lints a single anchor element for common issues in email clients.
+ *
  * Checks:
- *  - missing href
- *  - invalid URL syntax
- *  - use of HTTP URLs
- *  - localhost URLs
- *  - missing rel="noopener noreferrer" on links with target="_blank"
+ *  - missing href.
+ *  - invalid URL syntax.
+ *  - use of HTTP URLs.
+ *  - localhost URLs.
+ *  - missing rel="noopener noreferrer" on links with target="_blank".
  *
  * @param anchor - The anchor element to lint.
  * @param markup - The HTML markup containing the anchor element.
@@ -150,12 +151,13 @@ function lintLink(
 
 /**
  * Lints a single image element for common issues in email clients.
+ *
  * Checks:
- *  - missing alt text
- *  - missing src
- *  - use of HTTP URLs
- *  - localhost URLs
- *  - data URLs that exceed size limits
+ *  - missing alt text.
+ *  - missing src.
+ *  - use of HTTP URLs.
+ *  - localhost URLs.
+ *  - data URLs that exceed size limits.
  *
  * @param image - The image element to lint.
  * @param markup - The HTML markup containing the image element.
@@ -226,11 +228,12 @@ function lintImage(image: HTMLImageElement, markup: string): LintingRow | null {
 
 /**
  * Lints the overall markup of the email for common issues that may affect rendering in email clients.
+ *
  * Checks:
- * - overall HTML size that may be clipped by email clients
- * - presence of <script> tags which are not supported in email clients
- * - presence of <form> tags which have poor support in email clients
- * - presence of external stylesheets which are not reliable in email clients
+ * - overall HTML size that may be clipped by email clients.
+ * - presence of &lt;script> tags which are not supported in email clients.
+ * - presence of &lt;form> tags which have poor support in email clients.
+ * - presence of external stylesheets which are not reliable in email clients.
  *
  * @param document - The parsed Document object representing the email markup.
  * @param markup - The original HTML markup string, used for calculating code locations of issues.
@@ -304,7 +307,7 @@ export function lintEmailMarkup(markup: string): LintingRow[] {
       return lintImage(image, markup);
     }),
     ...lintMarkup(document, markup),
-  ].filter(Boolean) as LintingRow[];
+  ].filter(Boolean);
   const seen = new Set<string>();
   const uniqueRows = rows.filter((row) => {
     const key = JSON.stringify(row);

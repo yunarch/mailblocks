@@ -11,7 +11,7 @@ const CopyButton = ({ content }: { content: string }) => {
   useEffect(() => {
     return () => {
       if (copiedTimeoutRef.current) {
-        globalThis.clearTimeout(copiedTimeoutRef.current);
+        clearTimeout(copiedTimeoutRef.current);
       }
     };
   }, []);
@@ -19,9 +19,9 @@ const CopyButton = ({ content }: { content: string }) => {
     await navigator.clipboard.writeText(content);
     setCopied(true);
     if (copiedTimeoutRef.current) {
-      globalThis.clearTimeout(copiedTimeoutRef.current);
+      clearTimeout(copiedTimeoutRef.current);
     }
-    copiedTimeoutRef.current = globalThis.setTimeout(() => {
+    copiedTimeoutRef.current = setTimeout(() => {
       setCopied(false);
       copiedTimeoutRef.current = null;
     }, 5000);
@@ -38,7 +38,7 @@ const CopyButton = ({ content }: { content: string }) => {
   );
 };
 
-export function EmailPreview({ editorRef }: { editorRef: EmailEditorRef }) {
+export const EmailPreview = ({ editorRef }: { editorRef: EmailEditorRef }) => {
   const content = use(editorRef.getEmailHTML());
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-neutral-900">
@@ -53,7 +53,7 @@ export function EmailPreview({ editorRef }: { editorRef: EmailEditorRef }) {
           <pre className="p-4 text-sm leading-6">
             <code>
               {content.split('\n').map((line, i) => (
-                <span key={i} className="flex">
+                <span key={`preview-line-${String(i)}`} className="flex">
                   <span className="inline-block w-12 shrink-0 pr-4 text-right text-gray-400 select-none dark:text-neutral-600">
                     {i + 1}
                   </span>
@@ -68,4 +68,4 @@ export function EmailPreview({ editorRef }: { editorRef: EmailEditorRef }) {
       </Stack>
     </Stack>
   );
-}
+};

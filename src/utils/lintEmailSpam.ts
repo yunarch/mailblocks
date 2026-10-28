@@ -59,7 +59,7 @@ const getLinkHost = (href: string): string | undefined => {
   }
 };
 const linkTextLooksLikeUrl = (text: string): boolean => {
-  return /^(https?:\/\/|www\.)\S+$/i.test(text.trim());
+  return /^(?:https?:\/\/|www\.)\S+$/i.test(text.trim());
 };
 
 /**
@@ -67,7 +67,7 @@ const linkTextLooksLikeUrl = (text: string): boolean => {
  * @returns A boolean indicating whether the anchor has mismatched link text and href hosts.
  */
 function hasMismatchedLink(anchor: HTMLAnchorElement): boolean {
-  const text = anchor.textContent?.trim() ?? '';
+  const text = anchor.textContent.trim();
   const href = anchor.getAttribute('href') ?? '';
   if (!href || !linkTextLooksLikeUrl(text)) return false;
   const textHost = getLinkHost(

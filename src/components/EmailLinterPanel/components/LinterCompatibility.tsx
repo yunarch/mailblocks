@@ -1,4 +1,4 @@
-import { MdErrorOutline, MdArrowDropDown } from 'react-icons/md';
+import { MdArrowDropDown, MdErrorOutline } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
 import type { CompatibilityResult } from '@/types/linter';
 import { Stack } from '@/ui/Stack';
@@ -155,7 +155,7 @@ export const LinterCompatibility = ({
           const unsupportedStr = result.unsupportedClients.join(', ');
           return (
             <div
-              key={i}
+              key={`${result.title}-${String(i)}`}
               className="col-span-4 grid grid-cols-subgrid border-b border-transparent py-1.5 transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
             >
               <div>

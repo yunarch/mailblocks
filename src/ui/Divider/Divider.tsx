@@ -41,7 +41,7 @@ export const Divider = ({
   orientation,
   ...other
 }: DividerProps) => {
-  const Component = as || 'span';
+  const Component = as ?? 'span';
   return (
     <Component
       ref={ref}

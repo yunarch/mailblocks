@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { MdRefresh } from 'react-icons/md';
 import { useAppContext } from '@/providers/AppContextProvider';
-import {
+import type {
   CompatibilityResult,
   LintingRow,
   SpamCheckingResult,
