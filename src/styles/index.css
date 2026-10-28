@@ -10,25 +10,113 @@ body,
   @apply bg-gray-100 text-gray-950 dark:bg-black dark:text-white;
 }
 
-/* Email editor */
+/*
+ * Email editor
+ * The canvas is the workspace (not part of the email). The ProseMirror root is
+ * the email <body>: the theme paints the real body background on it, so it is
+ * shown as an artboard at the selected viewport width.
+ */
 .mailblocks-editor-canvas {
-  background-color: var(--color-gray-500);
+  --mailblocks-workspace-bg: var(--color-gray-100);
+  --mailblocks-workspace-dot: var(--color-gray-300);
+  --mailblocks-artboard-ring: rgb(0 0 0 / 0.08);
+  --mailblocks-hint: var(--color-gray-400);
+  --mailblocks-guide: rgb(0 0 0 / 0.12);
+  --mailblocks-guide-active: rgb(14 165 233 / 0.7);
+  --mailblocks-guide-fill: rgb(0 0 0 / 0.025);
+  background-color: var(--mailblocks-workspace-bg);
+  background-image: radial-gradient(
+    var(--mailblocks-workspace-dot) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
   border-radius: 8px;
+  padding: 0 24px 32px;
+}
+
+[data-theme='dark'] .mailblocks-editor-canvas {
+  --mailblocks-workspace-bg: var(--color-neutral-900);
+  --mailblocks-workspace-dot: rgb(255 255 255 / 0.08);
+  --mailblocks-artboard-ring: rgb(255 255 255 / 0.12);
+  --mailblocks-hint: var(--color-neutral-500);
+}
+
+/* Artboard label, e.g. "Email · 650px" */
+.mailblocks-editor-canvas::before {
+  content: var(--mailblocks-canvas-label);
+  display: block;
+  width: var(--mailblocks-canvas-width);
+  margin: 0 auto;
+  padding: 12px 0 6px;
+  color: var(--mailblocks-hint);
+  font-size: 11px;
+  transition: width 200ms ease;
 }
 
 .mailblocks-editor-canvas .ProseMirror {
-  background-color: transparent !important;
+  width: var(--mailblocks-canvas-width);
+  margin: 0 auto !important;
+  min-height: 0 !important;
+  box-shadow:
+    0 0 0 1px var(--mailblocks-artboard-ring),
+    0 12px 32px -12px rgb(0 0 0 / 0.35);
+  transition: width 200ms ease;
 }
 
 .mailblocks-editor-canvas .node-container {
   margin: 0 auto;
-  width: var(--mailblocks-canvas-width) !important;
-  transition: width 200ms ease;
+  max-width: 100% !important;
 }
 
-.mailblocks-editor-canvas .node-column {
-  border: 1px dashed var(--color-gray-300);
+/* Nested containers fill their table cell, like the exported `width:100%` */
+.mailblocks-editor-canvas .node-container .node-container {
+  width: 100% !important;
+}
+
+/* Trailing empty line kept by the editor to type after the last block (not exported) */
+.mailblocks-editor-canvas
+  :is(.ProseMirror, .ProseMirror > .node-container:last-child)
+  > .node-paragraph:last-child:has(> .ProseMirror-trailingBreak:only-child) {
+  position: relative;
+  outline: 1px dashed var(--mailblocks-hint);
+  outline-offset: -2px;
   border-radius: 4px;
+  opacity: 0.8;
+
+  &::after {
+    content: 'Editor only · not exported';
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    color: var(--mailblocks-hint);
+    font-size: 10px;
+    pointer-events: none;
+  }
+}
+
+/*
+ * Column guides: an outline (no layout impact) so widths match the export.
+ * Hidden at rest, neutral when hovering the row, accent on the hovered column.
+ * Empty columns stay faintly visible so they can be found.
+ */
+.mailblocks-editor-canvas .node-column {
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  border-radius: 2px;
+
+  &:has(> .node-paragraph:only-child > .ProseMirror-trailingBreak:only-child) {
+    outline-color: var(--mailblocks-guide);
+    background-color: var(--mailblocks-guide-fill);
+  }
+
+  .node-columns:hover > & {
+    outline-color: var(--mailblocks-guide);
+  }
+
+  .node-columns:hover > &:hover:not(:has(.node-column:hover)) {
+    outline-color: var(--mailblocks-guide-active);
+  }
 }
 
 .mailblocks-editor-canvas table {

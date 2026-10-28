@@ -60,7 +60,10 @@ export const EmailEditor = ({
             'mailblocks-edit-grid',
             'flex-1 h-full grid grid-cols-[minmax(0,1fr)_320px]'
           )}
-          style={{ '--mailblocks-canvas-width': `${viewportWidth}px` }}
+          style={{
+            '--mailblocks-canvas-width': `${viewportWidth}px`,
+            '--mailblocks-canvas-label': `"Email · ${String(viewportWidth)}px"`,
+          }}
         >
           <ReactEmailEditor
             key={`${selectedTemplate.id}-1`}
@@ -74,7 +77,7 @@ export const EmailEditor = ({
             <Inspector.Root
               className={cx(
                 'mailblocks-inspector',
-                'w-[320px] flex flex-col overflow-auto border-l border-gray-200 bg-white dark:border-white/10 dark:bg-black'
+                'w-[320px] flex flex-col overflow-auto border-l border-gray-200 dark:border-white/10'
               )}
             >
               <div className="flex h-12 shrink-0 items-center border-b border-gray-200 px-4 dark:border-white/10">
