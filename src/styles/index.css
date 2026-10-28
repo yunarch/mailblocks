@@ -80,31 +80,24 @@ body,
   width: 100% !important;
 }
 
-/* Trailing empty line kept by the editor to add content after the last block (not exported while empty) */
+/*
+ * The editor keeps an empty line after the last block of sections and columns
+ * (e.g. after an image or a button), which is not exported while empty.
+ * Collapse it to a thin clickable strip so the canvas matches the export; it
+ * expands again while it holds the cursor. The hover highlight shows it as
+ * "Text" when pointed at. The email's last empty line keeps its full height,
+ * as the place to add content at the end.
+ */
 .mailblocks-editor-canvas
-  :is(.ProseMirror, .ProseMirror > .node-container:last-child)
-  > .node-paragraph:last-child:has(> .ProseMirror-trailingBreak:only-child) {
-  position: relative;
-  outline: 1px dashed var(--mailblocks-hint);
-  outline-offset: -2px;
-  border-radius: 4px;
-  opacity: 0.8;
-
-  &::after {
-    content: 'Editor · Click to add content';
-    position: absolute;
-    top: 50%;
-    right: 8px;
-    transform: translateY(-50%);
-    color: var(--mailblocks-hint);
-    font-size: 10px;
-    pointer-events: none;
-  }
-
-  /* Focused: the editor placeholder ("Press '/' for commands") takes over */
-  &.is-empty::after {
-    content: none;
-  }
+  :is(.node-section, .node-column)
+  > .node-paragraph:not(:first-child):last-child:has(
+    > .ProseMirror-trailingBreak:only-child
+  ):not(.is-empty) {
+  height: 8px;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  cursor: text;
 }
 
 /*

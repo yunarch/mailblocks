@@ -3,6 +3,7 @@ import {
   ImageIcon,
   type SlashCommandItem,
 } from '@react-email/editor/ui';
+import { BLOCK_COMMANDS } from '@/extensions/blocks';
 
 // Command definitions
 const IMAGE_COMMAND: SlashCommandItem = {
@@ -44,8 +45,22 @@ function addImageCommand() {
 }
 
 /**
+ * Appends the pre-styled blocks to the default slash commands, once.
+ */
+function addBlockCommands() {
+  for (const command of BLOCK_COMMANDS) {
+    const exists = defaultSlashCommands.some(
+      (item) =>
+        item.category === command.category && item.title === command.title
+    );
+    if (!exists) defaultSlashCommands.push(command);
+  }
+}
+
+/**
  * Builds and registers custom slash commands for the default React Email Editor command set.
  */
 export function buildReactEmailSlashCommands() {
   addImageCommand();
+  addBlockCommands();
 }

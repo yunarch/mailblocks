@@ -23,6 +23,7 @@ import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
 import { EmailEditorInspectedNodeHighlight } from './EmailEditorInspectedNodeHighlight';
 import { EmailEditorInspectorBlockActions } from './EmailEditorInspectorBlockActions';
+import { EmailEditorInspectorImage } from './EmailEditorInspectorImage';
 
 // Build react-email slash commands
 buildReactEmailSlashCommands();
@@ -247,7 +248,11 @@ export const EmailEditor = ({
                           <EmailEditorInspectorBlockActions
                             nodePos={context.nodePos.pos}
                           />
-                          <Inspector.Attributes {...context} />
+                          {context.nodeType === 'image' ? (
+                            <EmailEditorInspectorImage {...context} />
+                          ) : (
+                            <Inspector.Attributes {...context} />
+                          )}
                           <Inspector.Background {...context} />
                           <Inspector.Size {...context} />
                           <Inspector.Padding {...context} />

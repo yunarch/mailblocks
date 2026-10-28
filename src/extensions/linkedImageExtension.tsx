@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { EmailNode } from '@react-email/editor/core';
 import type { CommandProps, Editor, JSONContent } from '@tiptap/core';
 
@@ -173,6 +174,80 @@ async function executeUploadFlow(
 }
 
 /**
+ * Uploads a file and swaps it into the image at `pos`. Only that image is
+ * updated, even when other images share the same source.
+ *
+ * @param editor - The editor instance.
+ * @param pos - The position right before the image node.
+ * @param file - The image file to upload.
+ * @param uploadImage - The function that uploads the image and returns its URL.
+ */
+async function executeReplaceFlow(
+  editor: Editor,
+  pos: number,
+  file: File,
+  uploadImage: LinkedImageOptions['uploadImage']
+) {
+  const previousSrc = editor.state.doc.nodeAt(pos)?.attrs.src as unknown;
+  let url: string;
+  try {
+    ({ url } = await uploadImage(file));
+  } catch {
+    return;
+  }
+  // The document may have changed during the upload, so the image is matched again
+  const { state, view } = editor;
+  let target: number | null = null;
+  const nodeAtPos = state.doc.nodeAt(pos);
+  if (nodeAtPos?.type.name === 'image' && nodeAtPos.attrs.src === previousSrc) {
+    target = pos;
+  } else {
+    state.doc.descendants((node, nodePos) => {
+      if (target !== null) return false;
+      if (node.type.name === 'image' && node.attrs.src === previousSrc) {
+        target = nodePos;
+      }
+    });
+  }
+  if (target === null) return;
+  const node = state.doc.nodeAt(target);
+  if (!node) return;
+  view.dispatch(
+    state.tr.setNodeMarkup(target, undefined, { ...node.attrs, src: url })
+  );
+}
+
+/**
+ * Opens the browser file picker for a single image.
+ *
+ * @param onFile - Called with the picked file.
+ */
+function pickImageFile(onFile: (file: File) => void) {
+  const input = document.createElement('input');
+  input.accept = 'image/*';
+  input.type = 'file';
+  input.addEventListener('change', () => {
+    const file = input.files?.[0];
+    if (file) onFile(file);
+  });
+  input.click();
+}
+
+/**
+ * Opens the file picker and replaces the image at `pos` with the uploaded file.
+ *
+ * @param editor - The editor instance.
+ * @param pos - The position right before the image node.
+ * @returns Whether the image was found and the picker opened.
+ */
+export function replaceImage(editor: Editor, pos: number) {
+  const commands = editor.commands as unknown as {
+    replaceImage: (pos: number) => boolean;
+  };
+  return commands.replaceImage(pos);
+}
+
+/**
  * Creates an image extension that supports wrapping images in links and uploading files.
  *
  * @param options - Configuration with the handler used to upload image files.
@@ -180,16 +255,20 @@ async function executeUploadFlow(
  */
 export function createLinkedImageExtension(options: LinkedImageOptions) {
   const uploadImageCommand = ({ editor }: Pick<CommandProps, 'editor'>) => {
-    const input = document.createElement('input');
-    input.accept = 'image/*';
-    input.type = 'file';
-    input.addEventListener('change', () => {
-      const file = input.files?.[0];
-      if (file) void executeUploadFlow(editor, file, options.uploadImage);
+    pickImageFile((file) => {
+      void executeUploadFlow(editor, file, options.uploadImage);
     });
-    input.click();
     return true;
   };
+  const replaceImageCommand =
+    (pos: number) =>
+    ({ editor }: Pick<CommandProps, 'editor'>) => {
+      if (editor.state.doc.nodeAt(pos)?.type.name !== 'image') return false;
+      pickImageFile((file) => {
+        void executeReplaceFlow(editor, pos, file, options.uploadImage);
+      });
+      return true;
+    };
 
   return EmailNode.create({
     name: 'image',
@@ -242,6 +321,7 @@ export function createLinkedImageExtension(options: LinkedImageOptions) {
             });
           },
         uploadImage: () => uploadImageCommand,
+        replaceImage: replaceImageCommand,
       };
     },
     renderToReactEmail: ({ node, style }) => {
