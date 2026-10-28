@@ -137,6 +137,49 @@ body,
 }
 
 /*
+ * Hover highlight: outlines the node under the pointer (what a click would
+ * inspect) with its label, and its parent container with a fainter outline.
+ * The overlays live in the canvas, outside the email, so they never affect layout.
+ */
+.mailblocks-editor-canvas {
+  position: relative;
+}
+
+.mailblocks-hover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 2px;
+}
+
+.mailblocks-hover-overlay--parent {
+  outline: 1px dashed var(--mailblocks-guide-active);
+  outline-offset: -1px;
+  opacity: 0.5;
+}
+
+.mailblocks-hover-overlay--hovered {
+  outline: 1px solid var(--mailblocks-guide-active);
+  outline-offset: -1px;
+
+  &::before {
+    content: attr(data-label);
+    position: absolute;
+    bottom: 100%;
+    left: -1px;
+    padding: 1px 6px;
+    border-radius: 3px 3px 0 0;
+    background-color: var(--mailblocks-guide-active);
+    color: white;
+    font-size: 10px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+}
+
+/*
  * Legacy `align` attributes (imported as `alignment`). The editor maps them to
  * a plain `text-align`, but email clients treat them like the HTML attribute:
  * on tables it only positions the table, on cells it also aligns block
