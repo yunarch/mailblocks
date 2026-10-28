@@ -226,3 +226,15 @@ body,
   --re-bg-hover: rgb(243 244 246);
   --re-bg-active: rgb(229 231 235);
 }
+
+/* Size inputs look like the editor's own number fields: no native spin buttons */
+.mailblocks-size-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+
+  &::-webkit-inner-spin-button,
+  &::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}

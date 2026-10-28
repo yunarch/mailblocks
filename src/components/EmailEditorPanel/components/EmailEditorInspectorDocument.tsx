@@ -164,8 +164,9 @@ const Group = ({
 
 /**
  * A size field styled like the inspector number inputs, with a px / % unit
- * picker. Emptying the number goes back to automatic sizing. The number is
- * applied on Enter or when leaving the field.
+ * picker. Valid numbers (typed or stepped with the arrow keys) are applied as
+ * they change; emptying the number goes back to automatic sizing when leaving
+ * the field.
  *
  * @param props - The field state.
  * @param props.label - The visible field name.
@@ -185,18 +186,23 @@ const SizeField = ({
   const { amount, unit: storedUnit } = splitSize(value);
   const [pickedUnit, setPickedUnit] = useState<SizeUnit | null>(null);
   const unit = amount ? storedUnit : (pickedUnit ?? storedUnit);
-  const commit = (input: HTMLInputElement) => {
-    const typed = input.value.trim();
-    if (typed === amount) return;
-    if (typed === '') {
-      onCommit(undefined);
-      return;
-    }
-    if (Number.isNaN(Number(typed)) || Number(typed) < 0) {
-      input.value = amount;
-      return;
-    }
+  const [draft, setDraft] = useState(amount);
+  const [syncedAmount, setSyncedAmount] = useState(amount);
+  if (amount !== syncedAmount) {
+    setSyncedAmount(amount);
+    setDraft(amount);
+  }
+  const apply = (typed: string) => {
+    if (typed === '' || typed === amount) return;
+    if (Number.isNaN(Number(typed)) || Number(typed) < 0) return;
     onCommit(`${String(Number(typed))}${unit}`);
+  };
+  const finish = () => {
+    if (draft.trim() === '') {
+      if (amount !== '') onCommit(undefined);
+      return;
+    }
+    setDraft(amount);
   };
   return (
     <div data-re-inspector-prop-row="">
@@ -204,21 +210,22 @@ const SizeField = ({
       <div className="flex items-center gap-1">
         <span data-re-inspector-number="">
           <input
-            key={value}
             data-re-inspector-input=""
             data-type="number"
             aria-label={label}
-            type="text"
+            type="number"
+            min={0}
             inputMode="decimal"
             placeholder="auto"
-            defaultValue={amount}
-            className="max-w-14!"
-            onBlur={(event) => {
-              commit(event.currentTarget);
+            value={draft}
+            className="mailblocks-size-input max-w-14!"
+            onChange={(event) => {
+              setDraft(event.currentTarget.value);
+              apply(event.currentTarget.value.trim());
             }}
+            onBlur={finish}
             onKeyDown={(event) => {
-              if (event.key === 'Enter') commit(event.currentTarget);
-              if (event.key === 'Escape') event.currentTarget.value = amount;
+              if (event.key === 'Enter') event.currentTarget.blur();
             }}
           />
         </span>
