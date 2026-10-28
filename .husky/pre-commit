@@ -22,4 +22,4 @@ fi
 # Format all files (not just staged) to ensure consistent formatting across the codebase.
 # Note: Formatting only staged files can leave unstaged files in a different format, causing future commits to include unrelated formatting diffs.
 # Note2: Might require the developers to commit (or amend) the formatted files after the pre-commit hook runs, but this is a better tradeoff for code consistency.
-bun run format:all
+bun run format:fix

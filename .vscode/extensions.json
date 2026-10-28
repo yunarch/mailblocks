@@ -1,5 +1,6 @@
 {
   "recommendations": [
+    "dbaeumer.vscode-eslint",
     "oxc.oxc-vscode",
 
     "aaron-bond.better-comments",

@@ -1,11 +1,8 @@
-import { defineConfig, type OxfmtConfig } from 'oxfmt';
-import yunarchOxfmtConfig from './node_modules/@yunarch/config-web/dist/config.oxfmt.json' with { type: 'json' };
+import { config } from '@yunarch/config-web/oxfmt';
+import { defineConfig } from 'oxfmt';
 
 export default defineConfig({
-  ...(yunarchOxfmtConfig as OxfmtConfig),
-  ignorePatterns: [
-    ...yunarchOxfmtConfig.ignorePatterns,
-    'src/utils/templates.ts',
-  ],
+  ...config,
+  ignorePatterns: ['src/utils/templates.ts'],
   sortTailwindcss: true,
 });

@@ -8,7 +8,7 @@
 
   // Auto fix
   "editor.codeActionsOnSave": {
-    "source.fixAll.oxc": "explicit",
+    "source.fixAll.eslint": "explicit",
     "source.removeUnusedImports": "never",
     "source.organizeImports": "never"
   },

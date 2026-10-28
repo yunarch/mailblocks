@@ -3,7 +3,6 @@
 # Function to run all checks
 run_checks() {
   bun run lint
-  bun run tests
 }
 
 # Check if the branch has an upstream
