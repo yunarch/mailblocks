@@ -84,7 +84,7 @@ jobs:
           filters = [(p.startswith("!"), glob_to_regex(p.lstrip("!"))) for p in patterns]
 
           diff = subprocess.run(
-              ["git", "diff", "--name-only", "-z", "HEAD^1", "HEAD"],
+              ["git", "diff", "--no-renames", "--name-only", "-z", "HEAD^1", "HEAD"],
               check=True, capture_output=True,
           ).stdout
           files = [f.decode("utf-8", "surrogateescape") for f in diff.split(b"\0") if f]
