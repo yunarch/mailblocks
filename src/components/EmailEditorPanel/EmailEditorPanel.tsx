@@ -9,8 +9,8 @@ import { Stack } from '@/ui/Stack';
 import { Switch } from '@/ui/Switch';
 import { Typography } from '@/ui/Typography';
 import { EmailEditor } from './components/EmailEditor';
+import { EmailHtmlCode } from './components/EmailHtmlCode';
 import { EmailPreview } from './components/EmailPreview';
-import { EmailRender } from './components/EmailRender';
 
 const MODES = [
   { id: 'editor', label: 'Editor', Icon: MdOutlineDesktopWindows },
@@ -24,6 +24,7 @@ export const EmailEditorPanel = () => {
   const [preview, setPreview] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from editing so `use()` receives a stable promise.
   const [activeViewport, setActiveViewport] = useState(DEFAULT_VIEWPORT_SIZE);
+  const [showEmailClientFrame, setShowEmailClientFrame] = useState(true);
   const isEditing = mode === 'editor' && !preview;
 
   // Methods
@@ -118,12 +119,14 @@ export const EmailEditorPanel = () => {
             }
           >
             {mode === 'editor' ? (
-              <EmailRender
+              <EmailPreview
                 html={previewHtml}
-                viewportWidth={activeViewport.width}
+                viewport={activeViewport}
+                showEmailClientFrame={showEmailClientFrame}
+                onShowEmailClientFrameChange={setShowEmailClientFrame}
               />
             ) : (
-              <EmailPreview html={previewHtml} />
+              <EmailHtmlCode html={previewHtml} />
             )}
           </Suspense>
         )}
