@@ -58,6 +58,15 @@ describe('<Button />', () => {
 Use accessible locators and await browser actions and `expect.element`
 assertions. Add shared provider wrappers to `src/__tests__/` only when needed.
 
+Prefer real interactions (`click`, `dblClick`, `dropTo`, `userEvent.keyboard`),
+which use trusted browser events. Dispatch synthetic events only to observe
+intermediate states that real interactions can't pause on, such as the middle of
+a drag. Synthetic pointer events don't acquire real pointer capture.
+
+Tailwind's preflight removes the default `<body>` margin, so elements rendered at
+the page edge may be partly outside the viewport. Wrap them in padding when a test
+interacts at their edges.
+
 ## Mocking browser APIs
 
 Prefer real browser behavior. When an API needs mocking, use `vi.spyOn` and

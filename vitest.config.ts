@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'node:url';
+import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('src', import.meta.url)),
@@ -67,6 +68,7 @@ export default defineConfig({
             ],
             screenshotDirectory: './.vitest/screenshots',
           },
+          setupFiles: ['./src/__tests__/setup.browser.ts'],
         },
       },
     ],
