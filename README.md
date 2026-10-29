@@ -76,6 +76,38 @@ bun run dev
 | `bun run clean`         | Remove build output and caches.               |
 | `bun run gen:templates` | Sync templates from the React Email demo app. |
 
+### Testing
+
+This project has automated tests in place to help ensure that the codebase is stable and functioning as expected and uses [Vitest](https://vitest.dev/) as its automated testing framework.
+
+We have the next types of tests:
+
+- **Standard Unit Tests** (`*.test.ts(x)`) - For testing utility functions, services, etc, non-UI logic.
+- **Browser Mode Unit Tests** (`*.browser.test.ts(x)`) - For tests that require DOM access.
+
+```sh
+# Run all the tests
+bun run tests
+
+# Run all the tests in watch mode
+bun run tests:watch
+
+# Run only standard tests
+bun run tests:standard
+
+# Run only browser mode tests
+bun run tests:browser
+```
+
+See the [testing guide](docs/testing.md) for detailed instructions on how to test.
+
+> [!NOTE]
+> In order to run `browser mode tests` you need to install browsers. It should be done automatically. But if you encounter any issues, you can manually install them with the following command:
+>
+> ```sh
+> bunx playwright install
+> ```
+
 ### Updating templates
 
 The bundled templates are generated from the [React Email demo emails](https://github.com/resend/react-email/tree/canary/apps/demo/emails). Running `bun run gen:templates` downloads them, renders each one to HTML, and regenerates `src/utils/templates.ts`.
