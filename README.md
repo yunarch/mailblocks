@@ -12,7 +12,7 @@
 <br />
 Powered by [React Email](https://react.email/).
 
-[Overview](#overview) • [Why Mailblocks](#why-mailblocks) • [Features](#features) • [Getting started](#getting-started) • [Development](#development)
+[Overview](#overview) • [Why](#why) • [Features](#features) • [Getting started](#getting-started) • [Development](#development)
 
 ![Mailblocks screenshot](docs/assets/screenshot.png)
 
@@ -24,7 +24,7 @@ Mailblocks is a browser-based email template editor for developers. Start from a
 
 Everything runs client-side: there's no backend, account, or sign-up.
 
-## Why Mailblocks
+## Why
 
 Building an email template that looks good everywhere is hard, because email clients don't follow modern web standards:
 
