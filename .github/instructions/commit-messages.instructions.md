@@ -37,7 +37,7 @@ Generating a message does not authorize creating a commit, staging files, or pus
 - If the description already makes the area clear, do not add a scope. When unsure, omit it.
 - Start the description with a lowercase imperative verb, such as `add`, `fix`, or `remove`. Preserve the capitalization of proper names and code identifiers.
 - Prefer specific verbs and nouns that name what changed over generic ones such as `update`, `change`, `improve`, `handle`, or `adjust`. When something is added, name it as it appears in the diff (for example its label or value) rather than a generic `new option`.
-- Do not describe where the change lives in the code (file, component, panel, or module names); describe what changed.
+- Do not describe where the change lives in the code (file, component, panel, or module names); describe what changed. Exception: `test` commits may name the units under test.
 - Do not end the subject with a period. Keep the entire subject within 72 characters.
 - Prefer a subject alone for simple changes. Add a body only when useful context or motivation is supported by the evidence.
 - Separate the body and footers with blank lines. Wrap body and footer prose at 100 characters where practical; do not break URLs or identifiers.
@@ -46,9 +46,14 @@ Generating a message does not authorize creating a commit, staging files, or pus
 
 Decide in this order and stop at the first match:
 
-1. Does the change add something a user can see or use (a new option, setting, view, control, or behavior)? Use `feat`, even if the diff also touches types, constants, or defaults.
-2. Does it correct behavior that the diff shows was wrong or broken before? Use `fix`. Code that keeps existing behavior working after an addition is not a fix.
-3. Otherwise pick the most specific of the remaining types.
+1. Does the diff touch only one kind of non-product file? Use that file kind's type, even when the change adds new files, cases, or capabilities:
+   - only tests, test utilities, mocks, or test setup → `test`;
+   - only documentation → `docs`;
+   - only CI workflows → `ci`;
+   - only dependencies or build, bundler, or test runner configuration → `build`.
+2. Does the change add something an end user of the product can see or use (a new option, setting, view, control, or behavior)? Use `feat`, even if the diff also touches types, constants, or defaults. Only changes to shipped product code qualify; new tests, docs, or tooling for contributors are never `feat`.
+3. Does it correct behavior that the diff shows was wrong or broken before? Use `fix`. Code that keeps existing behavior working after an addition is not a fix.
+4. Otherwise pick the most specific of the remaining types.
 
 - `feat`: a new end-user capability, option, or behavior.
 - `fix`: a bug fix, regression repair, or defect mitigation, even when accompanied by tests.
@@ -93,3 +98,11 @@ fix(auth): reject expired tokens
 
 Validate token expiry before accepting authenticated requests.
 ```
+
+Test-only change: the diff only adds test files, so the type is `test`, and the subject may name the units under test.
+
+```text
+test: add tests for Button and ButtonGroup components
+```
+
+Not `feat: add tests for Button and ButtonGroup components`: new tests add nothing an end user can see or use.

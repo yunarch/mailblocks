@@ -11,6 +11,10 @@ coverage
 # nyc test coverage
 .nyc_output
 
+# vitest
+.vitest
+.vitest-attachments
+
 # misc
 .DS_Store
 *.pem
@@ -84,9 +88,6 @@ build
 
 # typescript
 *.tsbuildinfo
-
-# MSW
-mockServiceWorker.js
 
 # Temp (downloaded React Email sources)
 tmp/

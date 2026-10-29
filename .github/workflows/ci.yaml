@@ -14,8 +14,53 @@ env:
 permissions: {}
 
 jobs:
-  lint:
-    name: 🔍 Lint
+  changes:
+    name: 🎯 Changes
     permissions:
       contents: read
+      pull-requests: read
+    uses: $/.github/workflows/template_changes.yaml
+    with:
+      paths: |
+        .github/actions/**
+        .github/workflows/**
+        src/**
+        proxy/**
+        public/**
+        *.json
+        *.js
+        *.ts
+        index.html
+        bun.lock
+        Dockerfile
+  lint:
+    name: 🔍 Lint
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pull-requests: write
     uses: $/.github/workflows/template_lint.yaml
+  test:
+    name: 🧪 Test
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    permissions:
+      contents: read
+    uses: $/.github/workflows/template_test.yaml
+  # Single check to mark as required in the branch ruleset.
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [changes, lint, test]
+    if: always()
+    steps:
+      - name: ❌ CI checks failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS"
+          exit 1
+      - name: ✅ CI checks passed
+        run: echo "OK"

@@ -49,8 +49,11 @@ export function formatBytes(bytes: number): string {
  * @returns The line and column number of the offset.
  */
 export function getCodeLocation(markup: string, offset: number): CodeLocation {
-  const lines = markup.slice(0, Math.max(0, offset)).split('\n');
-  return { line: lines.length, column: lines.at(-1)?.length ?? 0 };
+  const before = markup.slice(0, Math.max(0, offset));
+  return {
+    line: before.split('\n').length,
+    column: before.length - before.lastIndexOf('\n') - 1,
+  };
 }
 
 /**
