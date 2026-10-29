@@ -6,6 +6,9 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  optimizeDeps: {
+    include: ['react-dom/client', 'react-dom/server.browser'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('src', import.meta.url)),
@@ -27,6 +30,7 @@ export default defineConfig({
         'src/__tests__/**',
         'src/**/__tests__/**',
         'src/**/*.{test,spec}.{ts,tsx}',
+        'src/main.tsx',
         'src/utils/templates.ts',
       ],
     },
@@ -64,7 +68,7 @@ export default defineConfig({
             headless: true,
             provider: playwright(),
             instances: [
-              { browser: 'chromium', viewport: { width: 810, height: 1080 } },
+              { browser: 'chromium', viewport: { width: 1600, height: 1080 } },
             ],
             screenshotDirectory: './.vitest/screenshots',
           },
