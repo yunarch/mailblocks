@@ -4,6 +4,7 @@ import { page, userEvent } from 'vitest/browser';
 import { interceptFilePicker, renderApp } from '@/__tests__/test-utils';
 import { EmailEditorPanel } from '../EmailEditorPanel';
 
+// Returns the text content of all paragraphs in the editor.
 const paragraphs = (editor: Editor) => {
   return [...editor.view.dom.querySelectorAll('p')].map((p) => p.textContent);
 };
