@@ -94,6 +94,105 @@ const EmailClientsSelect = ({
   );
 };
 
+const CompatibilityResults = ({
+  results,
+  loading,
+}: {
+  results: CompatibilityResult[] | undefined;
+  loading: boolean;
+}) => {
+  if (loading) {
+    return (
+      <Typography variant="caption" tone="info">
+        Running compatibility checks...
+      </Typography>
+    );
+  }
+  if (results === undefined) {
+    return (
+      <Typography variant="label" tone="muted">
+        Open or refresh compatibility to check the current email.
+      </Typography>
+    );
+  }
+  if (results.length === 0) {
+    return (
+      <Stack className="gap-1">
+        <Typography variant="h3" tone="success">
+          All good
+        </Typography>
+        <Typography variant="bodySm" tone="subtle">
+          No compatibility issues found.
+        </Typography>
+      </Stack>
+    );
+  }
+  return (
+    <div className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-x-4 gap-y-0 text-xs">
+      {results.map((result, i) => {
+        const isWarning = result.severity === 'warning';
+        return (
+          <div
+            key={`${result.title}-${String(i)}`}
+            className="col-span-4 grid grid-cols-subgrid border-b border-transparent py-1.5 transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
+          >
+            <div>
+              <Typography
+                variant="label"
+                tone={isWarning ? 'warning' : 'info'}
+                uppercase
+                className="flex flex-row items-center gap-2"
+              >
+                {isWarning ? (
+                  <MdWarningAmber size={14} />
+                ) : (
+                  <MdInfoOutline size={14} />
+                )}
+                <span>{result.title}</span>
+              </Typography>
+            </div>
+            <Typography variant="label" tone="subtle" uppercase>
+              {result.category}
+            </Typography>
+            <Stack className="gap-0.5">
+              <Typography variant="bodySm">
+                {result.unsupportedClients.length > 0 && (
+                  <span className="block">
+                    Not supported in {result.unsupportedClients.join(', ')}
+                  </span>
+                )}
+                {result.partialClients.length > 0 && (
+                  <span className="block">
+                    Partially supported in {result.partialClients.join(', ')}
+                  </span>
+                )}
+              </Typography>
+              {result.notes.length > 0 && (
+                <Typography variant="caption" tone="muted">
+                  {result.notes.join(' ')}
+                </Typography>
+              )}
+            </Stack>
+            <Stack className="items-end gap-0.5">
+              <a
+                href={result.url}
+                className="text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                More ↗
+              </a>
+              <Typography variant="caption" tone="muted">
+                html:{result.location.line}:{result.location.column}
+              </Typography>
+            </Stack>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // Component
 export const LinterCompatibility = ({
   results,
@@ -106,112 +205,13 @@ export const LinterCompatibility = ({
   selectedEmailClients: Set<string>;
   onToggleEmailClient: (key: string) => void;
 }) => {
-  if (loading) {
-    return (
-      <Typography variant="caption" tone="info">
-        Running compatibility checks...
-      </Typography>
-    );
-  }
-  if (results === undefined) {
-    return (
-      <Stack className="gap-2">
-        <EmailClientsSelect
-          selectedEmailClients={selectedEmailClients}
-          onToggleEmailClient={onToggleEmailClient}
-        />
-        <Typography variant="label" tone="muted">
-          Open or refresh compatibility to check the current email.
-        </Typography>
-      </Stack>
-    );
-  }
-  if (results.length === 0) {
-    return (
-      <Stack className="gap-2">
-        <EmailClientsSelect
-          selectedEmailClients={selectedEmailClients}
-          onToggleEmailClient={onToggleEmailClient}
-        />
-        <Stack className="gap-1">
-          <Typography variant="h3" tone="success">
-            All good
-          </Typography>
-          <Typography variant="bodySm" tone="subtle">
-            No compatibility issues found.
-          </Typography>
-        </Stack>
-      </Stack>
-    );
-  }
   return (
     <Stack className="gap-2">
       <EmailClientsSelect
         selectedEmailClients={selectedEmailClients}
         onToggleEmailClient={onToggleEmailClient}
       />
-      <div className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-x-4 gap-y-0 text-xs">
-        {results.map((result, i) => {
-          const isWarning = result.severity === 'warning';
-          return (
-            <div
-              key={`${result.title}-${String(i)}`}
-              className="col-span-4 grid grid-cols-subgrid border-b border-transparent py-1.5 transition-colors last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/3"
-            >
-              <div>
-                <Typography
-                  variant="label"
-                  tone={isWarning ? 'warning' : 'info'}
-                  uppercase
-                  className="flex flex-row items-center gap-2"
-                >
-                  {isWarning ? (
-                    <MdWarningAmber size={14} />
-                  ) : (
-                    <MdInfoOutline size={14} />
-                  )}
-                  <span>{result.title}</span>
-                </Typography>
-              </div>
-              <Typography variant="label" tone="subtle" uppercase>
-                {result.category}
-              </Typography>
-              <Stack className="gap-0.5">
-                <Typography variant="bodySm">
-                  {result.unsupportedClients.length > 0 && (
-                    <span className="block">
-                      Not supported in {result.unsupportedClients.join(', ')}
-                    </span>
-                  )}
-                  {result.partialClients.length > 0 && (
-                    <span className="block">
-                      Partially supported in {result.partialClients.join(', ')}
-                    </span>
-                  )}
-                </Typography>
-                {result.notes.length > 0 && (
-                  <Typography variant="caption" tone="muted">
-                    {result.notes.join(' ')}
-                  </Typography>
-                )}
-              </Stack>
-              <Stack className="items-end gap-0.5">
-                <a
-                  href={result.url}
-                  className="text-gray-400 underline decoration-gray-300 decoration-1 transition-colors hover:text-gray-600 dark:text-neutral-500 dark:decoration-neutral-600 dark:hover:text-neutral-300"
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  More ↗
-                </a>
-                <Typography variant="caption" tone="muted">
-                  html:{result.location.line}:{result.location.column}
-                </Typography>
-              </Stack>
-            </div>
-          );
-        })}
-      </div>
+      <CompatibilityResults results={results} loading={loading} />
     </Stack>
   );
 };
