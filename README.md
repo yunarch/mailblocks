@@ -4,7 +4,7 @@
 
 # Mailblocks
 
-[![Open the demo](https://img.shields.io/badge/Demo-yunarch.github.io%2Fmailblocks-blue?style=flat-square)](https://yunarch.github.io/mailblocks/)
+[![Open the app](https://img.shields.io/badge/App-yunarch.github.io%2Fmailblocks-blue?style=flat-square)](https://yunarch.github.io/mailblocks/)
 [![CI](https://img.shields.io/github/actions/workflow/status/yunarch/mailblocks/ci.yaml?branch=main&style=flat-square&label=CI)](https://github.com/yunarch/mailblocks/actions/workflows/ci.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE.md)
 
