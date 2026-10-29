@@ -5,7 +5,9 @@
 # Mailblocks
 
 [![Open the app](https://img.shields.io/badge/App-yunarch.github.io%2Fmailblocks-blue?style=flat-square)](https://yunarch.github.io/mailblocks/)
+[![Version](https://img.shields.io/github/v/tag/yunarch/mailblocks?sort=semver&style=flat-square&label=Version)](https://github.com/yunarch/mailblocks/releases)
 [![CI](https://img.shields.io/github/actions/workflow/status/yunarch/mailblocks/ci.yaml?branch=main&style=flat-square&label=CI)](https://github.com/yunarch/mailblocks/actions/workflows/ci.yaml)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/yunarch/mailblocks/deploy.yaml?branch=main&style=flat-square&label=Deploy)](https://github.com/yunarch/mailblocks/actions/workflows/deploy.yaml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE.md)
 
 **Build an email visually, then copy production-ready HTML.**
