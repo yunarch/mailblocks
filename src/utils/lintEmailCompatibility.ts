@@ -307,10 +307,10 @@ function findFeature(
 ): FeatureMatch | undefined {
   const findImage = (predicate: (src: string) => boolean) => {
     const image = context.images.find((el) =>
-      predicate(el.getAttribute('src') ?? '')
+      predicate(String(el.getAttribute('src')))
     );
     return image
-      ? { source: image.getAttribute('src') ?? '', element: image }
+      ? { source: String(image.getAttribute('src')), element: image }
       : undefined;
   };
   if (slug === 'image-base64') {
@@ -324,34 +324,28 @@ function findFeature(
     });
   }
   if (slug.startsWith('html-')) {
-    try {
-      const el = context.root.querySelector(deriveHtmlSelector(slug));
-      if (!el) return undefined;
-      return {
-        source: el.outerHTML.slice(0, el.outerHTML.indexOf('>') + 1),
-        element: el,
-      };
-    } catch {
-      return undefined;
-    }
+    const el = context.root.querySelector(deriveHtmlSelector(slug));
+    if (!el) return undefined;
+    return {
+      source: el.outerHTML.slice(0, el.outerHTML.indexOf('>') + 1),
+      element: el,
+    };
   }
-  if (slug.startsWith('css-')) {
-    const pattern = deriveCssPattern(slug);
-    if (!pattern) return undefined;
-    const css = isStylesheetOnly(slug)
-      ? context.stylesheetCss
-      : `${context.inlineCss}\n${context.stylesheetCss}`;
-    const globalPattern = new RegExp(pattern.source, `${pattern.flags}g`);
-    for (const match of css.matchAll(globalPattern)) {
-      if (!match[0].trimEnd().endsWith(':')) {
-        return { source: match[0], pattern };
-      }
-      const declarationValue =
-        /^[^;\n]*/.exec(css.slice(match.index + match[0].length))?.[0] ?? '';
-      if (NEUTRAL_VALUE_PATTERN.test(declarationValue.trim())) continue;
-      return { source: `${match[0]}${declarationValue}`, pattern };
+  const pattern = deriveCssPattern(slug);
+  if (!pattern) return undefined;
+  const css = isStylesheetOnly(slug)
+    ? context.stylesheetCss
+    : `${context.inlineCss}\n${context.stylesheetCss}`;
+  const globalPattern = new RegExp(pattern.source, `${pattern.flags}g`);
+  for (const match of css.matchAll(globalPattern)) {
+    if (!match[0].trimEnd().endsWith(':')) {
+      return { source: match[0], pattern };
     }
-    return undefined;
+    const [declarationValue] = css
+      .slice(match.index + match[0].length)
+      .split(/[;\n]/, 1);
+    if (NEUTRAL_VALUE_PATTERN.test(declarationValue.trim())) continue;
+    return { source: `${match[0]}${declarationValue}`, pattern };
   }
   return undefined;
 }
@@ -362,8 +356,8 @@ function findFeature(
  * @returns A human-readable client label, e.g. "Gmail Android" or "Outlook.com".
  */
 function getClientLabel(client: string, platform: string): string {
-  const family = CANIEMAIL_NICENAMES.family[client] ?? client;
-  const platformLabel = CANIEMAIL_NICENAMES.platform[platform] ?? platform;
+  const family = CANIEMAIL_NICENAMES.family[client];
+  const platformLabel = CANIEMAIL_NICENAMES.platform[platform];
   return platformLabel.includes(family)
     ? platformLabel
     : `${family} ${platformLabel}`;
@@ -388,13 +382,14 @@ function getClientSupport(
   for (const [client, platforms] of Object.entries(feature.stats)) {
     if (!emailClients.has(client)) continue;
     for (const [platform, versions] of Object.entries(platforms)) {
-      const support = Object.values(versions).at(-1) ?? '';
-      const status = support.charAt(0);
+      const [status, ...noteRefs] = String(
+        Object.values(versions).at(-1)
+      ).split(' ');
       if (status !== 'n' && status !== 'a') continue;
       const label = getClientLabel(client, platform);
       (status === 'n' ? unsupported : partial).add(label);
-      for (const { groups } of support.matchAll(/#(?<num>\d+)/g)) {
-        const note = groups?.num ? feature.notes_by_num?.[groups.num] : null;
+      for (const noteRef of noteRefs) {
+        const note = feature.notes_by_num?.[noteRef.slice(1)];
         if (note) notes.add(formatNote(note));
       }
     }
@@ -448,7 +443,6 @@ function getElementOffset(markup: string, element: Element): number {
   const index = [...element.ownerDocument.querySelectorAll(tag)].indexOf(
     element
   );
-  if (index === -1) return -1;
   const masked = markup.replaceAll(/<!--[\s\S]*?-->/g, (comment) =>
     ' '.repeat(comment.length)
   );
@@ -470,8 +464,7 @@ function getContentOffset(markup: string, root: Element): number {
   const rootOffset = getElementOffset(markup, root);
   if (rootOffset === -1) return 0;
   if (root.tagName === 'BODY') return rootOffset;
-  const tagEnd = markup.indexOf('>', rootOffset);
-  return tagEnd === -1 ? rootOffset : tagEnd + 1;
+  return markup.indexOf('>', rootOffset) + 1;
 }
 
 /**
@@ -491,9 +484,9 @@ function getMatchLocation(
   }
   const sourceOffset = markup.indexOf(match.source, fromIndex);
   if (sourceOffset !== -1) return getCodeLocation(markup, sourceOffset);
-  if (match.pattern) {
-    const index = match.pattern.exec(markup.slice(fromIndex))?.index;
-    if (index !== undefined) return getCodeLocation(markup, fromIndex + index);
+  const patternIndex = match.pattern?.exec(markup.slice(fromIndex))?.index;
+  if (patternIndex !== undefined) {
+    return getCodeLocation(markup, fromIndex + patternIndex);
   }
   return findCodeLocation(markup, match.source.slice(0, 64), fromIndex);
 }
@@ -517,9 +510,8 @@ export function lintEmailCompatibility(
   const contentOffset = getContentOffset(markup, root);
   const context: FeatureContext = {
     root,
-    inlineCss: Array.from(
-      root.querySelectorAll('[style]'),
-      (el) => el.getAttribute('style') ?? ''
+    inlineCss: Array.from(root.querySelectorAll('[style]'), (el) =>
+      String(el.getAttribute('style'))
     ).join('\n'),
     stylesheetCss: Array.from(
       root.querySelectorAll('style'),

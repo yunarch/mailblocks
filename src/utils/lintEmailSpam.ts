@@ -72,7 +72,7 @@ const linkTextLooksLikeUrl = (text: string): boolean => {
  */
 function hasMismatchedLink(anchor: HTMLAnchorElement): boolean {
   const text = anchor.textContent.trim();
-  const href = anchor.getAttribute('href') ?? '';
+  const href = String(anchor.getAttribute('href'));
   if (!href || !linkTextLooksLikeUrl(text)) return false;
   const textHost = getLinkHost(
     text.startsWith('http') ? text : `https://${text}`
@@ -148,7 +148,7 @@ export function lintEmailSpam({
     links.every(
       (link) =>
         !UNSUBSCRIBE_PATTERN.test(link.textContent) &&
-        !UNSUBSCRIBE_PATTERN.test(link.getAttribute('href') ?? '')
+        !UNSUBSCRIBE_PATTERN.test(String(link.getAttribute('href')))
     )
   ) {
     checks.push({
