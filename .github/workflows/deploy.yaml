@@ -140,7 +140,16 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag -a "$TAG" -m "Release $TAG"
+          if TAG_COMMIT="$(git rev-parse -q --verify "refs/tags/$TAG^{commit}")"; then
+            # Re-run after a failed release: reuse the tag only if it points to this commit
+            if [ "$TAG_COMMIT" != "$(git rev-parse HEAD)" ]; then
+              echo "Tag $TAG already exists on another commit" >&2
+              exit 1
+            fi
+            echo "Tag $TAG already exists on HEAD, reusing it"
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+          fi
           gh auth setup-git
           git push origin "$TAG"
       - name: 📝 Generate release notes
