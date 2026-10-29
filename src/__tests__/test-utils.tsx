@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { expect, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { App } from '@/App';
+import { EmailEditorPanel } from '@/components/EmailEditorPanel/EmailEditorPanel';
 import {
   AppContextProvider,
   useAppContext,
@@ -28,7 +29,8 @@ const ContextProbe = ({
  * waits until the email editor is ready.
  *
  * @param ui - The UI to render inside the app context.
- * @returns The render result, plus accessors for the live editor and context.
+ * @returns The render result, accessors for the live editor and context, and
+ * `exportEmail()` to parse the HTML the editor would export.
  */
 export async function renderApp(ui: React.ReactNode = <App />) {
   const state: { context?: AppContext } = {};
@@ -51,8 +53,31 @@ export async function renderApp(ui: React.ReactNode = <App />) {
     if (!editor) throw new Error('The email editor is not ready');
     return editor;
   };
+  const exportEmail = async () => {
+    const html = await getContext().editorRef.current?.getEmailHTML();
+    if (!html) throw new Error('The email could not be exported');
+    return new DOMParser().parseFromString(html, 'text/html');
+  };
   await expect.poll(() => getContext().editorVersion).toBeGreaterThan(0);
-  return { screen, getContext, getEditor };
+  return { screen, getContext, getEditor, exportEmail };
+}
+
+/**
+ * Renders the editor panel on its own, filling the page like in the app
+ * layout, optionally starting from the given email content.
+ *
+ * @param html - The email body to start from.
+ * @returns The `renderApp` result, plus the live editor.
+ */
+export async function renderEditorPanel(html?: string) {
+  const result = await renderApp(
+    <div className="flex h-svh flex-col">
+      <EmailEditorPanel />
+    </div>
+  );
+  const editor = result.getEditor();
+  if (html) editor.commands.setContent(html);
+  return { ...result, editor };
 }
 
 /**

@@ -1,25 +1,7 @@
 import type { Editor } from '@tiptap/core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
-import { interceptFilePicker, renderApp } from '@/__tests__/test-utils';
-import { EmailEditorPanel } from '../EmailEditorPanel';
-
-// Returns the text content of all paragraphs in the editor.
-const paragraphs = (editor: Editor) => {
-  return [...editor.view.dom.querySelectorAll('p')].map((p) => p.textContent);
-};
-
-// Renders the editor panel with the given email content.
-const renderPanel = async (html?: string) => {
-  const result = await renderApp(
-    <div className="flex h-svh flex-col">
-      <EmailEditorPanel />
-    </div>
-  );
-  const editor = result.getEditor();
-  if (html) editor.commands.setContent(html);
-  return { ...result, editor };
-};
+import { interceptFilePicker, renderEditorPanel } from '@/__tests__/test-utils';
 
 // Types a slash command on an empty line at the end of the email and picks it.
 const runSlashCommand = async (editor: Editor, query: string) => {
@@ -43,52 +25,9 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('editing blocks from the inspector', () => {
-  it('moves, duplicates and deletes the selected block', async () => {
-    const { screen, editor } = await renderPanel(
-      '<p>First</p><p>Second</p><p>Third</p>'
-    );
-    await screen.getByText('Second').click();
-    await expect
-      .element(screen.getByRole('toolbar', { name: 'Element actions' }))
-      .toBeVisible();
-    await screen.getByRole('button', { name: 'Move up' }).click();
-    expect(paragraphs(editor)).toEqual(['Second', 'First', 'Third']);
-    await screen.getByRole('button', { name: 'Move down' }).click();
-    expect(paragraphs(editor)).toEqual(['First', 'Second', 'Third']);
-    await screen.getByRole('button', { name: 'Duplicate' }).click();
-    expect(paragraphs(editor)).toEqual(['First', 'Second', 'Second', 'Third']);
-    await screen.getByRole('button', { name: 'Delete' }).click();
-    expect(paragraphs(editor)).toEqual(['First', 'Second', 'Third']);
-  });
-
-  it('disables moves past the ends of the email', async () => {
-    const { screen } = await renderPanel('<p>First</p><p>Last</p>');
-    await screen.getByText('First').click();
-    await expect
-      .element(screen.getByRole('button', { name: 'Move up' }))
-      .toBeDisabled();
-    await expect
-      .element(screen.getByRole('button', { name: 'Move down' }))
-      .toBeEnabled();
-  });
-
-  it('undoes each action separately', async () => {
-    const { screen, editor } = await renderPanel(
-      '<p>First</p><p>Second</p><p>Third</p>'
-    );
-    await screen.getByText('First').click();
-    await screen.getByRole('button', { name: 'Move down' }).click();
-    await screen.getByRole('button', { name: 'Move down' }).click();
-    expect(paragraphs(editor)).toEqual(['Second', 'Third', 'First']);
-    await userEvent.keyboard('{Control>}z{/Control}');
-    expect(paragraphs(editor)).toEqual(['Second', 'First', 'Third']);
-  });
-});
-
 describe('slash commands', () => {
   it('inserts a pre-styled block and continues on a new line below it', async () => {
-    const { editor } = await renderPanel('<p>Intro</p><p></p>');
+    const { editor } = await renderEditorPanel('<p>Intro</p><p></p>');
     await runSlashCommand(editor, 'hero');
     await userEvent.keyboard('After');
     const text = editor.view.dom.textContent;
@@ -99,7 +38,7 @@ describe('slash commands', () => {
 
   it('uploads an image picked from the Image command', async () => {
     const picker = interceptFilePicker();
-    const { editor } = await renderPanel('<p>Intro</p><p></p>');
+    const { editor } = await renderEditorPanel('<p>Intro</p><p></p>');
     await runSlashCommand(editor, 'image');
     picker.choose(new File(['x'], 'photo.png', { type: 'image/png' }));
     await expect
@@ -109,35 +48,9 @@ describe('slash commands', () => {
   });
 });
 
-describe('image inspector', () => {
-  it('replaces the selected image and warns that it is only local', async () => {
-    const picker = interceptFilePicker();
-    const { screen, editor } = await renderPanel(
-      '<p>Intro</p><img src="https://example.com/a.png" alt="Logo" width="300" height="200">'
-    );
-    await page
-      .elementLocator(editor.view.dom.querySelector('img') as Element)
-      .click();
-    const url = screen.getByLabelText('Image URL');
-    await expect.element(url).toHaveValue('https://example.com/a.png');
-    await expect.element(screen.getByLabelText('Alt text')).toHaveValue('Logo');
-    await expect
-      .element(screen.getByText(/only saved in your browser/))
-      .not.toBeInTheDocument();
-    await screen.getByRole('button', { name: 'Upload…' }).click();
-    picker.choose(new File(['x'], 'photo.png', { type: 'image/png' }));
-    await expect
-      .poll(() => (url.element() as HTMLInputElement).value)
-      .toMatch(/^blob:/);
-    await expect
-      .element(screen.getByText(/only saved in your browser/))
-      .toBeVisible();
-  });
-});
-
 describe('editor canvas', () => {
   it('does not follow links when they are clicked', async () => {
-    const { screen } = await renderPanel(
+    const { screen } = await renderEditorPanel(
       '<p>Read <a href="https://example.com">the docs</a></p>'
     );
     const prevented: boolean[] = [];
@@ -151,7 +64,7 @@ describe('editor canvas', () => {
   });
 
   it('outlines the hovered element with its type', async () => {
-    const { screen, editor } = await renderPanel('<p>Hover me</p>');
+    const { screen, editor } = await renderEditorPanel('<p>Hover me</p>');
     const outline = editor.view.dom.parentElement?.querySelector<HTMLElement>(
       '.mailblocks-hover-overlay--hovered'
     );
@@ -161,7 +74,7 @@ describe('editor canvas', () => {
   });
 
   it('resizes the canvas to the selected viewport', async () => {
-    const { screen, editor } = await renderPanel();
+    const { screen, editor } = await renderEditorPanel();
     const canvasWidth = () =>
       editor.view.dom
         .closest<HTMLElement>('.mailblocks-edit-grid')
@@ -174,7 +87,7 @@ describe('editor canvas', () => {
 
 describe('preview and HTML code', () => {
   it('previews the rendered email including the latest edits', async () => {
-    const { screen, editor } = await renderPanel('<p>Original</p>');
+    const { screen, editor } = await renderEditorPanel('<p>Original</p>');
     editor.commands.setContent('<p>Edited text</p>');
     await screen.getByRole('switch', { name: /Preview/ }).click();
     const frame = screen.getByTitle('Rendered email');
@@ -198,7 +111,7 @@ describe('preview and HTML code', () => {
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue();
-    const { screen } = await renderPanel('<p>Copy me</p>');
+    const { screen } = await renderEditorPanel('<p>Copy me</p>');
     await screen.getByRole('button', { name: 'HTML code' }).click();
     await expect.element(screen.getByText('Email HTML code')).toBeVisible();
     await expect
