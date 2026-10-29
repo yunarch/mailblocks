@@ -31,6 +31,14 @@ export const AppHeader = () => {
             >
               {templatesDrawerOpen ? <MdClose /> : <MdMenu />}
             </Button>
+            <img
+              src={`${import.meta.env.BASE_URL}icon.svg`}
+              alt=""
+              aria-hidden="true"
+              width={24}
+              height={24}
+              className="mr-1 shrink-0"
+            />
             <Typography as="h1" variant="body" className="font-semibold">
               Mailblocks
             </Typography>

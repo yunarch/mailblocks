@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="public/android-chrome-192x192.png" alt="Mailblocks logo" width="96" height="96" />
+<img src="public/icon.svg" alt="Mailblocks logo" width="96" height="96" />
 
 # Mailblocks
 
