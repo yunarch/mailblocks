@@ -67,6 +67,26 @@ Tailwind's preflight removes the default `<body>` margin, so elements rendered a
 the page edge may be partly outside the viewport. Wrap them in padding when a test
 interacts at their edges.
 
+## Flow tests
+
+Components built on the email editor (and the editor extensions in
+`src/extensions/`) are tested through user flows with the real editor, not one
+test per file. These tests catch breaking changes when upgrading React Email,
+TipTap or React. Put each flow in the `__tests__/` folder of the component the
+user interacts with.
+
+- `renderApp(ui?)` from `src/__tests__/test-utils.tsx` renders the app (or the
+  given component) inside the app context, waits until the editor is ready, and
+  returns `getEditor()`. Use the editor only to arrange content (for example,
+  `getEditor().commands.setContent(html)`), then act through the UI.
+- `interceptFilePicker()` lets a test choose a file when the app opens a file
+  picker. Restore it with `vi.restoreAllMocks()`.
+- Panels fill their parent in the app layout. When rendering one on its own,
+  wrap it in a full-height container such as `<div className="flex h-svh flex-col">`.
+- Place the cursor by clicking a line, not with `editor.commands.focus()`.
+  Wait for menus such as the slash command list to appear before typing into
+  them.
+
 ## Mocking browser APIs
 
 Prefer real browser behavior. When an API needs mocking, use `vi.spyOn` and
