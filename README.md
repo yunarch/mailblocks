@@ -2,18 +2,18 @@
 
 An email template editor for developers, built with [React Email](https://react.email/).
 
-![Mailblocks](docs/assets/screenshot.png)
-
-## Features
-
 - **Visual email editor:** Edit content directly and fine-tune block attributes, colors, dimensions, spacing, and borders with the inspector.
 - **Block management:** Reorder, duplicate, or remove blocks to shape your email layout.
 - **Ready-made templates:** Use pre-built templates as a starting point for your emails.
-- **Desktop and mobile previews:** Check layouts at different viewport widths and switch between editing and rendered output.
+- **Desktop and mobile previews:** Check layouts at different viewport widths, switch between editing and rendered output, and see the email inside a generic mail client.
 - **Generated HTML:** Inspect the HTML produced without leaving the editor.
 - **Markup linting:** Spot common issues in the generated email markup as you edit.
 - **Email-client compatibility:** Review compatibility warnings for the email clients you select.
 - **Spam checks:** Identify potential spam signals with a heuristic score and detailed findings.
+
+### [Demo](https://yunarch.github.io/mailblocks/)
+
+![Mailblocks](docs/assets/screenshot.png)
 
 > [!WARNING]
 > Compatibility checks and spam scores are guidance, not guarantees of rendering accuracy or inbox placement. Test emails in your target clients before sending.
