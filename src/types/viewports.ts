@@ -13,6 +13,15 @@ export type ViewportSize = {
   Icon: IconType;
 };
 
+/**
+ * @param viewport - The selected viewport.
+ * @returns Whether the client is shown as a mobile app instead of a desktop window.
+ */
+export function isMobileClientViewport(viewport: ViewportSize): boolean {
+  return viewport.id === 'm' || viewport.id === 's';
+}
+
+// Available viewport sizes for the email client UI.
 export const viewportSizes: ViewportSize[] = [
   { id: 'xl', label: 'XL', width: 800, Icon: MdOutlineMonitor },
   { id: 'l', label: 'L', width: 650, Icon: MdOutlineDesktopWindows },
@@ -20,4 +29,5 @@ export const viewportSizes: ViewportSize[] = [
   { id: 's', label: 'S', width: 375, Icon: MdPhoneIphone },
 ];
 
+// Default viewport size for the email client UI.
 export const DEFAULT_VIEWPORT_SIZE = viewportSizes[1];

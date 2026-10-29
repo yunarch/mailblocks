@@ -18,7 +18,7 @@ import {
   MdWifi,
 } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
-import type { ViewportSize } from '@/types/viewports';
+import { isMobileClientViewport, type ViewportSize } from '@/types/viewports';
 
 // Generic, unbranded mail client UI drawn around the rendered email.
 const SENDER = { name: 'Your Company', email: 'hello@example.com' };
@@ -32,20 +32,14 @@ const FOLDERS: { label: string; Icon: IconType; count?: number }[] = [
 ];
 export const EMAIL_CLIENT_FRAME_SIDEBAR_WIDTH = 200;
 
-/**
- * @param viewport - The selected viewport.
- * @returns Whether the client is shown as a mobile app instead of a desktop window.
- */
-export function isMobileClient(viewport: ViewportSize): boolean {
-  return viewport.id === 'm' || viewport.id === 's';
-}
-
+// Toolbar icon component for the email client UI.
 const ToolbarIcon = ({ Icon, label }: { Icon: IconType; label: string }) => (
   <span title={label} className="grid size-8 place-items-center rounded-full">
     <Icon className="size-5" />
   </span>
 );
 
+// Sender row component for the email client UI.
 const SenderRow = ({ compact }: { compact: boolean }) => {
   const [date] = useState(() =>
     new Date().toLocaleString(undefined, {
@@ -84,7 +78,8 @@ const SenderRow = ({ compact }: { compact: boolean }) => {
   );
 };
 
-const DesktopClient = ({
+// Desktop client frame component for the email client UI.
+const DesktopClientFrame = ({
   subject,
   children,
 }: {
@@ -150,7 +145,8 @@ const DesktopClient = ({
   </div>
 );
 
-const MobileClient = ({
+// Mobile client frame component for the email client UI.
+const MobileClientFrame = ({
   subject,
   children,
 }: {
@@ -186,7 +182,7 @@ const MobileClient = ({
 );
 
 // Component
-export const EmailClientFrame = ({
+export const EmailPreviewClientFrame = ({
   viewport,
   subject,
   children,
@@ -195,7 +191,9 @@ export const EmailClientFrame = ({
   subject?: string;
   children: React.ReactNode;
 }) => {
-  const Client = isMobileClient(viewport) ? MobileClient : DesktopClient;
+  const Client = isMobileClientViewport(viewport)
+    ? MobileClientFrame
+    : DesktopClientFrame;
   const trimmedSubject = subject?.trim() ?? '';
   return (
     <Client
