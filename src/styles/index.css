@@ -70,6 +70,21 @@ body,
   margin: 0 auto !important;
   min-height: 0 !important;
 }
+
+/*
+ * Generic mail client frame for the rendered preview. It always uses a light
+ * UI so the chrome never changes how the email itself looks.
+ */
+.mailblocks-client {
+  width: fit-content;
+  margin: 0 auto;
+  background-color: white;
+  color: var(--color-gray-900);
+  box-shadow:
+    0 0 0 1px var(--mailblocks-artboard-ring),
+    0 24px 48px -16px rgb(0 0 0 / 0.35);
+}
+
 .mailblocks-editor-canvas .node-container {
   margin: 0 auto;
   max-width: 100% !important;

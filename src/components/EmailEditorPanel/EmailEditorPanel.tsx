@@ -1,6 +1,10 @@
 import type { EmailEditorRef } from '@react-email/editor';
 import { Suspense, useState } from 'react';
-import { MdOutlineDesktopWindows, MdOutlineRemoveRedEye } from 'react-icons/md';
+import {
+  MdOutlineDesktopWindows,
+  MdOutlineMail,
+  MdOutlineRemoveRedEye,
+} from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { DEFAULT_VIEWPORT_SIZE, viewportSizes } from '@/types/viewports';
@@ -24,6 +28,7 @@ export const EmailEditorPanel = () => {
   const [preview, setPreview] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from editing so `use()` receives a stable promise.
   const [activeViewport, setActiveViewport] = useState(DEFAULT_VIEWPORT_SIZE);
+  const [showClient, setShowClient] = useState(false);
   const isEditing = mode === 'editor' && !preview;
 
   // Methods
@@ -69,6 +74,19 @@ export const EmailEditorPanel = () => {
           ))}
         </ButtonGroup>
         <Stack className="flex-row items-center gap-3">
+          {mode === 'editor' && preview && (
+            <Switch
+              checked={showClient}
+              title="Show the rendered email inside a mail client"
+              label={
+                <span className="flex items-center gap-1.5">
+                  <MdOutlineMail />
+                  Client
+                </span>
+              }
+              onChange={setShowClient}
+            />
+          )}
           {mode === 'editor' && (
             <Switch
               checked={preview}
@@ -120,7 +138,8 @@ export const EmailEditorPanel = () => {
             {mode === 'editor' ? (
               <EmailRender
                 html={previewHtml}
-                viewportWidth={activeViewport.width}
+                viewport={activeViewport}
+                showClient={showClient}
               />
             ) : (
               <EmailPreview html={previewHtml} />
