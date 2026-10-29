@@ -9,9 +9,20 @@ on:
 permissions: {}
 
 jobs:
+  changes:
+    name: 🎯 Changes
+    permissions:
+      contents: read
+      pull-requests: read
+    uses: $/.github/workflows/template_changes.yaml
+    with:
+      paths: |
+        .github/workflows/**
+        .github/actions/**
   zizmor:
     name: GitHub Actions Analysis
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    needs: changes
+    if: needs.changes.outputs.changed == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: ubuntu-latest
     permissions:
       security-events: write # Required to upload SARIF results to the Security tab (only used on push to main).

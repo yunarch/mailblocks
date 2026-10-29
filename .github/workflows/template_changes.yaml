@@ -1,0 +1,96 @@
+name: Template Changes
+
+# Detects whether a pull request touches any of the given paths.
+# Use this instead of `on.pull_request.paths` so the calling workflow always runs and
+# required status checks are always reported (skipped jobs count as passing).
+on:
+  workflow_call:
+    inputs:
+      paths:
+        description: >-
+          Path patterns (one per line) that should trigger the dependent jobs.
+          Supports `*`, `**` and ordered `!` negation like `on.pull_request.paths`;
+          `?`, `+` and character classes (`[...]`) are not supported and fail the job.
+        required: true
+        type: string
+    outputs:
+      changed:
+        description: "'true' when any changed file matches the paths, or when the event is not a pull request"
+        value: ${{ jobs.changes.outputs.changed }}
+
+# Control the permissions for the workflow
+# We default to no permissions so jobs have to explicitly set permissions they need. This is a secure default.
+permissions: {}
+
+# Jobs
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      changed: ${{ steps.filter.outputs.changed }}
+    steps:
+      - name: 📁 Checkout
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 2 # PR merge commit + both parents, enough for `git diff HEAD^1 HEAD`
+      - name: 🎯 Filter changed paths
+        id: filter
+        env:
+          PATHS: ${{ inputs.paths }}
+        shell: python
+        run: |
+          import os, re, subprocess
+
+          def glob_to_regex(pattern: str) -> re.Pattern:
+              # `**` spans directories, `*` does not; everything else is literal.
+              unsupported = set(pattern) & {"?", "+", "[", "]"}
+              if unsupported:
+                  raise SystemExit(f"::error::Unsupported glob character(s) {sorted(unsupported)} in pattern '{pattern}'")
+              out, i = [], 0
+              while i < len(pattern):
+                  if pattern.startswith("**/", i):
+                      out.append("(?:.*/)?"); i += 3
+                  elif pattern.startswith("**", i):
+                      out.append(".*"); i += 2
+                  elif pattern[i] == "*":
+                      out.append("[^/]*"); i += 1
+                  else:
+                      out.append(re.escape(pattern[i])); i += 1
+              return re.compile("^" + "".join(out) + "$")
+
+          def matches(path: str, filters: list[tuple[bool, re.Pattern]]) -> bool:
+              # Ordered evaluation: a later `!pattern` excludes, a later positive pattern re-includes.
+              result = False
+              for negated, regex in filters:
+                  if regex.match(path):
+                      result = not negated
+              return result
+
+          def set_output(value: bool) -> None:
+              with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+                  f.write(f"changed={'true' if value else 'false'}\n")
+
+          if os.environ["GITHUB_EVENT_NAME"] != "pull_request":
+              print("Not a pull request, running all jobs")
+              set_output(True)
+              raise SystemExit(0)
+
+          patterns = [line.strip() for line in os.environ["PATHS"].splitlines() if line.strip()]
+          filters = [(p.startswith("!"), glob_to_regex(p.lstrip("!"))) for p in patterns]
+
+          diff = subprocess.run(
+              ["git", "diff", "--name-only", "-z", "HEAD^1", "HEAD"],
+              check=True, capture_output=True,
+          ).stdout
+          files = [f.decode("utf-8", "surrogateescape") for f in diff.split(b"\0") if f]
+
+          matched = [f for f in files if matches(f, filters)]
+          print(f"{len(files)} changed file(s), {len(matched)} matching:")
+          for f in files:
+              print(f"  {'✔' if f in matched else ' '} {f}")
+          set_output(bool(matched))
