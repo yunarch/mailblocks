@@ -21,27 +21,85 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: 📁 Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: 🏷️ Get version
+        id: version
+        env:
+          RELEASE_VERSION: ${{ inputs.release-version }}
+        run: |
+          EXISTING_TAG="$(git tag --points-at HEAD --list 'v[0-9]*')"
+          if [ -n "$EXISTING_TAG" ]; then
+            echo "HEAD is already released as $EXISTING_TAG, refusing to re-release" >&2
+            exit 1
+          fi
+
+          OLD_TAG="$(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || true)"
+          OLD_VERSION="${OLD_TAG#v}"
+          OLD_VERSION="${OLD_VERSION:-0.0.0}"
+          IFS=. read -r MAJOR MINOR PATCH <<< "${OLD_VERSION%%[-+]*}"
+
+          BUMP="$RELEASE_VERSION"
+          if [ "$BUMP" = "conventional" ]; then
+            RANGE="${OLD_TAG:+$OLD_TAG..}HEAD"
+            SUBJECTS="$(git log "$RANGE" --format=%s)"
+            BODIES="$(git log "$RANGE" --format=%b)"
+            if grep -Eq '^[a-z]+(\([^)]*\))?!:' <<< "$SUBJECTS" || grep -Eq '^BREAKING[ -]CHANGE:' <<< "$BODIES"; then
+              BUMP=major
+            elif grep -Eq '^feat(\([^)]*\))?:' <<< "$SUBJECTS"; then
+              BUMP=minor
+            else
+              BUMP=patch
+            fi
+          fi
+
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+            *) echo "Unknown release type: $BUMP" >&2; exit 1 ;;
+          esac
+
+          TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "Tag $TAG already exists, refusing to re-release" >&2
+            exit 1
+          fi
+          echo "Releasing $TAG ($BUMP bump from ${OLD_TAG:-v0.0.0})"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
   build:
     name: Build
     runs-on: ubuntu-latest
+    needs: [version]
     permissions:
       contents: read
       pages: read
     steps:
       - name: 📁 Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
       - name: 🔧 Setup Bun
-        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6
       - name: 📦 Install dependencies
         run: bun install --frozen-lockfile
       - name: 🏗️ Build
         run: bun run build
       - name: ⚙️ Setup Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - name: 📤 Upload artifact
-        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4.0.0
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b
         with:
           path: './dist'
   deploy:
@@ -57,56 +115,44 @@ jobs:
     steps:
       - name: 🚀 Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
   release:
     name: Release
     runs-on: ubuntu-latest
-    needs: [deploy]
+    needs: [version, deploy]
     permissions:
       contents: write
     steps:
       - name: 📁 Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: 📝 Generate changelog
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@469f0e5e35831fbd1962706f29f65daf0a5723f2 # v6.5.0
+      - name: 🔧 Setup node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
-          output-file: 'false'
-          skip-commit: 'true'
-          skip-on-empty: 'false'
-          skip-git-pull: 'true'
-          skip-tag: 'true'
-          git-push: 'false'
-      - name: 🏷️ Get version
-        id: version
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
+          node-version: lts/*
+          package-manager-cache: false
+      - name: 🔖 Create and push tag
         env:
-          RELEASE_VERSION: ${{ inputs.release-version }}
-          OLD_VERSION: ${{ steps.changelog.outputs.old_version }}
-          CONVENTIONAL_TAG: ${{ steps.changelog.outputs.tag }}
-        run: |
-          if [ "$RELEASE_VERSION" = "conventional" ]; then
-            TAG="$CONVENTIONAL_TAG"
-          else
-            CURRENT="${OLD_VERSION:-0.0.0}"
-            IFS=. read -r MAJOR MINOR PATCH <<< "${CURRENT%%[-+]*}"
-            case "$RELEASE_VERSION" in
-              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
-              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
-              patch) PATCH=$((PATCH + 1)) ;;
-              *) echo "Unknown release type: $RELEASE_VERSION" >&2; exit 1 ;;
-            esac
-            TAG="v${MAJOR}.${MINOR}.${PATCH}"
-          fi
-          echo "Releasing $TAG"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-      - name: 🔖 Create Release
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        env:
+          TAG: ${{ needs.version.outputs.tag }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAG: ${{ steps.version.outputs.tag }}
-          NOTES: ${{ steps.changelog.outputs.clean_changelog }}
-        run: gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --notes "$NOTES"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if TAG_COMMIT="$(git rev-parse -q --verify "refs/tags/$TAG^{commit}")"; then
+            # Re-run after a failed release: reuse the tag only if it points to this commit
+            if [ "$TAG_COMMIT" != "$(git rev-parse HEAD)" ]; then
+              echo "Tag $TAG already exists on another commit" >&2
+              exit 1
+            fi
+            echo "Tag $TAG already exists on HEAD, reusing it"
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+          fi
+          gh auth setup-git
+          git push origin "$TAG"
+      - name: 📝 Generate release notes
+        run: npx changelogithub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
