@@ -51,9 +51,8 @@ export const Stack = ({
   const clones = useMemo(() => {
     if (!separator) return children;
     return getValidChildren(children).map((child, index, arr) => {
-      const key = child.key ?? index;
       return (
-        <Fragment key={key}>
+        <Fragment key={child.key}>
           {child}
           {index === arr.length - 1 ? null : separator}
         </Fragment>
