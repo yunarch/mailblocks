@@ -40,9 +40,8 @@ export function sanitizeVariableName(name: string): string {
 export function countVariables(texts: Iterable<string>): Map<string, number> {
   const counts = new Map<string, number>();
   for (const text of texts) {
-    for (const match of text.matchAll(VARIABLE_PATTERN)) {
-      const name = match.groups?.name;
-      if (name) counts.set(name, (counts.get(name) ?? 0) + 1);
+    for (const [, name] of text.matchAll(VARIABLE_PATTERN)) {
+      counts.set(name, (counts.get(name) ?? 0) + 1);
     }
   }
   return counts;
