@@ -44,7 +44,8 @@
     "react-icons": "5.7.0",
     "react-email": "6.11.5",
     "@react-email/editor": "1.7.16",
-    "caniemail": "2.0.2"
+    "caniemail": "2.0.2",
+    "dompurify": "3.4.17"
   },
   "devDependencies": {
     "@yunarch/config-web": "0.10.1",
