@@ -41,17 +41,20 @@ Mailblocks runs entirely in the browser, which comes with some trade-offs and li
 
 ## Features
 
-- **Visual editor:** Edit content inline, insert blocks with `/` slash commands, and fine-tune attributes, colors, dimensions, spacing, and borders from the inspector.
-- **Block management:** Reorder, duplicate, or remove blocks to shape your layout.
-- **Ready-made templates:** Load React Email demo templates as editable HTML, browsable by category.
-- **Responsive previews:** Switch between viewport sizes, toggle between the editor and the rendered output, and see the email inside a generic desktop or mobile mail client.
-- **Generated HTML and plain text:** Inspect and copy the produced HTML and its plain-text version without leaving the editor.
-- **React Email export:** Additionally, copy the email as a ready-to-use React Email component.
-- **Variables:** Add placeholders like `{{name}}` with sample values to preview realistic content. They're kept as-is in the exported HTML, ready for your email service to fill in.
-- **Markup linting:** Catch common issues in the generated markup as you edit, with code locations.
-- **Email-client compatibility:** Check the HTML and CSS features you use against the email clients you select, based on [caniemail](https://www.caniemail.com/) data.
-- **Spam checks:** Get a heuristic score with detailed findings, such as image-to-text ratio, missing unsubscribe link, link shorteners, mismatched link text, spammy phrases, and messages large enough to be clipped by Gmail (over 102 KB).
-- **Works offline:** Install Mailblocks as an app and keep using it without a connection after the first visit.
+- **Visual editor:** Edit text inline and type `/` to insert headings, lists, buttons, images, columns, and more.
+- **Pre-styled blocks:** Drop in a header, hero, content section, call to action, feature row, accent divider, social links, or footer.
+- **Structure highlighting:** Hover any element to see its outline and type; links never navigate while you edit.
+- **Inspector:** Adjust typography, links, backgrounds, sizes, padding, borders, and column spacing in a resizable side panel.
+- **Block actions:** Move, duplicate, or delete the selected block, each as its own undo step.
+- **Templates:** Start from a blank starter or one of 60+ [React Email demos](https://demo.react.email/).
+- **HTML import:** Paste or open your own `.html` email.
+- **Variables:** Define placeholders like `{{name}}` with sample values.
+- **Responsive previews:** Render the email in different viewport sizes and preview it inside a desktop or mobile mail client frame showing its subject.
+- **Export:** Copy/save the email as HTML, plain text, or additionally as a React Email component.
+- **Markup linting:** Catch invalid or insecure URLs, images missing alt text or width, links without readable text, scripts, forms, and external stylesheets, with code locations.
+- **Email-client compatibility:** Check your HTML and CSS against the clients you pick (Apple Mail, Gmail, Outlook, etc) using [caniemail](https://www.caniemail.com/) data.
+- **Spam checks:** Get a score out of 10 based on spam-like wording, URL shorteners, mismatched links, missing unsubscribe links, image-to-text ratio, tracking pixels, and Gmail clipping (over 102 KB).
+- **Works offline:** Install it as an app and keep editing and linting without a connection.
 
 > [!WARNING]
 > Compatibility checks and spam scores are guidance, not guarantees of rendering accuracy or inbox placement.
@@ -68,11 +71,14 @@ No. Edits only live in the current page, so reloading or switching templates dis
 
 > Saving to local storage may come in a future release.
 
-### Can I import my own HTML or template?
+### Can I import my own HTML email?
 
-No, not yet. You can start from the blank starter or one of the bundled React Email demo templates.
+Yes, Use the import button to paste HTML or load an `.html` file into the editor. It's processed entirely in your browser:
 
-> Importing your own HTML or template may come in a future release.
+- Rules in `<style>` blocks are inlined, since the editor only keeps inline styles. Rules that can't be inlined, such as media queries, `:hover` and pseudo-elements, are dropped, along with external stylesheets.
+- Scripts, embedded frames, event handlers and `javascript:` links are removed.
+- Elements the editor has no block for, such as Outlook conditional comments, are dropped. Table layouts and inline styles are kept.
+- Images with relative paths won't load. Use absolute URLs or replace them from the image inspector.
 
 ### Why don't my uploaded images show up in the exported email?
 
