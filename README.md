@@ -130,7 +130,7 @@ bun run dev
 
 ### Testing
 
-This project has automated tests in place to help ensure that the codebase is stable and functioning as expected and uses [Vitest](https://vitest.dev/) as its automated testing framework.
+This project has automated tests in place to help ensure that the codebase is stable and functioning as expected. This project uses [Vitest](https://vitest.dev/) as its automated testing framework. See the [testing guide](docs/testing.md) for detailed instructions on how to test.
 
 We have the next types of tests:
 
@@ -151,8 +151,6 @@ bun run tests:standard
 bun run tests:browser
 ```
 
-See the [testing guide](docs/testing.md) for detailed instructions on how to test.
-
 > [!NOTE]
 > In order to run `browser mode tests` you need to install browsers. It should be done automatically. But if you encounter any issues, you can manually install them with the following command:
 >
@@ -163,9 +161,6 @@ See the [testing guide](docs/testing.md) for detailed instructions on how to tes
 ### Updating templates
 
 The bundled templates are generated from the [React Email demo emails](https://github.com/resend/react-email/tree/canary/apps/demo/emails). Running `bun run gen:templates` downloads them, renders each one to HTML, and regenerates `src/utils/templates.ts`.
-
-> [!NOTE]
-> `src/utils/templates.ts` is generated. Don't edit it manually; rerun the sync script instead.
 
 ### Project structure
 
