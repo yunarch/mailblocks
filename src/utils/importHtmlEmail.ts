@@ -170,7 +170,10 @@ function getBomEncoding(bytes: Uint8Array) {
  * @returns The declared encoding label, if any.
  */
 function getDeclaredEncoding(bytes: Uint8Array) {
-  const head = new TextDecoder('windows-1252').decode(bytes.subarray(0, 1024));
+  // Comments are skipped, including one left unclosed by the 1024-byte cut
+  const head = new TextDecoder('windows-1252')
+    .decode(bytes.subarray(0, 1024))
+    .replaceAll(/<!--[\s\S]*?(?:-->|$)/g, '');
   const label = /<meta\b[^>]*?charset\s*=\s*["']?\s*(?<label>[\w.:-]+)/i.exec(
     head
   )?.groups?.label;

@@ -41,6 +41,15 @@ describe('decodeHtml', () => {
     );
   });
 
+  it('ignores charset declarations inside comments', () => {
+    const html =
+      '<!-- <meta charset="windows-1252"> --><meta charset="utf-8"><p>Café</p>';
+    expect(decodeHtml(bytes(html))).toBe(html);
+    expect(decodeHtml(bytes('<!-- <meta charset="windows-1252">Café'))).toBe(
+      '<!-- <meta charset="windows-1252">Café'
+    );
+  });
+
   it('decodes a declared UTF-16 as UTF-8, since the declaration was readable as ASCII', () => {
     expect(decodeHtml(bytes('<meta charset="UTF-16"><p>Café</p>'))).toBe(
       '<meta charset="UTF-16"><p>Café</p>'

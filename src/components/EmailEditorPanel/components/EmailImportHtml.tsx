@@ -40,8 +40,8 @@ export const EmailImportHtml = () => {
     selectTemplate(importHtmlEmail(content, fileName));
   };
   const chooseFile = () => {
-    const fileSession = sessionRef.current;
     pickHtmlFile((file) => {
+      const fileSession = ++sessionRef.current;
       void file.arrayBuffer().then((buffer) => {
         if (sessionRef.current !== fileSession) return;
         importHtml(decodeHtml(buffer), file.name);

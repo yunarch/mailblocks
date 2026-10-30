@@ -122,6 +122,38 @@ describe('import HTML', () => {
     expect(app.getContext().selectedTemplate.category).not.toBe('Imported');
   });
 
+  it('imports the latest chosen file when an earlier one finishes reading later', async () => {
+    const app = await renderApp();
+    const picker = interceptFilePicker();
+    const reads: ((buffer: ArrayBuffer) => void)[] = [];
+    vi.spyOn(Blob.prototype, 'arrayBuffer').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          reads.push(resolve);
+        })
+    );
+    const latest = HTML.replace('Spring sale is here', 'Summer sale is here');
+    const dialog = await openImport(app);
+    const chooseButton = dialog.getByRole('button', { name: 'Choose file…' });
+    await chooseButton.click();
+    picker.choose(new File([HTML], 'spring.html', { type: 'text/html' }));
+    await chooseButton.click();
+    picker.choose(new File([latest], 'summer.html', { type: 'text/html' }));
+    expect(reads).toHaveLength(2);
+    reads[0]?.(new TextEncoder().encode(HTML).buffer);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    await expect.element(dialog).toBeInTheDocument();
+    reads[1]?.(new TextEncoder().encode(latest).buffer);
+    await expect.element(dialog).not.toBeInTheDocument();
+    await expect.poll(() => editorText(app)).toContain('Summer sale is here');
+    const email = await app.exportEmail();
+    expect(email.querySelector('h1')?.textContent.trim()).toBe(
+      'Summer sale is here'
+    );
+  });
+
   it('asks before replacing unsaved edits', async () => {
     const app = await renderApp();
     await app.screen.getByText('Welcome to Mailblocks').click();
