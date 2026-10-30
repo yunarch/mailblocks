@@ -65,11 +65,10 @@ export function getSelectorSpecificity(selector: string) {
 }
 
 /**
- * Removes markup that can run scripts or navigate away (scripts, frames,
- * external stylesheets, event handlers, `javascript:` URLs...), since imported
- * HTML is rendered in the editor and in the preview iframe. The whole document
- * is kept, with its `title` and `style` elements, so it can be named and its
- * style rules inlined.
+ * Removes markup that can run scripts or navigate away
+ * (scripts, frames, external stylesheets, event handlers, `javascript:` URLs...),
+ * since imported HTML is rendered in the editor and in the preview iframe. The whole document
+ * is kept, with its `title` and `style` elements, so it can be named and its style rules inlined.
  *
  * @param html - The full HTML document or fragment of the email.
  * @returns The sanitized HTML document.
@@ -94,10 +93,9 @@ function appliesOnScreen(media: MediaList) {
 }
 
 /**
- * Inlines the rules of the email's style elements into the `style` attribute
- * of the elements they match, then removes the style elements. The editor only
- * keeps inline styles, so rules that can't be inlined (media queries, `:hover`,
- * pseudo-elements) are dropped, along with style elements whose `media` doesn't
+ * Inlines the rules of the email's style elements into the `style` attribute of the elements they match,
+ * then removes the style elements. The editor only keeps inline styles, so rules that can't be inlined
+ * (media queries, `:hover`,pseudo-elements) are dropped, along with style elements whose `media` doesn't
  * apply on screen, such as `print` or `screen and (max-width: 600px)`.
  *
  * @param document - The parsed document, modified in place.
@@ -150,6 +148,58 @@ function inlineStyles(document: Document) {
       }
     }
   }
+}
+
+/**
+ * @param bytes - The start of the HTML file.
+ * @returns The encoding given by a byte order mark, if any.
+ */
+function getBomEncoding(bytes: Uint8Array) {
+  if (bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf) {
+    return 'utf8';
+  }
+  if (bytes[0] === 0xfe && bytes[1] === 0xff) return 'utf-16be';
+  if (bytes[0] === 0xff && bytes[1] === 0xfe) return 'utf-16le';
+}
+
+/**
+ * Finds the encoding declared by a meta `charset` attribute, or by the `charset` parameter
+ * of a meta `http-equiv="Content-Type"` content, in the first 1024 bytes, as browsers do.
+ *
+ * @param bytes - The HTML file.
+ * @returns The declared encoding label, if any.
+ */
+function getDeclaredEncoding(bytes: Uint8Array) {
+  const head = new TextDecoder('windows-1252').decode(bytes.subarray(0, 1024));
+  const label = /<meta\b[^>]*?charset\s*=\s*["']?\s*(?<label>[\w.:-]+)/i.exec(
+    head
+  )?.groups?.label;
+  if (!label) return;
+  const encoding = label.toLowerCase();
+  // A declared UTF-16 can't be right, since the declaration was read as ASCII
+  if (encoding.startsWith('utf-16')) return 'utf8';
+  if (encoding === 'x-user-defined') return 'windows-1252';
+  return encoding;
+}
+
+/**
+ * Decodes an HTML file using its byte order mark or declared charset,
+ * falling back to UTF-8 when there is none or it isn't supported.
+ *
+ * @param buffer - The bytes of the HTML file.
+ * @returns The HTML text.
+ */
+export function decodeHtml(buffer: ArrayBuffer) {
+  const bytes = new Uint8Array(buffer);
+  const encoding = getBomEncoding(bytes) ?? getDeclaredEncoding(bytes);
+  if (encoding) {
+    try {
+      return new TextDecoder(encoding).decode(bytes);
+    } catch {
+      // Unknown encoding label, decode as UTF-8
+    }
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 /**

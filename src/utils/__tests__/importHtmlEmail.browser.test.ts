@@ -1,10 +1,52 @@
 import { describe, expect, it } from 'vitest';
-import { getSelectorSpecificity, importHtmlEmail } from '../importHtmlEmail';
+import {
+  decodeHtml,
+  getSelectorSpecificity,
+  importHtmlEmail,
+} from '../importHtmlEmail';
 
 const importBody = (html: string, fileName = 'email.html') => {
   const { content } = importHtmlEmail(html, fileName);
   return new DOMParser().parseFromString(content, 'text/html');
 };
+
+const bytes = (...parts: (string | number[])[]) =>
+  new Uint8Array(
+    parts.flatMap((part) =>
+      typeof part === 'string' ? [...new TextEncoder().encode(part)] : part
+    )
+  ).buffer;
+
+describe('decodeHtml', () => {
+  it.each([
+    ['<meta charset="windows-1252">', 'windows-1252'],
+    [
+      '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">',
+      'ISO-8859-1',
+    ],
+  ])('decodes using the charset declared by %s', (meta) => {
+    // "é" is 0xE9 in Windows-1252 and ISO-8859-1
+    expect(decodeHtml(bytes(meta, '<p>Caf', [0xe9], '</p>'))).toBe(
+      `${meta}<p>Café</p>`
+    );
+  });
+
+  it('decodes as UTF-8 without a declaration or with an unknown one', () => {
+    expect(decodeHtml(bytes('<p>Café</p>'))).toBe('<p>Café</p>');
+    expect(decodeHtml(bytes('<meta charset="nope"><p>Café</p>'))).toBe(
+      '<meta charset="nope"><p>Café</p>'
+    );
+  });
+
+  it('prefers the byte order mark over the declared charset', () => {
+    expect(
+      decodeHtml(bytes([0xef, 0xbb, 0xbf], '<meta charset="latin1">é'))
+    ).toBe('<meta charset="latin1">é');
+    expect(decodeHtml(new Uint8Array([0xff, 0xfe, 0xe9, 0x00]).buffer)).toBe(
+      'é'
+    );
+  });
+});
 
 describe('getSelectorSpecificity', () => {
   it.each([

@@ -74,6 +74,54 @@ describe('import HTML', () => {
     expect(editorText(app)).toContain('Welcome to Mailblocks');
   });
 
+  it('decodes a chosen file using its declared charset', async () => {
+    const app = await renderApp();
+    const picker = interceptFilePicker();
+    const dialog = await openImport(app);
+    await dialog.getByRole('button', { name: 'Choose file…' }).click();
+    // "é" is 0xE9 in Windows-1252, which is invalid on its own in UTF-8
+    const bytes = new Uint8Array([
+      ...new TextEncoder().encode('<meta charset="windows-1252"><p>Caf'),
+      0xe9,
+      ...new TextEncoder().encode('</p>'),
+    ]);
+    picker.choose(new File([bytes], 'cafe.html', { type: 'text/html' }));
+    await expect.poll(() => editorText(app)).toContain('Café');
+    const email = await app.exportEmail();
+    expect(email.querySelector('p')?.textContent).toBe('Café');
+  });
+
+  it('ignores a file still being read when the dialog is closed', async () => {
+    const app = await renderApp();
+    const picker = interceptFilePicker();
+    const reads: ((buffer: ArrayBuffer) => void)[] = [];
+    vi.spyOn(Blob.prototype, 'arrayBuffer').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          reads.push(resolve);
+        })
+    );
+    const file = new File([HTML], 'spring.html', { type: 'text/html' });
+    const buffer = new TextEncoder().encode(HTML).buffer;
+    let dialog = await openImport(app);
+    await dialog.getByRole('button', { name: 'Choose file…' }).click();
+    picker.choose(file);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    // Reopening starts a new import, which the earlier read must not complete
+    dialog = await openImport(app);
+    await dialog.getByRole('button', { name: 'Choose file…' }).click();
+    picker.choose(file);
+    await userEvent.keyboard('{Escape}');
+    await expect.element(dialog).not.toBeInTheDocument();
+    expect(reads).toHaveLength(2);
+    for (const resolve of reads) resolve(buffer);
+    await new Promise((resolve) => {
+      setTimeout(resolve, 50);
+    });
+    expect(editorText(app)).toContain('Welcome to Mailblocks');
+    expect(app.getContext().selectedTemplate.category).not.toBe('Imported');
+  });
+
   it('asks before replacing unsaved edits', async () => {
     const app = await renderApp();
     await app.screen.getByText('Welcome to Mailblocks').click();

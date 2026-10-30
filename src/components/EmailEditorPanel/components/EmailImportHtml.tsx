@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MdOutlineFileUpload } from 'react-icons/md';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
-import { importHtmlEmail } from '@/utils/importHtmlEmail';
+import { decodeHtml, importHtmlEmail } from '@/utils/importHtmlEmail';
 
 /**
  * Opens the browser file picker for an HTML file.
@@ -27,9 +27,11 @@ export const EmailImportHtml = () => {
   const { selectTemplate } = useAppContext();
   const [open, setOpen] = useState(false);
   const [html, setHtml] = useState('');
+  const sessionRef = useRef(0);
 
   // Methods
   const close = () => {
+    sessionRef.current++;
     setOpen(false);
     setHtml('');
   };
@@ -37,6 +39,23 @@ export const EmailImportHtml = () => {
     close();
     selectTemplate(importHtmlEmail(content, fileName));
   };
+  const chooseFile = () => {
+    const fileSession = sessionRef.current;
+    pickHtmlFile((file) => {
+      void file.arrayBuffer().then((buffer) => {
+        if (sessionRef.current !== fileSession) return;
+        importHtml(decodeHtml(buffer), file.name);
+      });
+    });
+  };
+
+  // Incremented whenever the dialog closes, so pending file reads are ignored
+  useEffect(
+    () => () => {
+      sessionRef.current++;
+    },
+    []
+  );
 
   // Render
   return (
@@ -83,17 +102,7 @@ export const EmailImportHtml = () => {
               }}
             />
             <Stack className="mt-4 flex-row justify-between gap-2">
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => {
-                  pickHtmlFile((file) => {
-                    void file.text().then((content) => {
-                      importHtml(content, file.name);
-                    });
-                  });
-                }}
-              >
+              <Button variant="outline" size="md" onClick={chooseFile}>
                 Choose file…
               </Button>
               <Stack className="flex-row gap-2">

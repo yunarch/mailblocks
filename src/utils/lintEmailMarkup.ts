@@ -264,8 +264,8 @@ function lintImage(image: HTMLImageElement, markup: string): LintingRow | null {
  *
  * Checks:
  * - overall HTML size that may be clipped by Gmail.
- * - presence of &lt;script> tags which are not supported in email clients.
- * - presence of &lt;form> tags which have poor support in email clients.
+ * - presence of `script` tags which are not supported in email clients.
+ * - presence of `form` tags which have poor support in email clients.
  * - presence of external stylesheets which are not reliable in email clients.
  *
  * @param document - The parsed Document object representing the email markup.
