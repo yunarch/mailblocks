@@ -4,7 +4,7 @@ import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Typography } from '@/ui/Typography';
 
-const CopyButton = ({ content }: { content: string }) => {
+const CopyButton = ({ content, label }: { content: string; label: string }) => {
   const copiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
@@ -28,8 +28,8 @@ const CopyButton = ({ content }: { content: string }) => {
   return (
     <Button
       variant="ghost"
-      aria-label={copied ? 'Copied' : 'Copy HTML'}
-      title={copied ? 'Copied' : 'Copy HTML'}
+      aria-label={copied ? 'Copied' : label}
+      title={copied ? 'Copied' : label}
       onClick={handleCopy}
     >
       {copied ? <MdCheck /> : <MdContentCopy />}
@@ -37,15 +37,23 @@ const CopyButton = ({ content }: { content: string }) => {
   );
 };
 
-export const EmailHtmlCode = ({ html }: { html: Promise<string> }) => {
-  const content = use(html);
+export const EmailExportToCode = ({
+  content: contentPromise,
+  title,
+  copyLabel,
+}: {
+  content: Promise<string>;
+  title: string;
+  copyLabel: string;
+}) => {
+  const content = use(contentPromise);
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-neutral-900">
       <Stack className="flex-row items-center justify-between border-b border-gray-200 px-4 py-1 dark:border-white/10">
         <Typography variant="caption" tone="muted">
-          Email HTML code
+          {title}
         </Typography>
-        <CopyButton content={content} />
+        <CopyButton content={content} label={copyLabel} />
       </Stack>
       <Stack className="relative flex-1">
         <div className="absolute h-full w-full overflow-auto">
