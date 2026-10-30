@@ -49,6 +49,12 @@ describe('applyVariables', () => {
     expect(
       applyVariables('{{name}} {{other}}', [{ name: 'name', sample: '' }])
     ).toBe('{{name}} {{other}}');
+    expect(
+      applyVariables('{{name}} {{other}} {{plan}}', [
+        { name: 'name', sample: 'Ada' },
+        { name: 'other', sample: '' },
+      ])
+    ).toBe('Ada {{other}} {{plan}}');
   });
 });
 

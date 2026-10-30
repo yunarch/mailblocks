@@ -44,8 +44,9 @@ Mailblocks runs entirely in the browser, which comes with some trade-offs and li
 - **Visual editor:** Edit content inline, insert blocks with `/` slash commands, and fine-tune attributes, colors, dimensions, spacing, and borders from the inspector.
 - **Block management:** Reorder, duplicate, or remove blocks to shape your layout.
 - **Ready-made templates:** Load React Email demo templates as editable HTML, browsable by category.
-- **Responsive previews:** Switch between XL (800px), L (650px), M (480px), and S (375px) viewports, toggle between the editor and the rendered output, and see the email inside a generic desktop or mobile mail client.
+- **Responsive previews:** Switch between viewport sizes, toggle between the editor and the rendered output, and see the email inside a generic desktop or mobile mail client.
 - **Generated HTML and plain text:** Inspect and copy the produced HTML and its plain-text version without leaving the editor.
+- **React Email export:** Additionally, copy the email as a ready-to-use React Email component.
 - **Variables:** Add placeholders like `{{name}}` with sample values to preview realistic content. They're kept as-is in the exported HTML, ready for your email service to fill in.
 - **Markup linting:** Catch common issues in the generated markup as you edit, with code locations.
 - **Email-client compatibility:** Check the HTML and CSS features you use against the email clients you select, based on [caniemail](https://www.caniemail.com/) data.

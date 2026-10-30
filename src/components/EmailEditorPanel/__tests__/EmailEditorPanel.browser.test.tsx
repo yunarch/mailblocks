@@ -143,6 +143,21 @@ describe('preview and code', () => {
     expect(text).not.toMatch(/<[a-z!]/i);
   });
 
+  it('shows the email as React Email code and copies it to the clipboard', async () => {
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    const { screen } = await renderEditorPanel('<p>Copy me</p>');
+    await screen.getByRole('button', { name: 'Code' }).click();
+    await screen.getByRole('tab', { name: 'React Email' }).click();
+    await screen.getByRole('button', { name: 'Copy React Email' }).click();
+    expect(writeText).toHaveBeenCalledOnce();
+    const [source] = writeText.mock.calls[0];
+    expect(source).toMatch(/^import \{[^}]+\} from 'react-email';/);
+    expect(source).toContain('export default function Email()');
+    expect(source).toContain('Copy me');
+  });
+
   it('previews variable samples while keeping placeholders in the code', async () => {
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')
