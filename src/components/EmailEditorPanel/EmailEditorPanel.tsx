@@ -9,20 +9,43 @@ import { Stack } from '@/ui/Stack';
 import { Switch } from '@/ui/Switch';
 import { Typography } from '@/ui/Typography';
 import { EmailEditor } from './components/EmailEditor';
-import { EmailHtmlCode } from './components/EmailHtmlCode';
+import { EmailExportToCode } from './components/EmailExportToCode';
 import { EmailPreview } from './components/EmailPreview';
 
 const MODES = [
   { id: 'editor', label: 'Editor', Icon: MdOutlineDesktopWindows },
-  { id: 'code', label: 'HTML code', Icon: PiCodeBold },
+  { id: 'code', label: 'Code', Icon: PiCodeBold },
 ] as const;
 type Mode = (typeof MODES)[number]['id'];
 
+/**
+ * Exports the email once and splits it so each view gets a stable promise for `use()`.
+ *
+ * @param ref - The reference to the email editor instance.
+ * @returns An object containing promises for the HTML and plain text versions of the email.
+ */
+function exportEmail(ref: EmailEditorRef) {
+  const email = ref.getEmail();
+  return {
+    html: (async () => {
+      const { html } = await email;
+      return html;
+    })(),
+    text: (async () => {
+      const { text } = await email;
+      return text;
+    })(),
+  };
+}
+
+// Component
 export const EmailEditorPanel = () => {
   const { editorRef } = useAppContext();
   const [mode, setMode] = useState<Mode>('editor');
   const [preview, setPreview] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState<Promise<string> | null>(null); // Created once per switch away from editing so `use()` receives a stable promise.
+  const [previewEmail, setPreviewEmail] = useState<ReturnType<
+    typeof exportEmail
+  > | null>(null); // Created once per switch away from editing so `use()` receives a stable promise.
   const [activeViewport, setActiveViewport] = useState(DEFAULT_VIEWPORT_SIZE);
   const [showEmailClientFrame, setShowEmailClientFrame] = useState(true);
   const isEditing = mode === 'editor' && !preview;
@@ -31,13 +54,15 @@ export const EmailEditorPanel = () => {
   const changeView = (nextMode: Mode, nextPreview: boolean) => {
     const willEdit = nextMode === 'editor' && !nextPreview;
     if (isEditing && !willEdit) {
-      setPreviewHtml(editorRef.current?.getEmailHTML() ?? null);
+      setPreviewEmail(
+        editorRef.current ? exportEmail(editorRef.current) : null
+      );
     }
     setMode(nextMode);
     setPreview(nextPreview);
   };
   const handleEditorReady = (ref: EmailEditorRef) => {
-    if (!isEditing) setPreviewHtml(ref.getEmailHTML());
+    if (!isEditing) setPreviewEmail(exportEmail(ref));
   };
 
   // Render
@@ -110,7 +135,7 @@ export const EmailEditorPanel = () => {
             onReady={handleEditorReady}
           />
         </Stack>
-        {previewHtml && !isEditing && (
+        {previewEmail && !isEditing && (
           <Suspense
             fallback={
               <Typography variant="caption" tone="info">
@@ -118,15 +143,19 @@ export const EmailEditorPanel = () => {
               </Typography>
             }
           >
-            {mode === 'editor' ? (
+            {mode === 'editor' && (
               <EmailPreview
-                html={previewHtml}
+                html={previewEmail.html}
                 viewport={activeViewport}
                 showEmailClientFrame={showEmailClientFrame}
                 onShowEmailClientFrameChange={setShowEmailClientFrame}
               />
-            ) : (
-              <EmailHtmlCode html={previewHtml} />
+            )}
+            {mode === 'code' && (
+              <EmailExportToCode
+                html={previewEmail.html}
+                text={previewEmail.text}
+              />
             )}
           </Suspense>
         )}

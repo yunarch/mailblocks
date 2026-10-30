@@ -85,7 +85,7 @@ describe('editor canvas', () => {
   });
 });
 
-describe('preview and HTML code', () => {
+describe('preview and code', () => {
   it('previews the rendered email including the latest edits', async () => {
     const { screen, editor } = await renderEditorPanel('<p>Original</p>');
     editor.commands.setContent('<p>Edited text</p>');
@@ -112,8 +112,10 @@ describe('preview and HTML code', () => {
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue();
     const { screen } = await renderEditorPanel('<p>Copy me</p>');
-    await screen.getByRole('button', { name: 'HTML code' }).click();
-    await expect.element(screen.getByText('Email HTML code')).toBeVisible();
+    await screen.getByRole('button', { name: 'Code' }).click();
+    await expect
+      .element(screen.getByRole('tab', { name: 'HTML' }))
+      .toHaveAttribute('aria-selected', 'true');
     await expect
       .element(screen.getByRole('switch', { name: /Preview/ }))
       .not.toBeInTheDocument();
@@ -125,5 +127,19 @@ describe('preview and HTML code', () => {
     await expect
       .element(screen.getByRole('button', { name: 'Copied' }))
       .toBeVisible();
+  });
+
+  it('shows the email plain text and copies it to the clipboard', async () => {
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    const { screen } = await renderEditorPanel('<p>Copy me</p>');
+    await screen.getByRole('button', { name: 'Code' }).click();
+    await screen.getByRole('tab', { name: 'Plain text' }).click();
+    await screen.getByRole('button', { name: 'Copy plain text' }).click();
+    expect(writeText).toHaveBeenCalledOnce();
+    const [text] = writeText.mock.calls[0];
+    expect(text).toContain('Copy me');
+    expect(text).not.toMatch(/<[a-z!]/i);
   });
 });

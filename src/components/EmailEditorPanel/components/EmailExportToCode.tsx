@@ -2,9 +2,14 @@ import { use, useEffect, useRef, useState } from 'react';
 import { MdCheck, MdContentCopy } from 'react-icons/md';
 import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
-import { Typography } from '@/ui/Typography';
+import { Tabs } from '@/ui/Tabs';
 
-const CopyButton = ({ content }: { content: string }) => {
+const FORMATS = [
+  { label: 'HTML', copyLabel: 'Copy HTML' },
+  { label: 'Plain text', copyLabel: 'Copy plain text' },
+];
+
+const CopyButton = ({ content, label }: { content: string; label: string }) => {
   const copiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [copied, setCopied] = useState(false);
   useEffect(() => {
@@ -28,8 +33,8 @@ const CopyButton = ({ content }: { content: string }) => {
   return (
     <Button
       variant="ghost"
-      aria-label={copied ? 'Copied' : 'Copy HTML'}
-      title={copied ? 'Copied' : 'Copy HTML'}
+      aria-label={copied ? 'Copied' : label}
+      title={copied ? 'Copied' : label}
       onClick={handleCopy}
     >
       {copied ? <MdCheck /> : <MdContentCopy />}
@@ -37,15 +42,27 @@ const CopyButton = ({ content }: { content: string }) => {
   );
 };
 
-export const EmailHtmlCode = ({ html }: { html: Promise<string> }) => {
-  const content = use(html);
+export const EmailExportToCode = ({
+  html,
+  text,
+}: {
+  html: Promise<string>;
+  text: Promise<string>;
+}) => {
+  const [format, setFormat] = useState(0);
+  const contents = [use(html), use(text)];
+  const content = contents[format];
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-neutral-900">
-      <Stack className="flex-row items-center justify-between border-b border-gray-200 px-4 py-1 dark:border-white/10">
-        <Typography variant="caption" tone="muted">
-          Email HTML code
-        </Typography>
-        <CopyButton content={content} />
+      <Stack className="flex-row items-center justify-between border-b border-gray-200 pr-4 dark:border-white/10">
+        <Tabs
+          activeItem={format}
+          items={FORMATS}
+          onChange={(index) => {
+            setFormat(index);
+          }}
+        />
+        <CopyButton content={content} label={FORMATS[format].copyLabel} />
       </Stack>
       <Stack className="relative flex-1">
         <div className="absolute h-full w-full overflow-auto">
