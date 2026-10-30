@@ -201,4 +201,32 @@ describe('preview and code', () => {
     const [html] = writeText.mock.calls[0];
     expect(html).toContain('Hello {{name}}');
   });
+
+  it('downloads an email draft with variable samples applied', async () => {
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL');
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(vi.fn());
+    const { screen } = await renderEditorPanel('<p>Hello {{name}}</p>');
+    await screen
+      .getByRole('textbox', { name: 'Sample value for name' })
+      .fill('Ada');
+    await screen.getByRole('button', { name: 'Code' }).click();
+    await screen.getByRole('button', { name: 'Download email draft' }).click();
+    expect((click.mock.contexts[0] as HTMLAnchorElement).download).toBe(
+      'email.eml'
+    );
+    const [[blob]] = createObjectURL.mock.calls as [[Blob]];
+    expect(blob.type).toBe('message/rfc822;charset=utf-8');
+    const draft = await blob.text();
+    expect(draft).toMatch(/^X-Unsent: 1\r\n/);
+    const bodies = [
+      ...draft.matchAll(/base64\r\n\r\n(?<body>[\w+/=\r\n]+?)\r\n--/g),
+    ].map(({ groups }) => atob((groups?.body ?? '').replaceAll('\r\n', '')));
+    expect(bodies).toHaveLength(2);
+    for (const body of bodies) {
+      expect(body).toContain('Hello Ada');
+      expect(body).not.toContain('{{name}}');
+    }
+  });
 });

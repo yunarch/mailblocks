@@ -165,6 +165,7 @@ export const EmailEditorPanel = () => {
                 html={previewEmail.html}
                 reactEmail={previewEmail.reactEmail}
                 text={previewEmail.text}
+                variables={variables}
               />
             )}
           </Suspense>

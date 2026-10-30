@@ -56,6 +56,14 @@ describe('applyVariables', () => {
       ])
     ).toBe('Ada {{other}} {{plan}}');
   });
+
+  it('inserts samples unescaped into plain text', () => {
+    expect(
+      applyVariables('Hi {{name}}', [{ name: 'name', sample: 'Ada <3 & co' }], {
+        escape: false,
+      })
+    ).toBe('Hi Ada <3 & co');
+  });
 });
 
 describe('getByteLength', () => {
