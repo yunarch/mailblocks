@@ -73,4 +73,16 @@ describe('composeEmailDraft', () => {
       composeEmailDraft({ subject: '', html: '<p>Hi</p>', text: 'Hi' })
     ).not.toContain('Subject:');
   });
+
+  it('uses CRLF line breaks in the decoded text parts', () => {
+    const draft = composeEmailDraft({
+      subject: 'Hi',
+      html: '<p>a</p>\n<p>b</p>\r<p>c</p>\r\n',
+      text: 'a\nb\rc\r\n',
+    });
+    expect(getParts(draft).map(({ body }) => body)).toEqual([
+      'a\r\nb\r\nc\r\n',
+      '<p>a</p>\r\n<p>b</p>\r\n<p>c</p>\r\n',
+    ]);
+  });
 });

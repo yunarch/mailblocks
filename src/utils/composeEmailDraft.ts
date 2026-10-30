@@ -14,10 +14,10 @@ function toBase64(bytes: Uint8Array): string {
 
 /**
  * @param content - The text to encode.
- * @returns The UTF-8 text as base64, wrapped to the MIME line length.
+ * @returns The UTF-8 text with CRLF line breaks as base64, wrapped to the MIME line length.
  */
 function encodeBody(content: string): string {
-  const normalized = content.replaceAll(/\r\n|\r|\n/g, CRLF);
+  const normalized = content.replaceAll(/\r\n|\r|\n/g, '\r\n');
   const encoded = toBase64(new TextEncoder().encode(normalized));
   const lines: string[] = [];
   for (let i = 0; i < encoded.length; i += BASE64_LINE_LENGTH) {
