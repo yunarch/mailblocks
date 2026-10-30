@@ -1,10 +1,6 @@
 import type { EmailEditorRef } from '@react-email/editor';
 import { Suspense, useState } from 'react';
-import {
-  MdOutlineDesktopWindows,
-  MdOutlineNotes,
-  MdOutlineRemoveRedEye,
-} from 'react-icons/md';
+import { MdOutlineDesktopWindows, MdOutlineRemoveRedEye } from 'react-icons/md';
 import { PiCodeBold } from 'react-icons/pi';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { DEFAULT_VIEWPORT_SIZE, viewportSizes } from '@/types/viewports';
@@ -18,8 +14,7 @@ import { EmailPreview } from './components/EmailPreview';
 
 const MODES = [
   { id: 'editor', label: 'Editor', Icon: MdOutlineDesktopWindows },
-  { id: 'code', label: 'HTML code', Icon: PiCodeBold },
-  { id: 'text', label: 'Plain text', Icon: MdOutlineNotes },
+  { id: 'code', label: 'Code', Icon: PiCodeBold },
 ] as const;
 type Mode = (typeof MODES)[number]['id'];
 
@@ -158,16 +153,8 @@ export const EmailEditorPanel = () => {
             )}
             {mode === 'code' && (
               <EmailExportToCode
-                content={previewEmail.html}
-                title="Email HTML code"
-                copyLabel="Copy HTML"
-              />
-            )}
-            {mode === 'text' && (
-              <EmailExportToCode
-                content={previewEmail.text}
-                title="Email plain text"
-                copyLabel="Copy plain text"
+                html={previewEmail.html}
+                text={previewEmail.text}
               />
             )}
           </Suspense>
