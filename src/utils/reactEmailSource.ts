@@ -451,7 +451,6 @@ function printProps(
       key === 'key' ||
       key === 'ref' ||
       value === null ||
-      value === false ||
       typeof value === 'function' ||
       typeof value === 'symbol' ||
       (key === 'style' &&

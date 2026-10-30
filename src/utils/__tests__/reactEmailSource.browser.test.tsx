@@ -241,6 +241,7 @@ describe('composeReactEmailSource without the app', () => {
               'data-config': { name: 'x', count: 1 },
               disabled: true,
               hidden: false,
+              'aria-checked': false,
               style: { '--brand': 'red', color: 'red' },
             }),
             createElement(RefBox, { style: {} })
@@ -253,7 +254,8 @@ describe('composeReactEmailSource without the app', () => {
     expect(source).toContain("'--brand': 'red'");
     expect(source).toContain("data-list={['a', 1]}");
     expect(source).toContain('data-empty={{}}');
-    expect(source).not.toContain('hidden');
+    expect(source).toContain('hidden={false}');
+    expect(source).toContain('aria-checked={false}');
     expect(source).toContain('<span />');
     const { actual, expected } = await renderBoth(editor);
     expect(actual).toEqual(expected);
