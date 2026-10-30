@@ -2,7 +2,7 @@ import type { Editor } from '@tiptap/core';
 import { findVariableRanges, removeVariableFromText } from '@/utils/helpers';
 
 // Leaf nodes (images, line breaks) read as one character, so text offsets match document positions.
-const LEAF_TEXT = '\u{FFFC}';
+export const LEAF_TEXT = '\u{FFFC}';
 
 /**
  * @param attrs - Node or mark attributes, such as a link `href`.

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { MdAdd, MdDeleteOutline, MdOutlineDataObject } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
 import { BlockerModal } from '@/components/BlockerModal/BlockerModal';
-import { deleteVariable } from '@/extensions/variables';
+import { deleteVariable, LEAF_TEXT } from '@/extensions/variables';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Button } from '@/ui/Button';
 import { countVariables, sanitizeVariableName } from '@/utils/helpers';
@@ -30,8 +30,11 @@ function getDocumentTexts(doc: ProseMirrorNode) {
     }
   };
   doc.descendants((node) => {
-    // Block text is read as a whole, so placeholders split by formatting are still found
-    if (node.isTextblock) texts.push(node.textContent);
+    // Block text is read as a whole, so placeholders split by formatting are
+    // still found; leaf nodes read like in `deleteVariable`, so both agree
+    if (node.isTextblock) {
+      texts.push(node.textBetween(0, node.content.size, undefined, LEAF_TEXT));
+    }
     addAttributes(node.attrs);
     for (const mark of node.marks) addAttributes(mark.attrs);
   });

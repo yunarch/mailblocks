@@ -240,6 +240,13 @@ describe('variables', () => {
       .not.toBeInTheDocument();
   });
 
+  it('does not count placeholders split by a line break as used', async () => {
+    const { screen } = await renderEditorPanel('<p>Hi {{<br>name}}</p>');
+    await expect
+      .element(screen.getByRole('textbox', { name: 'Sample value for name' }))
+      .not.toBeInTheDocument();
+  });
+
   it('asks before removing a used variable, then removes every use', async () => {
     const { screen, editor } = await renderEditorPanel(
       '<p>Hi {{name}}, your <a href="https://a.dev/{{name}}">plan</a></p>'
