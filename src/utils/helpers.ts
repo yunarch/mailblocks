@@ -49,6 +49,31 @@ export function countVariables(texts: Iterable<string>): Map<string, number> {
 }
 
 /**
+ * @param text - The text to search.
+ * @param name - Placeholder to find, e.g. `first_name` for `{{first_name}}`.
+ * @returns The start and end offsets of each `{{name}}` placeholder in the text.
+ */
+export function findVariableRanges(
+  text: string,
+  name: string
+): [number, number][] {
+  return [...text.matchAll(VARIABLE_PATTERN)]
+    .filter((match) => match.groups?.name === name)
+    .map((match) => [match.index, match.index + match[0].length]);
+}
+
+/**
+ * @param text - The text to clean.
+ * @param name - Placeholder to remove, e.g. `first_name` for `{{first_name}}`.
+ * @returns The text without any `{{name}}` placeholder.
+ */
+export function removeVariableFromText(text: string, name: string): string {
+  return text.replaceAll(VARIABLE_PATTERN, (match, found: string) =>
+    found === name ? '' : match
+  );
+}
+
+/**
  * @param html - The email HTML containing `{{name}}` placeholders.
  * @param variables - The variables with their sample values.
  * @returns The HTML with each placeholder replaced by its escaped sample

@@ -199,7 +199,7 @@ describe('page and container inspector', () => {
 });
 
 describe('variables', () => {
-  it('lists placeholders typed in the email, which cannot be removed', async () => {
+  it('lists placeholders typed in the email with their usage count', async () => {
     const { screen } = await renderEditorPanel(
       '<p>Hi {{name}}, your <a href="https://a.dev/{{name}}">plan</a></p>'
     );
@@ -207,9 +207,6 @@ describe('variables', () => {
     await expect
       .element(screen.getByRole('textbox', { name: 'Sample value for name' }))
       .toBeVisible();
-    await expect
-      .element(screen.getByRole('button', { name: 'Remove name' }))
-      .toBeDisabled();
   });
 
   it('adds a variable with its sample and inserts it at the text cursor', async () => {
@@ -229,9 +226,6 @@ describe('variables', () => {
     editor.commands.focus('end');
     await screen.getByRole('button', { name: 'Insert firstname' }).click();
     expect(paragraphs(editor)).toEqual(['Hello{{firstname}}']);
-    await expect
-      .element(screen.getByRole('button', { name: 'Remove firstname' }))
-      .toBeDisabled();
   });
 
   it('removes variables that are not used in the email', async () => {
@@ -243,6 +237,25 @@ describe('variables', () => {
     await screen.getByRole('button', { name: 'Remove plan' }).click();
     await expect
       .element(screen.getByRole('textbox', { name: 'Sample value for plan' }))
+      .not.toBeInTheDocument();
+  });
+
+  it('asks before removing a used variable, then removes every use', async () => {
+    const { screen, editor } = await renderEditorPanel(
+      '<p>Hi {{name}}, your <a href="https://a.dev/{{name}}">plan</a></p>'
+    );
+    await screen.getByRole('button', { name: 'Remove name' }).click();
+    const dialog = screen.getByRole('dialog', { name: 'Remove variable' });
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    expect(paragraphs(editor)).toEqual(['Hi {{name}}, your plan']);
+    await screen.getByRole('button', { name: 'Remove name' }).click();
+    await dialog.getByRole('button', { name: 'Remove' }).click();
+    expect(paragraphs(editor)).toEqual(['Hi , your plan']);
+    expect(editor.view.dom.querySelector('a')?.getAttribute('href')).toBe(
+      'https://a.dev/'
+    );
+    await expect
+      .element(screen.getByRole('textbox', { name: 'Sample value for name' }))
       .not.toBeInTheDocument();
   });
 });

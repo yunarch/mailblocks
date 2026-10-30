@@ -3,10 +3,12 @@ import {
   applyVariables,
   countVariables,
   findCodeLocation,
+  findVariableRanges,
   formatBytes,
   getByteLength,
   getCodeLocation,
   isLocalhostUrl,
+  removeVariableFromText,
 } from '../helpers';
 
 describe('countVariables', () => {
@@ -17,6 +19,17 @@ describe('countVariables', () => {
       ['name', 2],
       ['plan', 1],
     ]);
+  });
+});
+
+describe('findVariableRanges and removeVariableFromText', () => {
+  it('only target the given variable', () => {
+    const text = 'Hi {{ name }}, {{plan}} {{name}}';
+    expect(findVariableRanges(text, 'name')).toEqual([
+      [3, 13],
+      [24, 32],
+    ]);
+    expect(removeVariableFromText(text, 'name')).toBe('Hi , {{plan}} ');
   });
 });
 

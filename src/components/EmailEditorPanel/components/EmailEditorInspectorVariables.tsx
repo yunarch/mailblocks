@@ -4,6 +4,8 @@ import { useCurrentEditor, useEditorState } from '@tiptap/react';
 import { useState } from 'react';
 import { MdAdd, MdDeleteOutline, MdOutlineDataObject } from 'react-icons/md';
 import { cx } from 'tailwind-variants';
+import { BlockerModal } from '@/components/BlockerModal/BlockerModal';
+import { deleteVariable } from '@/extensions/variables';
 import { useAppContext } from '@/providers/AppContextProvider';
 import { Button } from '@/ui/Button';
 import { countVariables, sanitizeVariableName } from '@/utils/helpers';
@@ -42,6 +44,10 @@ export const EmailEditorInspectorVariables = () => {
   const { variables, setVariables, markEmailDirty } = useAppContext();
   const [collapsed, setCollapsed] = useState(false);
   const [draft, setDraft] = useState({ name: '', sample: '' });
+  const [pendingDelete, setPendingDelete] = useState<{
+    name: string;
+    count: number;
+  } | null>(null);
   const state = useEditorState({
     editor,
     selector: ({ editor: current }) => {
@@ -86,6 +92,7 @@ export const EmailEditorInspectorVariables = () => {
     markEmailDirty();
   };
   const removeVariable = (name: string) => {
+    deleteVariable(editor, name);
     setVariables((current) =>
       current.filter((variable) => variable.name !== name)
     );
@@ -147,13 +154,11 @@ export const EmailEditorInspectorVariables = () => {
               <MdAdd />
             </Button>
           </form>
+          <p className="text-xs leading-5 text-gray-500 dark:text-neutral-500">
+            Type <code>{'{{name}}'}</code> in the email or add a variable above.
+            Sample values only show in the preview.
+          </p>
           <div className="flex flex-col gap-1.5 border-t border-dashed border-gray-200 pt-2 dark:border-white/15">
-            {names.length === 0 && (
-              <p className="text-xs leading-5 text-gray-500 dark:text-neutral-500">
-                Type <code>{'{{name}}'}</code> in the email or add a variable
-                above. Sample values only show in the preview.
-              </p>
-            )}
             {names.map((name) => {
               const count = used.get(name) ?? 0;
               return (
@@ -212,11 +217,14 @@ export const EmailEditorInspectorVariables = () => {
                       aria-label={`Remove ${name}`}
                       title={
                         count > 0
-                          ? 'Used in the email, delete it from the text to remove it'
+                          ? 'Remove the variable and its uses in the email'
                           : 'Remove variable'
                       }
-                      disabled={count > 0}
                       onClick={() => {
+                        if (count > 0) {
+                          setPendingDelete({ name, count });
+                          return;
+                        }
                         removeVariable(name);
                       }}
                     >
@@ -229,6 +237,20 @@ export const EmailEditorInspectorVariables = () => {
           </div>
         </div>
       )}
+      {pendingDelete ? (
+        <BlockerModal
+          title="Remove variable"
+          message={`{{${pendingDelete.name}}} is used ${pendingDelete.count === 1 ? 'once' : `${String(pendingDelete.count)} times`} in the email. Removing it deletes every use.`}
+          confirmText="Remove"
+          onCancel={() => {
+            setPendingDelete(null);
+          }}
+          onConfirm={() => {
+            removeVariable(pendingDelete.name);
+            setPendingDelete(null);
+          }}
+        />
+      ) : null}
     </div>
   );
 };
