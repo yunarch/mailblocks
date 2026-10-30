@@ -90,7 +90,7 @@ const BLOCKS: (Omit<SlashCommandItem, 'command' | 'category'> & {
     description: 'Colored separator line',
     icon: <MinusIcon size={20} />,
     searchTerms: ['divider', 'separator', 'line', 'hr', 'accent'],
-    html: `<hr style="width:auto;border:none;border-top:2px solid ${COLORS.accent};margin:16px 24px">`,
+    html: `<section data-type="section" style="padding:16px 24px"><hr style="margin:0;padding:0;border-width:0;border-style:solid;border-top-width:2px;border-top-color:${COLORS.accent}"></section>`,
   },
   {
     title: 'Social links',
