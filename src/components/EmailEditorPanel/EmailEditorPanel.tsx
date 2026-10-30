@@ -8,6 +8,7 @@ import { Button, ButtonGroup } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Switch } from '@/ui/Switch';
 import { Typography } from '@/ui/Typography';
+import { composeReactEmailSource } from '@/utils/reactEmailSource';
 import { EmailEditor } from './components/EmailEditor';
 import { EmailExportToCode } from './components/EmailExportToCode';
 import { EmailPreview } from './components/EmailPreview';
@@ -22,7 +23,7 @@ type Mode = (typeof MODES)[number]['id'];
  * Exports the email once and splits it so each view gets a stable promise for `use()`.
  *
  * @param ref - The reference to the email editor instance.
- * @returns An object containing promises for the HTML and plain text versions of the email.
+ * @returns An object containing promises to get the different representations of the email.
  */
 function exportEmail(ref: EmailEditorRef) {
   const email = ref.getEmail();
@@ -35,6 +36,9 @@ function exportEmail(ref: EmailEditorRef) {
       const { text } = await email;
       return text;
     })(),
+    reactEmail: new Promise<string>((resolve) => {
+      resolve(ref.editor ? composeReactEmailSource(ref.editor) : '');
+    }),
   };
 }
 
@@ -155,6 +159,7 @@ export const EmailEditorPanel = () => {
             {mode === 'code' && (
               <EmailExportToCode
                 html={previewEmail.html}
+                reactEmail={previewEmail.reactEmail}
                 text={previewEmail.text}
               />
             )}

@@ -7,6 +7,7 @@ import { Tabs } from '@/ui/Tabs';
 const FORMATS = [
   { label: 'HTML', copyLabel: 'Copy HTML' },
   { label: 'Plain text', copyLabel: 'Copy plain text' },
+  { label: 'React Email', copyLabel: 'Copy React Email' },
 ];
 
 const CopyButton = ({ content, label }: { content: string; label: string }) => {
@@ -45,12 +46,14 @@ const CopyButton = ({ content, label }: { content: string; label: string }) => {
 export const EmailExportToCode = ({
   html,
   text,
+  reactEmail,
 }: {
   html: Promise<string>;
   text: Promise<string>;
+  reactEmail: Promise<string>;
 }) => {
   const [format, setFormat] = useState(0);
-  const contents = [use(html), use(text)];
+  const contents = [use(html), use(text), use(reactEmail)];
   const content = contents[format];
   return (
     <Stack className="flex-1 rounded-lg border border-gray-200 bg-white dark:border-white/10 dark:bg-neutral-900">
