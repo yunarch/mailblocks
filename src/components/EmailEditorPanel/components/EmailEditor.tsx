@@ -25,6 +25,7 @@ import { EmailEditorInspectedNodeHighlight } from './EmailEditorInspectedNodeHig
 import { EmailEditorInspectorBlockActions } from './EmailEditorInspectorBlockActions';
 import { EmailEditorInspectorDocument } from './EmailEditorInspectorDocument';
 import { EmailEditorInspectorImage } from './EmailEditorInspectorImage';
+import { EmailEditorInspectorVariables } from './EmailEditorInspectorVariables';
 
 // Build react-email slash commands
 buildReactEmailSlashCommands();
@@ -227,6 +228,7 @@ export const EmailEditor = ({
                   </div>
                 </div>
                 <div className="flex-1 overflow-auto px-4 py-2 text-sm text-gray-900 dark:text-neutral-200">
+                  <EmailEditorInspectorVariables />
                   <Inspector.Document>
                     {(context) => <EmailEditorInspectorDocument {...context} />}
                   </Inspector.Document>

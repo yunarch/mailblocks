@@ -1,11 +1,43 @@
 import { describe, expect, it } from 'vitest';
 import {
+  applyVariables,
+  countVariables,
   findCodeLocation,
   formatBytes,
   getByteLength,
   getCodeLocation,
   isLocalhostUrl,
 } from '../helpers';
+
+describe('countVariables', () => {
+  it('counts placeholders across texts in order of first appearance', () => {
+    expect([
+      ...countVariables(['Hi {{ name }}, {{plan}}', 'https://a.dev/{{name}}']),
+    ]).toEqual([
+      ['name', 2],
+      ['plan', 1],
+    ]);
+  });
+});
+
+describe('applyVariables', () => {
+  it('replaces placeholders with their escaped sample', () => {
+    expect(
+      applyVariables('<p>Hi {{name}}</p><a href="{{url}}">x</a>', [
+        { name: 'name', sample: 'Ada <3' },
+        { name: 'url', sample: 'https://a.dev/?a=1&b="2"' },
+      ])
+    ).toBe(
+      '<p>Hi Ada &lt;3</p><a href="https://a.dev/?a=1&amp;b=&quot;2&quot;">x</a>'
+    );
+  });
+
+  it('keeps placeholders without a sample value', () => {
+    expect(
+      applyVariables('{{name}} {{other}}', [{ name: 'name', sample: '' }])
+    ).toBe('{{name}} {{other}}');
+  });
+});
 
 describe('getByteLength', () => {
   it('counts UTF-8 bytes rather than characters', () => {

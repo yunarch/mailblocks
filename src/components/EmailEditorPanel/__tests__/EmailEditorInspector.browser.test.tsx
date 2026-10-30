@@ -197,3 +197,52 @@ describe('page and container inspector', () => {
     ).toBe('24px');
   });
 });
+
+describe('variables', () => {
+  it('lists placeholders typed in the email, which cannot be removed', async () => {
+    const { screen } = await renderEditorPanel(
+      '<p>Hi {{name}}, your <a href="https://a.dev/{{name}}">plan</a></p>'
+    );
+    await expect.element(screen.getByText('2x')).toBeVisible();
+    await expect
+      .element(screen.getByRole('textbox', { name: 'Sample value for name' }))
+      .toBeVisible();
+    await expect
+      .element(screen.getByRole('button', { name: 'Remove name' }))
+      .toBeDisabled();
+  });
+
+  it('adds a variable with its sample and inserts it at the text cursor', async () => {
+    const { screen, editor } = await renderEditorPanel('<p>Hello</p>');
+    await screen
+      .getByRole('textbox', { name: 'New variable name' })
+      .fill('first name!');
+    await screen
+      .getByRole('textbox', { name: 'New variable sample value' })
+      .fill('Ada');
+    await userEvent.keyboard('{Enter}');
+    await expect
+      .element(
+        screen.getByRole('textbox', { name: 'Sample value for firstname' })
+      )
+      .toHaveValue('Ada');
+    editor.commands.focus('end');
+    await screen.getByRole('button', { name: 'Insert firstname' }).click();
+    expect(paragraphs(editor)).toEqual(['Hello{{firstname}}']);
+    await expect
+      .element(screen.getByRole('button', { name: 'Remove firstname' }))
+      .toBeDisabled();
+  });
+
+  it('removes variables that are not used in the email', async () => {
+    const { screen } = await renderEditorPanel('<p>Hello</p>');
+    await screen
+      .getByRole('textbox', { name: 'New variable name' })
+      .fill('plan');
+    await userEvent.keyboard('{Enter}');
+    await screen.getByRole('button', { name: 'Remove plan' }).click();
+    await expect
+      .element(screen.getByRole('textbox', { name: 'Sample value for plan' }))
+      .not.toBeInTheDocument();
+  });
+});

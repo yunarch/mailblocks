@@ -142,4 +142,27 @@ describe('preview and code', () => {
     expect(text).toContain('Copy me');
     expect(text).not.toMatch(/<[a-z!]/i);
   });
+
+  it('previews variable samples while keeping placeholders in the code', async () => {
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    const { screen } = await renderEditorPanel('<p>Hello {{name}}</p>');
+    await screen
+      .getByRole('textbox', { name: 'Sample value for name' })
+      .fill('Ada');
+    await screen.getByRole('switch', { name: /Preview/ }).click();
+    const frame = screen.getByTitle('Rendered email');
+    await expect
+      .poll(
+        () =>
+          (frame.element() as HTMLIFrameElement).contentDocument?.body
+            .textContent
+      )
+      .toContain('Hello Ada');
+    await screen.getByRole('button', { name: 'Code' }).click();
+    await screen.getByRole('button', { name: 'Copy HTML' }).click();
+    const [html] = writeText.mock.calls[0];
+    expect(html).toContain('Hello {{name}}');
+  });
 });
