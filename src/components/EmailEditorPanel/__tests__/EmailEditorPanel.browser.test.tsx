@@ -126,4 +126,18 @@ describe('preview and HTML code', () => {
       .element(screen.getByRole('button', { name: 'Copied' }))
       .toBeVisible();
   });
+
+  it('shows the email plain text and copies it to the clipboard', async () => {
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    const { screen } = await renderEditorPanel('<p>Copy me</p>');
+    await screen.getByRole('button', { name: 'Plain text' }).click();
+    await expect.element(screen.getByText('Email plain text')).toBeVisible();
+    await screen.getByRole('button', { name: 'Copy plain text' }).click();
+    expect(writeText).toHaveBeenCalledOnce();
+    const [text] = writeText.mock.calls[0];
+    expect(text).toContain('Copy me');
+    expect(text).not.toMatch(/<[a-z!]/i);
+  });
 });
