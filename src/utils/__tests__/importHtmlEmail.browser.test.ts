@@ -71,6 +71,24 @@ describe('importHtmlEmail', () => {
     expect(goodImage.getAttribute('src')).toBe('https://example.com/a.png');
   });
 
+  it('removes script URLs hidden behind encoded control characters', () => {
+    const html = `
+      <a href="&#1;javascript:alert(1)">Control</a>
+      <a href="&#31; java&#9;script:alert(1)">Mixed</a>
+      <a href="&#1;https://example.com">Safe</a>
+    `;
+    // The browser strips the controls, so these really are script URLs
+    const raw = new DOMParser().parseFromString(html, 'text/html');
+    expect(
+      [...raw.querySelectorAll('a')].map((anchor) => anchor.protocol)
+      // eslint-disable-next-line no-script-url -- Asserting the payload is a script URL
+    ).toEqual(['javascript:', 'javascript:', 'https:']);
+    const [control, mixed, safe] = importBody(html).querySelectorAll('a');
+    expect(control.hasAttribute('href')).toBe(false);
+    expect(mixed.hasAttribute('href')).toBe(false);
+    expect(safe.hasAttribute('href')).toBe(true);
+  });
+
   it('neutralizes mutation XSS payloads', () => {
     const { content } = importHtmlEmail(
       '<noscript><p title="</noscript><img src=x onerror=alert(1)>"></p></noscript><svg><style><img src=x onerror=alert(2)></style></svg>'
