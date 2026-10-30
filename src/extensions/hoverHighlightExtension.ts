@@ -1,7 +1,8 @@
+/* eslint-disable max-lines */
 import { getNodeMeta } from '@react-email/editor/ui';
 import { Extension } from '@tiptap/core';
 import type { Node as ProseMirrorNode } from '@tiptap/pm/model';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { NodeSelection, Plugin, PluginKey } from '@tiptap/pm/state';
 import type { EditorView } from '@tiptap/pm/view';
 
 type HoverTarget = { node: ProseMirrorNode; pos: number };
@@ -26,16 +27,15 @@ function isHighlightable(node: ProseMirrorNode) {
 }
 
 /**
- * Resolves the node under the pointer (the one a click would inspect) and its
- * highlightable ancestors, innermost first.
+ * Resolves the node directly under the pointer and its highlightable ancestors, innermost first.
  *
  * @param view - The editor view.
  * @param coords - The pointer position in viewport coordinates.
  * @param coords.left - The horizontal pointer position.
  * @param coords.top - The vertical pointer position.
- * @returns The hovered node followed by its ancestors, or an empty list.
+ * @returns The node under the pointer followed by its ancestors, or an empty list.
  */
-function getHoverTargets(
+function getTargetsAt(
   view: EditorView,
   coords: { left: number; top: number }
 ): HoverTarget[] {
@@ -53,6 +53,23 @@ function getHoverTargets(
     if (isHighlightable(node))
       targets.push({ node, pos: resolved.before(depth) });
   }
+  return targets;
+}
+
+/**
+ * Resolves the node under the pointer (the one a click would inspect) and its highlightable ancestors, innermost first.
+ *
+ * @param view - The editor view.
+ * @param coords - The pointer position in viewport coordinates.
+ * @param coords.left - The horizontal pointer position.
+ * @param coords.top - The vertical pointer position.
+ * @returns The hovered node followed by its ancestors, or an empty list.
+ */
+function getHoverTargets(
+  view: EditorView,
+  coords: { left: number; top: number }
+): HoverTarget[] {
+  const targets = getTargetsAt(view, coords);
   // Like the inspector, text inside a column targets the column itself
   const columnIndex = targets.findIndex(
     (target) => target.node.type.name === 'columnsColumn'
@@ -60,6 +77,28 @@ function getHoverTargets(
   return targets[0]?.node.type.name === 'paragraph' && columnIndex > 0
     ? targets.slice(columnIndex)
     : targets;
+}
+
+/**
+ * Selects the container under a click, such as a section clicked on its padding, matching the hover highlight.
+ * By default the click would place the cursor in the nearest text, so the inspector would show a child instead.
+ * Clicks on text and on atoms (images, dividers) keep their default behavior.
+ *
+ * @param view - The editor view.
+ * @param event - The click event.
+ * @returns Whether the click selected a container.
+ */
+function selectClickedContainer(view: EditorView, event: MouseEvent) {
+  const target = getTargetsAt(view, {
+    left: event.clientX,
+    top: event.clientY,
+  }).at(0);
+  if (!target || target.node.isTextblock || target.node.isAtom) return false;
+  const { state } = view;
+  view.dispatch(
+    state.tr.setSelection(NodeSelection.create(state.doc, target.pos))
+  );
+  return true;
 }
 
 /**
@@ -270,6 +309,9 @@ export const HoverHighlight = Extension.create({
           };
         },
         props: {
+          handleClick(view, _pos, event) {
+            return selectClickedContainer(view, event);
+          },
           handleDOMEvents: {
             mousemove(view, event) {
               highlights.get(view)?.setPointer({
