@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { describe, expect, it } from 'vitest';
 import {
   decodeHtml,
@@ -24,6 +25,8 @@ describe('decodeHtml', () => {
       '<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">',
       'ISO-8859-1',
     ],
+    // Browsers decode x-user-defined declarations as Windows-1252
+    ['<meta charset="x-user-defined">', 'windows-1252'],
   ])('decodes using the charset declared by %s', (meta) => {
     // "é" is 0xE9 in Windows-1252 and ISO-8859-1
     expect(decodeHtml(bytes(meta, '<p>Caf', [0xe9], '</p>'))).toBe(
@@ -38,11 +41,20 @@ describe('decodeHtml', () => {
     );
   });
 
+  it('decodes a declared UTF-16 as UTF-8, since the declaration was readable as ASCII', () => {
+    expect(decodeHtml(bytes('<meta charset="UTF-16"><p>Café</p>'))).toBe(
+      '<meta charset="UTF-16"><p>Café</p>'
+    );
+  });
+
   it('prefers the byte order mark over the declared charset', () => {
     expect(
       decodeHtml(bytes([0xef, 0xbb, 0xbf], '<meta charset="latin1">é'))
     ).toBe('<meta charset="latin1">é');
     expect(decodeHtml(new Uint8Array([0xff, 0xfe, 0xe9, 0x00]).buffer)).toBe(
+      'é'
+    );
+    expect(decodeHtml(new Uint8Array([0xfe, 0xff, 0x00, 0xe9]).buffer)).toBe(
       'é'
     );
   });
