@@ -10,6 +10,7 @@ import {
   type ReactElement,
   type ReactNode,
 } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import {
   Body,
   Button,
@@ -52,6 +53,8 @@ type SourceNode =
       children: SourceNode[];
     };
 
+type RenderMarkup = (element: ReactElement) => string;
+
 // React Email components kept as-is in the generated source, by name.
 const REACT_EMAIL_COMPONENTS = new Map<unknown, string>(
   Object.entries({
@@ -85,12 +88,33 @@ const INDENT = '  ';
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
 const SAFE_JSX_TEXT = /^[^\s{}<>&]$|^[^\s{}<>&][^{}<>&\n\r]*[^\s{}<>&]$/;
 
-// Used when the editor has no theming plugin providing its own base template.
+// Mirrors the editor's default base template, used when no theming plugin provides one.
 const FallbackBaseTemplate = ({ children }: { children?: ReactNode }) =>
   createElement(
     Html,
     null,
-    createElement(Head),
+    createElement(
+      Head,
+      null,
+      createElement('meta', {
+        content: 'width=device-width',
+        name: 'viewport',
+      }),
+      createElement('meta', {
+        content: 'IE=edge',
+        httpEquiv: 'X-UA-Compatible',
+      }),
+      createElement('meta', { name: 'x-apple-disable-message-reformatting' }),
+      createElement('meta', {
+        content: 'telephone=no,address=no,email=no,date=no,url=no',
+        name: 'format-detection',
+      }),
+      createElement(
+        'style',
+        null,
+        '@media (prefers-color-scheme: dark){li::marker{color:#c4c4c4}}'
+      )
+    ),
     createElement(Body, null, children)
   );
 
@@ -112,9 +136,9 @@ function composeEmailElement(editor: Editor): ReactElement {
   const extensionsByName = new Map(
     extensions.map((extension) => [extension.name, extension])
   );
+  // Marks always come from the schema; `rank` is ProseMirror's internal mark order.
   const getMarkRank = (name: string) =>
-    (editor.schema.marks[name] as { rank?: number } | undefined)?.rank ??
-    Number.MAX_SAFE_INTEGER;
+    (editor.schema.marks[name] as unknown as { rank: number }).rank;
 
   const parseContent = (
     content: JSONContent[] | undefined,
@@ -128,11 +152,10 @@ function composeEmailElement(editor: Editor): ReactElement {
       return all[index - 1]?.type === 'paragraph';
     });
     return nodes.map((node) => {
-      if (!node.type) return null;
-      const emailNode = extensionsByName.get(node.type);
+      const emailNode = extensionsByName.get(String(node.type));
       if (!(emailNode instanceof EmailNode)) return null;
       const style = serializerPlugin?.getNodeStyles(node, depth, editor) ?? {};
-      const childDepth = NODES_WITH_INCREMENTED_CHILD_DEPTH.has(node.type)
+      const childDepth = NODES_WITH_INCREMENTED_CHILD_DEPTH.has(emailNode.name)
         ? depth + 1
         : depth;
       const inlineWidth = /(?:^|;)\s*width\s*:\s*(?<width>[^;]+)/i.exec(
@@ -235,44 +258,63 @@ function expandNode(node: ReactNode): ReactNode {
 }
 
 /**
- * React Email components set some defaults (e.g. `Section` is centered) that
- * an explicit `undefined` prop removes, so those props must be kept.
+ * @param value - The value to check.
+ * @returns Whether the value is a plain object, such as a `style` prop.
+ */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/**
+ * @param props - The element props.
+ * @returns The props, and the entries of object props, without `undefined` values.
+ */
+function withoutUndefined(
+  props: Record<string, unknown>
+): Record<string, unknown> {
+  return Object.fromEntries(
+    Object.entries(props).flatMap(([key, value]): [string, unknown][] => {
+      if (value === undefined) return [];
+      return [[key, isPlainObject(value) ? withoutUndefined(value) : value]];
+    })
+  );
+}
+
+/**
+ * React Email components set defaults (e.g. `Section` is centered and
+ * `Container` has a `maxWidth`) that an explicit `undefined` removes, so those
+ * `undefined` props and style entries must be kept.
  *
  * @param type - The React Email component.
- * @param props - The props it is rendered with.
+ * @param props - The props it is rendered with, without children.
+ * @param renderMarkup - Renders an element to static markup.
  * @returns The props without the `undefined` values that don't change the output.
  */
 function getEffectiveProps(
-  type: unknown,
-  props: Record<string, unknown>
-): [string, unknown][] {
-  const entries = Object.entries(props).filter(([key]) => key !== 'children');
-  const defined = Object.fromEntries(
-    entries.filter(([, value]) => value !== undefined)
-  );
-  if (Object.keys(defined).length === entries.length) return entries;
-  let withUndefined: ReactNode;
-  let withoutUndefined: ReactNode;
-  try {
-    withUndefined = renderComponent(type, props);
-    withoutUndefined = renderComponent(type, {
-      ...defined,
-      children: props.children,
-    });
-  } catch {
-    return Object.entries(defined);
+  type: ComponentType,
+  props: Record<string, unknown>,
+  renderMarkup: RenderMarkup
+): Record<string, unknown> {
+  const markup = (candidate: Record<string, unknown>) =>
+    renderMarkup(createElement(type, candidate));
+  const expected = markup(props);
+  let effective = { ...props };
+  for (const [key, value] of Object.entries(props)) {
+    if (value === undefined) {
+      const { [key]: _, ...rest } = effective;
+      if (markup(rest) === expected) effective = rest;
+    } else if (isPlainObject(value)) {
+      for (const [entryKey, entry] of Object.entries(value)) {
+        if (entry !== undefined) continue;
+        const current = effective[key] as Record<string, unknown>;
+        const { [entryKey]: _, ...rest } = current;
+        if (markup({ ...effective, [key]: rest }) === expected) {
+          effective[key] = rest;
+        }
+      }
+    }
   }
-  if (
-    !isValidElement<Record<string, unknown>>(withUndefined) ||
-    !isValidElement<Record<string, unknown>>(withoutUndefined)
-  ) {
-    return Object.entries(defined);
-  }
-  const rendered = [withUndefined.props, withoutUndefined.props];
-  return entries.filter(
-    ([key, value]) =>
-      value !== undefined || rendered[0][key] !== rendered[1][key]
-  );
+  return effective;
 }
 
 /**
@@ -281,10 +323,15 @@ function getEffectiveProps(
  *
  * @param node - The React node to convert.
  * @param imports - Collects the React Email components used.
+ * @param renderMarkup - Renders an element to static markup.
  * @returns The flattened source nodes.
  * @throws {Error} When the tree contains content that can't be converted.
  */
-function toSourceNodes(node: ReactNode, imports: Set<string>): SourceNode[] {
+function toSourceNodes(
+  node: ReactNode,
+  imports: Set<string>,
+  renderMarkup: RenderMarkup
+): SourceNode[] {
   const expanded = expandNode(node);
   if (
     expanded === null ||
@@ -302,17 +349,22 @@ function toSourceNodes(node: ReactNode, imports: Set<string>): SourceNode[] {
     return value ? [{ kind: 'text', value }] : [];
   }
   if (Array.isArray(expanded)) {
-    return mergeText(
-      (expanded as ReactNode[]).flatMap((child) =>
-        toSourceNodes(child, imports)
-      )
+    return (expanded as ReactNode[]).flatMap((child) =>
+      toSourceNodes(child, imports, renderMarkup)
     );
   }
   if (!isValidElement<Record<string, unknown>>(expanded)) {
     throw new Error('The email contains content that cannot be exported');
   }
-  const { type, props } = expanded;
-  const children = toSourceNodes(props.children as ReactNode, imports);
+  const {
+    type,
+    props: { children: childNodes, ...props },
+  } = expanded;
+  const children = toSourceNodes(
+    childNodes as ReactNode,
+    imports,
+    renderMarkup
+  );
   if (type === Fragment) return children;
   const componentName = REACT_EMAIL_COMPONENTS.get(type);
   if (componentName) imports.add(componentName);
@@ -320,31 +372,14 @@ function toSourceNodes(node: ReactNode, imports: Set<string>): SourceNode[] {
     {
       kind: 'element',
       name: componentName ?? (type as string),
-      props: componentName
-        ? getEffectiveProps(type, props)
-        : Object.entries(props).filter(
-            ([key, value]) => key !== 'children' && value !== undefined
-          ),
+      props: Object.entries(
+        componentName
+          ? getEffectiveProps(type as ComponentType, props, renderMarkup)
+          : withoutUndefined(props)
+      ),
       children,
     },
   ];
-}
-
-/**
- * @param nodes - The source nodes.
- * @returns The nodes with adjacent text nodes joined together.
- */
-function mergeText(nodes: SourceNode[]): SourceNode[] {
-  const merged: SourceNode[] = [];
-  for (const node of nodes) {
-    const previous = merged.at(-1);
-    if (node.kind === 'text' && previous?.kind === 'text') {
-      previous.value += node.value;
-    } else {
-      merged.push(node);
-    }
-  }
-  return merged;
 }
 
 /**
@@ -385,7 +420,7 @@ function printValue(
   }
   if (typeof value === 'object') {
     const entries = Object.entries(value).filter(
-      ([, entry]) => entry !== undefined && typeof entry !== 'function'
+      ([, entry]) => typeof entry !== 'function'
     );
     if (entries.length === 0) return '{}';
     const inner = indent + INDENT;
@@ -420,8 +455,8 @@ function printProps(
       typeof value === 'function' ||
       typeof value === 'symbol' ||
       (key === 'style' &&
-        typeof value === 'object' &&
-        Object.values(value).every((entry) => entry === undefined))
+        isPlainObject(value) &&
+        Object.keys(value).length === 0)
     ) {
       return [];
     }
@@ -473,7 +508,12 @@ function printNode(node: SourceNode, indent: string): string[] {
   }
   return [
     ...(fitsInline ? [`${opening[0]}>`] : [...opening, `${indent}>`]),
-    ...children.flatMap((child) => printNode(child, indent + INDENT)),
+    ...children.flatMap((child, index) =>
+      // JSX would join adjacent text lines into a single string
+      child.kind === 'text' && children[index - 1]?.kind === 'text'
+        ? [`${indent + INDENT}{${quote(child.value)}}`]
+        : printNode(child, indent + INDENT)
+    ),
     `${indent}</${name}>`,
   ];
 }
@@ -484,9 +524,10 @@ function printNode(node: SourceNode, indent: string): string[] {
  * @param editor - The editor instance.
  * @returns A TSX module exporting the email as a React Email component.
  */
-export function composeReactEmailSource(editor: Editor): string {
+export function composeReactEmailSource(editor: Editor) {
+  const email = composeEmailElement(editor);
   const imports = new Set<string>();
-  const nodes = toSourceNodes(composeEmailElement(editor), imports);
+  const nodes = toSourceNodes(email, imports, renderToStaticMarkup);
   const body = nodes.flatMap((node) => printNode(node, INDENT.repeat(3)));
   return [
     `import { ${[...imports].toSorted((a, b) => a.localeCompare(b)).join(', ')} } from 'react-email';`,
