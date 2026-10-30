@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import type { EmailTemplate } from '@/types/templates';
 
 type MatchedRule = {
@@ -6,18 +7,6 @@ type MatchedRule = {
   order: number;
   style: CSSStyleDeclaration;
 };
-
-// `link` is included because external stylesheets can't be inlined client side
-const UNSAFE_ELEMENTS =
-  'script, iframe, frame, frameset, object, embed, applet, base, meta[http-equiv], link';
-const URL_ATTRIBUTES = new Set([
-  'href',
-  'src',
-  'action',
-  'formaction',
-  'xlink:href',
-]);
-const UNSAFE_URL = /^(?:javascript|vbscript|data:text\/html)/i;
 
 /**
  * Splits a selector list on top-level commas, keeping commas inside
@@ -76,27 +65,20 @@ export function getSelectorSpecificity(selector: string) {
 }
 
 /**
- * Removes elements and attributes that can run scripts or navigate away, since
- * imported HTML is rendered in the editor and in the preview iframe.
+ * Removes markup that can run scripts or navigate away (scripts, frames,
+ * external stylesheets, event handlers, `javascript:` URLs...), since imported
+ * HTML is rendered in the editor and in the preview iframe. The whole document
+ * is kept, with its `title` and `style` elements, so it can be named and its
+ * style rules inlined.
  *
- * @param document - The parsed document, modified in place.
+ * @param html - The full HTML document or fragment of the email.
+ * @returns The sanitized HTML document.
  */
-function sanitize(document: Document) {
-  for (const el of document.querySelectorAll(UNSAFE_ELEMENTS)) el.remove();
-  for (const el of document.querySelectorAll('*')) {
-    const attributes = Array.from(el.attributes, ({ name, value }) => ({
-      name,
-      value,
-    }));
-    for (const { name, value } of attributes) {
-      const lowerName = name.toLowerCase();
-      const isHandler = lowerName.startsWith('on');
-      const isUnsafeUrl =
-        URL_ATTRIBUTES.has(lowerName) &&
-        UNSAFE_URL.test(value.replaceAll(/\s/g, ''));
-      if (isHandler || isUnsafeUrl) el.removeAttribute(name);
-    }
-  }
+function sanitize(html: string) {
+  return DOMPurify.sanitize(html, {
+    WHOLE_DOCUMENT: true,
+    ADD_TAGS: ['title'],
+  });
 }
 
 /**
@@ -162,8 +144,7 @@ export function importHtmlEmail(
   html: string,
   fileName?: string
 ): EmailTemplate {
-  const document = new DOMParser().parseFromString(html, 'text/html');
-  sanitize(document);
+  const document = new DOMParser().parseFromString(sanitize(html), 'text/html');
   inlineStyles(document);
   const name =
     document.title.trim() ||

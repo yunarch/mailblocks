@@ -71,6 +71,41 @@ describe('importHtmlEmail', () => {
     expect(goodImage.getAttribute('src')).toBe('https://example.com/a.png');
   });
 
+  it('neutralizes mutation XSS payloads', () => {
+    const { content } = importHtmlEmail(
+      '<noscript><p title="</noscript><img src=x onerror=alert(1)>"></p></noscript><svg><style><img src=x onerror=alert(2)></style></svg>'
+    );
+    expect(content).not.toMatch(/onerror/i);
+  });
+
+  it('keeps email layout attributes', () => {
+    const document = importBody(`
+      <body bgcolor="#eeeeee">
+        <table role="presentation" align="center" width="600" cellpadding="0" cellspacing="0" border="0">
+          <tbody><tr><td valign="top" data-id="cell">Hi</td></tr></tbody>
+        </table>
+      </body>
+    `);
+    expect(document.body.getAttribute('bgcolor')).toBe('#eeeeee');
+    const table = document.querySelector('table');
+    const tableAttributes = Object.fromEntries(
+      table
+        ?.getAttributeNames()
+        .map((name) => [name, table.getAttribute(name)]) ?? []
+    );
+    expect(tableAttributes).toEqual({
+      role: 'presentation',
+      align: 'center',
+      width: '600',
+      cellpadding: '0',
+      cellspacing: '0',
+      border: '0',
+    });
+    const cell = document.querySelector('td');
+    expect(cell?.getAttribute('valign')).toBe('top');
+    expect(cell?.dataset.id).toBe('cell');
+  });
+
   it('inlines style rules and removes the style elements', () => {
     const document = importBody(`
       <html><head><style>
