@@ -1,3 +1,4 @@
+import { getNodeMeta } from '@react-email/editor/ui';
 import { useCurrentEditor, useEditorState } from '@tiptap/react';
 import {
   MdArrowDownward,
@@ -26,8 +27,10 @@ const ACTIONS: {
 
 // Component
 export const EmailEditorInspectorBlockActions = ({
+  nodeType,
   nodePos,
 }: {
+  nodeType: string;
   nodePos: number;
 }) => {
   const { editor } = useCurrentEditor();
@@ -40,26 +43,34 @@ export const EmailEditorInspectorBlockActions = ({
 
   // Render
   return (
-    <div
-      role="toolbar"
-      aria-label="Element actions"
-      className="flex items-center gap-1 border-b border-gray-200 py-2 dark:border-white/10"
-    >
-      {ACTIONS.map(({ action, label, icon }) => (
-        <Button
-          key={action}
-          variant="ghost"
-          size="sm"
-          aria-label={label}
-          title={label}
-          disabled={!available[action]}
-          onClick={() => {
-            runBlockAction(editor, nodePos, action);
-          }}
-        >
-          {icon}
-        </Button>
-      ))}
+    <div className="flex flex-col gap-2 border-b border-gray-200 py-4 last:border-b-0 dark:border-white/10">
+      <p className="text-xs font-semibold">
+        Block - {getNodeMeta(nodeType).label}
+      </p>
+      <p className="text-xs leading-5 text-gray-500 dark:text-neutral-500">
+        Move, duplicate or delete this block.
+      </p>
+      <div
+        role="toolbar"
+        aria-label="Element actions"
+        className="flex items-center gap-1"
+      >
+        {ACTIONS.map(({ action, label, icon }) => (
+          <Button
+            key={action}
+            variant="ghost"
+            size="sm"
+            aria-label={label}
+            title={label}
+            disabled={!available[action]}
+            onClick={() => {
+              runBlockAction(editor, nodePos, action);
+            }}
+          >
+            {icon}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 };

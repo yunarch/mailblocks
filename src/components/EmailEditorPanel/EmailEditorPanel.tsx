@@ -40,7 +40,7 @@ function exportEmail(ref: EmailEditorRef) {
 
 // Component
 export const EmailEditorPanel = () => {
-  const { editorRef } = useAppContext();
+  const { editorRef, variables } = useAppContext();
   const [mode, setMode] = useState<Mode>('editor');
   const [preview, setPreview] = useState(false);
   const [previewEmail, setPreviewEmail] = useState<ReturnType<
@@ -146,6 +146,7 @@ export const EmailEditorPanel = () => {
             {mode === 'editor' && (
               <EmailPreview
                 html={previewEmail.html}
+                variables={variables}
                 viewport={activeViewport}
                 showEmailClientFrame={showEmailClientFrame}
                 onShowEmailClientFrameChange={setShowEmailClientFrame}

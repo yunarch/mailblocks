@@ -148,6 +148,8 @@ body,
  * Hover highlight: outlines the node under the pointer (what a click would
  * inspect) with its label, and its parent container with a fainter outline.
  * The overlays live in the canvas, outside the email, so they never affect layout.
+ * Outlines are drawn outside the node box, so they never cover the caret when
+ * it sits at the edge of the node's content.
  */
 .mailblocks-editor-canvas {
   position: relative;
@@ -164,19 +166,17 @@ body,
 
 .mailblocks-hover-overlay--parent {
   outline: 1px dashed var(--mailblocks-guide-active);
-  outline-offset: -1px;
   opacity: 0.5;
 }
 
 .mailblocks-hover-overlay--hovered,
 .mailblocks-hover-overlay--inspected {
   outline: 1px solid var(--mailblocks-guide-active);
-  outline-offset: -1px;
 
   &::before {
     content: attr(data-label);
     position: absolute;
-    bottom: 100%;
+    bottom: calc(100% + 1px);
     left: -1px;
     padding: 1px 6px;
     border-radius: 3px 3px 0 0;
@@ -192,10 +192,10 @@ body,
 .mailblocks-hover-overlay--inspected {
   --mailblocks-guide-active: rgb(14 165 233);
   outline-width: 2px;
-  outline-offset: -2px;
 
   &::before {
-    left: 0;
+    bottom: calc(100% + 2px);
+    left: -2px;
     font-weight: 600;
   }
 }

@@ -8,6 +8,7 @@ import {
   useState,
 } from 'react';
 import type { EmailTemplate } from '@/types/templates';
+import type { EmailVariable } from '@/types/variables';
 import type { SetValue } from '@/utils/helpers';
 import { generatedReactEmailTemplates } from '@/utils/templates';
 
@@ -22,6 +23,8 @@ type AppContextType = {
   setSelectedTemplate: SetValue<EmailTemplate>;
   emailContent: string;
   setEmailContent: SetValue<string>;
+  variables: EmailVariable[];
+  setVariables: SetValue<EmailVariable[]>;
   pendingTemplate: EmailTemplate | null;
   isDirty: boolean;
   selectTemplate: (template: EmailTemplate) => void;
@@ -44,6 +47,7 @@ export const AppContextProvider = ({
     generatedReactEmailTemplates[0]
   );
   const [emailContent, setEmailContent] = useState(selectedTemplate.content);
+  const [variables, setVariables] = useState<EmailVariable[]>([]); // Sample values, plus variables added before they are used in the email.
   const [pendingTemplate, setPendingTemplate] = useState<EmailTemplate | null>(
     null
   );
@@ -56,6 +60,7 @@ export const AppContextProvider = ({
   const loadTemplate = useCallback((template: EmailTemplate) => {
     setSelectedTemplate(template);
     setEmailContent(template.content);
+    setVariables([]);
     setIsDirty(false);
   }, []);
   const selectTemplate = useCallback(
@@ -92,6 +97,8 @@ export const AppContextProvider = ({
       selectedTemplate,
       setSelectedTemplate,
       setEmailContent,
+      variables,
+      setVariables,
       pendingTemplate,
       emailContent,
       isDirty,
@@ -106,6 +113,7 @@ export const AppContextProvider = ({
       markEditorReady,
       templatesDrawerOpen,
       selectedTemplate,
+      variables,
       pendingTemplate,
       emailContent,
       isDirty,

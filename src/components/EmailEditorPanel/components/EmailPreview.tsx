@@ -1,8 +1,10 @@
 import { use, useEffect, useMemo, useRef } from 'react';
 import { MdMoreVert } from 'react-icons/md';
+import type { EmailVariable } from '@/types/variables';
 import { isMobileClientViewport, type ViewportSize } from '@/types/viewports';
 import { Menu } from '@/ui/Menu';
 import { Stack } from '@/ui/Stack';
+import { applyVariables } from '@/utils/helpers';
 import {
   EMAIL_CLIENT_FRAME_SIDEBAR_WIDTH,
   EmailPreviewClientFrame,
@@ -29,16 +31,21 @@ function withBaseTarget(html: string, extraHead = ''): string {
 // Component
 export const EmailPreview = ({
   html,
+  variables,
   viewport,
   showEmailClientFrame = false,
   onShowEmailClientFrameChange,
 }: {
   html: Promise<string>;
+  variables: EmailVariable[];
   viewport: ViewportSize;
   showEmailClientFrame?: boolean;
   onShowEmailClientFrameChange?: (showEmailClientFrame: boolean) => void;
 }) => {
-  const content = use(html);
+  const exported = use(html);
+  const content = useMemo(() => {
+    return applyVariables(exported, variables);
+  }, [exported, variables]);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const observerRef = useRef<ResizeObserver | null>(null);
   const subject = useMemo(
