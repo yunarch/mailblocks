@@ -82,10 +82,23 @@ function sanitize(html: string) {
 }
 
 /**
+ * @param media - The media list of a style element.
+ * @returns Whether the styles apply when the email is shown on screen: always,
+ * or for `all` or `screen` media without conditions.
+ */
+function appliesOnScreen(media: MediaList) {
+  return (
+    media.length === 0 ||
+    [...media].some((query) => query === 'all' || query === 'screen')
+  );
+}
+
+/**
  * Inlines the rules of the email's style elements into the `style` attribute
  * of the elements they match, then removes the style elements. The editor only
  * keeps inline styles, so rules that can't be inlined (media queries, `:hover`,
- * pseudo-elements) are dropped.
+ * pseudo-elements) are dropped, along with style elements whose `media` doesn't
+ * apply on screen, such as `print` or `screen and (max-width: 600px)`.
  *
  * @param document - The parsed document, modified in place.
  */
@@ -94,7 +107,9 @@ function inlineStyles(document: Document) {
   const matches: MatchedRule[] = [];
   let order = 0;
   for (const styleElement of styleElements) {
-    const sheet = new CSSStyleSheet();
+    styleElement.remove();
+    const sheet = new CSSStyleSheet({ media: styleElement.media });
+    if (!appliesOnScreen(sheet.media)) continue;
     sheet.replaceSync(styleElement.textContent);
     for (const rule of sheet.cssRules) {
       if (!(rule instanceof CSSStyleRule)) continue;
@@ -107,7 +122,6 @@ function inlineStyles(document: Document) {
         order++;
       }
     }
-    styleElement.remove();
   }
   matches.sort((a, b) => a.specificity - b.specificity || a.order - b.order);
   // Apply the rules per element, then its own inline style (which wins), then `!important` rules

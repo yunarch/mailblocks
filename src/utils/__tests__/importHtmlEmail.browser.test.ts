@@ -181,6 +181,31 @@ describe('importHtmlEmail', () => {
     );
   });
 
+  it.each(['', 'all', 'SCREEN', 'screen, print'])(
+    'inlines style elements with media "%s"',
+    (media) => {
+      const document = importBody(`
+        <style media="${media}">p { color: red; }</style>
+        <p>Text</p>
+      `);
+      expect(document.querySelector('style')).toBeNull();
+      expect(document.querySelector('p')?.style.color).toBe('red');
+    }
+  );
+
+  it.each([
+    'print',
+    'screen and (max-width: 600px)',
+    '(prefers-color-scheme: dark)',
+  ])('drops style elements with media "%s"', (media) => {
+    const document = importBody(`
+      <style media="${media}">p { display: none; }</style>
+      <p>Text</p>
+    `);
+    expect(document.querySelector('style')).toBeNull();
+    expect(document.querySelector('p')?.hasAttribute('style')).toBe(false);
+  });
+
   it('drops rules that cannot be inlined', () => {
     const document = importBody(`
       <style>
