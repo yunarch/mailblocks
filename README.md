@@ -59,7 +59,7 @@ Mailblocks runs entirely in the browser, which comes with some trade-offs and li
 
 ### Is it free? Is my content sent anywhere?
 
-Mailblocks is free to use. Your content is never sent to a server: editing, linting, and image uploads all happen in your browser. The app is hosted on GitHub Pages, so GitHub's own hosting policies apply, and we may add usage analytics in the future. If you'd rather avoid that, clone the repository and [run it locally](#run-locally).
+Mailblocks is free to use. Your content is never sent to a server: editing, linting, and image uploads all happen in your browser. The app is hosted on GitHub Pages, so GitHub's own hosting policies apply. If you'd rather avoid that, clone the repository and [run it locally](#run-locally) or host it yourself.
 
 ### Is my work saved?
 
@@ -83,11 +83,15 @@ I would recommend not relying on them. They point to React Email's demo site, wh
 
 ### Can I use variables like `{{name}}`?
 
-Yes. Type them directly as text, or define them in the **Variables** section of the email inspector with a sample value. Defined variables show their sample value in the preview, so you can see how the email looks with real content. Either way, variables stay as `{{name}}` in the exported HTML, ready for your email service to replace when sending.
+Yes. Type them directly as text, or define them in the Variables section of the email inspector with a sample value. Defined variables show their sample value in the preview, so you can see how the email looks with real content. Either way, variables stay as `{{name}}` in the exported HTML, ready for your email service to replace when sending.
 
 ### Does it create the plain-text version of the email?
 
-Yes. Emails can be sent with both an HTML version and a plain-text version: the text version is shown by clients that can't display HTML, and including it can help with spam filters. Mailblocks generates both, so you can copy each one. Attaching them to the same email is up to you.
+Yes. Mailblocks can generate both an HTML version and a plain-text version of your email, so you can copy each one.
+
+Sending both HTML and plain-text versions simultaneously, known technically as `multipart/alternative`, packs the same content in both formats into a single email. The email client shows the richest format it can display, usually HTML, and falls back to plain text otherwise. Including a plain-text version also helps with accessibility and spam filters.
+
+Combining both versions into one email is up to you. Most email services and libraries accept separate `html` and `text` fields and build the `multipart/alternative` message for you.
 
 ### Does it work offline?
 
