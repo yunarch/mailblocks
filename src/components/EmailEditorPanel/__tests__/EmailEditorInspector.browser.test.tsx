@@ -209,6 +209,13 @@ describe('variables', () => {
       .toBeVisible();
   });
 
+  it('counts a link once regardless of its label formatting', async () => {
+    const { screen } = await renderEditorPanel(
+      '<p><a href="https://a.dev/{{url}}">Visit <strong>site</strong></a> or <a href="https://b.dev/{{url}}"><em>this</em> one</a></p>'
+    );
+    await expect.element(screen.getByText('2x')).toBeVisible();
+  });
+
   it('adds a variable with its sample and inserts it at the text cursor', async () => {
     const { screen, editor } = await renderEditorPanel('<p>Hello</p>');
     await screen

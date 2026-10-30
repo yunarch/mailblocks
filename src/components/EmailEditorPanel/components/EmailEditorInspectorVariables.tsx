@@ -29,14 +29,21 @@ function getDocumentTexts(doc: ProseMirrorNode) {
       if (typeof value === 'string') texts.push(value);
     }
   };
-  doc.descendants((node) => {
+  doc.descendants((node, _pos, parent, index) => {
     // Block text is read as a whole, so placeholders split by formatting are
     // still found; leaf nodes read like in `deleteVariable`, so both agree
     if (node.isTextblock) {
       texts.push(node.textBetween(0, node.content.size, undefined, LEAF_TEXT));
     }
     addAttributes(node.attrs);
-    for (const mark of node.marks) addAttributes(mark.attrs);
+    // A mark spanning differently formatted runs (a link with bold text) is
+    // split across nodes, so only read it where its contiguous span starts
+    const previous = index > 0 ? parent?.child(index - 1) : undefined;
+    for (const mark of node.marks) {
+      if (!previous || !mark.isInSet(previous.marks)) {
+        addAttributes(mark.attrs);
+      }
+    }
   });
   return texts;
 }
@@ -107,6 +114,7 @@ export const EmailEditorInspectorVariables = () => {
     <div className="flex flex-col gap-2 border-b border-gray-200 py-4 last:border-b-0 dark:border-white/10">
       <button
         type="button"
+        aria-expanded={!collapsed}
         className="cursor-pointer self-start text-xs font-semibold"
         onClick={() => {
           setCollapsed((value) => !value);
