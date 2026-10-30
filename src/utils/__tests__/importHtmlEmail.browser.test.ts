@@ -206,6 +206,19 @@ describe('importHtmlEmail', () => {
     expect(document.querySelector('p')?.hasAttribute('style')).toBe(false);
   });
 
+  it('skips selectors that cannot be queried and inlines the rest', () => {
+    const document = importBody(`
+      <style>
+        @namespace svg url(http://www.w3.org/2000/svg);
+        svg|a, p { color: red; }
+        h1 { color: blue; }
+      </style>
+      <h1>Title</h1><p>Text</p>
+    `);
+    expect(document.querySelector('h1')?.style.color).toBe('blue');
+    expect(document.querySelector('p')?.style.color).toBe('red');
+  });
+
   it('drops rules that cannot be inlined', () => {
     const document = importBody(`
       <style>

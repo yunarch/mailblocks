@@ -114,7 +114,13 @@ function inlineStyles(document: Document) {
     for (const rule of sheet.cssRules) {
       if (!(rule instanceof CSSStyleRule)) continue;
       for (const selector of splitSelectorList(rule.selectorText)) {
-        const elements = document.querySelectorAll<HTMLElement>(selector);
+        let elements: NodeListOf<HTMLElement>;
+        try {
+          elements = document.querySelectorAll<HTMLElement>(selector);
+        } catch {
+          // Valid in a stylesheet but not queryable, e.g. `svg|a` with `@namespace`
+          continue;
+        }
         const specificity = getSelectorSpecificity(selector);
         for (const element of elements) {
           matches.push({ element, specificity, order, style: rule.style });
