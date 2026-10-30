@@ -14,7 +14,7 @@
 <br />
 Powered by [React Email](https://react.email/).
 
-[Overview](#overview) • [Why](#why) • [Features](#features) • [Getting started](#getting-started) • [Development](#development)
+[Overview](#overview) • [Why](#why) • [Features](#features) • [FAQ](#faq) • [Getting started](#getting-started) • [Development](#development)
 
 ![Mailblocks screenshot](docs/assets/screenshot.png)
 
@@ -35,7 +35,9 @@ Building an email template that looks good everywhere is hard, because email cli
 - **Mobile and desktop:** Roughly half of all emails are opened on phones, so multi-column layouts have to stack cleanly on small screens.
 - **Endless testing:** Checking a single template across clients and devices can take hours.
 
-Mailblocks takes care of that complexity. Design the email visually, check how it holds up, and copy the HTML. Then use it to create the template in your backend or email service.
+There are many solutions out there but most of them require an account, a paid plan, or a self-hosted setup with backend services such as Supabase or something similar.
+
+Mailblocks runs entirely in the browser, which comes with some trade-offs and limitations but it keeps the workflow fast and simple.
 
 ## Features
 
@@ -43,13 +45,119 @@ Mailblocks takes care of that complexity. Design the email visually, check how i
 - **Block management:** Reorder, duplicate, or remove blocks to shape your layout.
 - **Ready-made templates:** Load React Email demo templates as editable HTML, browsable by category.
 - **Responsive previews:** Switch between XL (800px), L (650px), M (480px), and S (375px) viewports, toggle between the editor and the rendered output, and see the email inside a generic desktop or mobile mail client.
-- **Generated HTML:** Inspect and copy the produced HTML without leaving the editor.
+- **Generated HTML and plain text:** Inspect and copy the produced HTML and its plain-text version without leaving the editor.
+- **Variables:** Add placeholders like `{{name}}` with sample values to preview realistic content. They're kept as-is in the exported HTML, ready for your email service to fill in.
 - **Markup linting:** Catch common issues in the generated markup as you edit, with code locations.
 - **Email-client compatibility:** Check the HTML and CSS features you use against the email clients you select, based on [caniemail](https://www.caniemail.com/) data.
 - **Spam checks:** Get a heuristic score with detailed findings, such as image-to-text ratio, missing unsubscribe link, link shorteners, mismatched link text, spammy phrases, and messages large enough to be clipped by Gmail (over 102 KB).
+- **Works offline:** Install Mailblocks as an app and keep using it without a connection after the first visit.
 
 > [!WARNING]
 > Compatibility checks and spam scores are guidance, not guarantees of rendering accuracy or inbox placement.
+
+## FAQ
+
+<!-- FAQ 1 -->
+<details>
+<summary><h3 style="display:inline">Is it free? Is my content sent anywhere?</h3></summary>
+
+<br />
+
+Mailblocks is free to use. Your content is never sent to a server: editing, linting, and image uploads all happen in your browser. The app is hosted on GitHub Pages, so GitHub's own hosting policies apply, and we may add usage analytics in the future. If you'd rather avoid that, clone the repository and [run it locally](#run-locally).
+
+</details>
+<br />
+
+<!-- FAQ 2 -->
+<details>
+<summary><h3 style="display:inline">Is my work saved?</h3></summary>
+
+<br />
+
+No. Edits only live in the current page, so reloading or switching templates discards them.
+
+> Saving to local storage may come in a future release.
+
+</details>
+<br />
+
+<!-- FAQ 3 -->
+<details>
+<summary><h3 style="display:inline">Can I import my own HTML or template?</h3></summary>
+
+<br />
+
+No, not yet. You can start from the blank starter or one of the bundled React Email demo templates.
+
+> Importing your own HTML or template may come in a future release.
+
+</details>
+<br />
+
+<!-- FAQ 4 -->
+<details>
+<summary><h3 style="display:inline">Why don't my uploaded images show up in the exported email?</h3></summary>
+
+<br />
+
+Uploaded images stay in your browser as temporary `blob:` URLs, so email clients can't load them. Host the image somewhere public and paste its URL in the image inspector.
+
+</details>
+<br />
+
+<!-- FAQ 5 -->
+<details>
+<summary><h3 style="display:inline">Can I keep the images from the bundled templates?</h3></summary>
+
+<br />
+
+I would recommend not relying on them. They point to React Email's demo site, which can change or go offline at any time. Replace them with images you host before sending real emails.
+
+</details>
+<br />
+
+<!-- FAQ 6 -->
+<details>
+<summary><h3 style="display:inline">Can I use variables like <code>{{name}}</code>?</h3></summary>
+
+<br />
+
+Yes. Type them directly as text, or define them in the **Variables** section of the email inspector with a sample value. Defined variables show their sample value in the preview, so you can see how the email looks with real content. Either way, variables stay as `{{name}}` in the exported HTML, ready for your email service to replace when sending.
+
+</details>
+<br />
+
+<!-- FAQ 7 -->
+<details>
+<summary><h3 style="display:inline">Does it create the plain-text version of the email?</h3></summary>
+
+<br />
+
+Yes. Emails can be sent with both an HTML version and a plain-text version: the text version is shown by clients that can't display HTML, and including it can help with spam filters. Mailblocks generates both, so you can copy each one. Attaching them to the same email is up to you.
+
+</details>
+<br />
+
+<!-- FAQ 8 -->
+<details>
+<summary><h3 style="display:inline">Does it work offline?</h3></summary>
+
+<br />
+
+Yes. After your first visit, the app is cached in your browser, so you can open it, edit, and lint without a connection. You can also install it as an app from your browser. Remote images, such as those in the bundled templates, still need a connection to load.
+
+</details>
+<br />
+
+<!-- FAQ 9 -->
+<details>
+<summary><h3 style="display:inline">Can I send test emails?</h3></summary>
+
+<br />
+
+No. This is one of the trade-offs/limitations of a client-only app: sending email requires a mail server, and browsers can't deliver email on their own. A `mailto:` link doesn't help either. It only opens the user's mail app with a plain-text draft, so the HTML wouldn't render and nothing is sent automatically.
+
+</details>
 
 ## Getting started
 
