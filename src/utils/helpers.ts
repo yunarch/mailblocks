@@ -75,12 +75,14 @@ export function removeVariableFromText(text: string, name: string): string {
 /**
  * @param html - The email HTML containing `{{name}}` placeholders.
  * @param variables - The variables with their sample values.
+ * @param options - Set `escape` to false to insert samples into plain text.
  * @returns The HTML with each placeholder replaced by its escaped sample
  * value. Placeholders without a sample are kept as-is.
  */
 export function applyVariables(
   html: string,
-  variables: EmailVariable[]
+  variables: EmailVariable[],
+  { escape = true }: { escape?: boolean } = {}
 ): string {
   const samples = new Map(
     variables
@@ -90,7 +92,8 @@ export function applyVariables(
   if (samples.size === 0) return html;
   return html.replaceAll(VARIABLE_PATTERN, (match, name: string) => {
     const sample = samples.get(name);
-    return sample === undefined ? match : escapeHtml(sample);
+    if (sample === undefined) return match;
+    return escape ? escapeHtml(sample) : sample;
   });
 }
 

@@ -1,8 +1,16 @@
 import { use, useEffect, useRef, useState } from 'react';
-import { MdCheck, MdContentCopy, MdDownload } from 'react-icons/md';
+import {
+  MdCheck,
+  MdContentCopy,
+  MdDownload,
+  MdOutlineForwardToInbox,
+} from 'react-icons/md';
+import type { EmailVariable } from '@/types/variables';
 import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Tabs } from '@/ui/Tabs';
+import { composeEmailDraft } from '@/utils/composeEmailDraft';
+import { applyVariables } from '@/utils/helpers';
 
 const FORMATS = [
   {
@@ -28,6 +36,24 @@ const FORMATS = [
   },
 ];
 
+/**
+ * Saves the content as a file through a temporary link.
+ *
+ * @param content - The text to save.
+ * @param fileName - The name of the downloaded file.
+ * @param mimeType - The media type of the saved text, e.g. `text/html`.
+ */
+function downloadFile(content: string, fileName: string, mimeType: string) {
+  const url = URL.createObjectURL(
+    new Blob([content], { type: `${mimeType};charset=utf-8` })
+  );
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
 // Download button component for exporting email content as a file
 const DownloadButton = ({
   content,
@@ -40,24 +66,53 @@ const DownloadButton = ({
   fileName: string;
   mimeType: string;
 }) => {
-  const handleDownload = () => {
-    const url = URL.createObjectURL(
-      new Blob([content], { type: `${mimeType};charset=utf-8` })
-    );
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.click();
-    URL.revokeObjectURL(url);
-  };
   return (
     <Button
       variant="ghost"
       aria-label={label}
       title={label}
-      onClick={handleDownload}
+      onClick={() => {
+        downloadFile(content, fileName, mimeType);
+      }}
     >
       <MdDownload />
+    </Button>
+  );
+};
+
+// Draft button component for opening the email in a mail client to send a test
+const DraftButton = ({
+  html,
+  text,
+  variables,
+}: {
+  html: string;
+  text: string;
+  variables: EmailVariable[];
+}) => {
+  const handleDownload = () => {
+    const filledHtml = applyVariables(html, variables);
+    const subject = new DOMParser()
+      .parseFromString(filledHtml, 'text/html')
+      .title.trim();
+    downloadFile(
+      composeEmailDraft({
+        subject,
+        html: filledHtml,
+        text: applyVariables(text, variables, { escape: false }),
+      }),
+      'email.eml',
+      'message/rfc822'
+    );
+  };
+  return (
+    <Button
+      variant="ghost"
+      aria-label="Download email draft"
+      title="Download as an email draft (.eml) to send a test from your mail app"
+      onClick={handleDownload}
+    >
+      <MdOutlineForwardToInbox />
     </Button>
   );
 };
@@ -101,10 +156,12 @@ export const EmailExportToCode = ({
   html,
   text,
   reactEmail,
+  variables,
 }: {
   html: Promise<string>;
   text: Promise<string>;
   reactEmail: Promise<string>;
+  variables: EmailVariable[];
 }) => {
   const [format, setFormat] = useState(0);
   const contents = [use(html), use(text), use(reactEmail)];
@@ -120,13 +177,18 @@ export const EmailExportToCode = ({
           }}
         />
         <Stack className="flex-row items-center gap-1">
+          <CopyButton content={content} label={FORMATS[format].copyLabel} />
           <DownloadButton
             content={content}
             label={FORMATS[format].downloadLabel}
             fileName={FORMATS[format].fileName}
             mimeType={FORMATS[format].mimeType}
           />
-          <CopyButton content={content} label={FORMATS[format].copyLabel} />
+          <DraftButton
+            html={contents[0]}
+            text={contents[1]}
+            variables={variables}
+          />
         </Stack>
       </Stack>
       <Stack className="relative flex-1">

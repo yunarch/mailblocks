@@ -106,7 +106,12 @@ Yes. After your first visit, the app is cached in your browser, so you can open 
 
 ### Can I send test emails?
 
-No. This is one of the trade-offs/limitations of a client-only app: sending email requires a mail server, and browsers can't deliver email on their own. A `mailto:` link doesn't help either. It only opens the user's mail app with a plain-text draft, so the HTML wouldn't render and nothing is sent automatically.
+No, not directly. This is one of the trade-offs/limitations of a client-only app: sending email requires a mail server, and browsers can't deliver email on their own. A `mailto:` link doesn't help either. It only opens the user's mail app with a plain-text draft, so the HTML wouldn't render and nothing is sent automatically.
+
+However, you can still send test emails using your own mail app. Instead, click on the **Download email draft** button in the code view. This will save the email as an unsent `.eml` message with its subject, HTML, and plain-text versions, and with your variable samples filled in. Open it, add a recipient, and send it.
+
+> [!NOTE]
+> Outlook opens the file directly as a draft. Other clients may show it as a received message; use their _Send again_ (Apple Mail) or _Edit as new message_ (Thunderbird) action instead. Webmail such as Gmail can't open `.eml` files.
 
 ## Getting started
 
