@@ -158,6 +158,27 @@ describe('preview and code', () => {
     expect(source).toContain('Copy me');
   });
 
+  it('downloads the code of the selected format as a file', async () => {
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL');
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(vi.fn());
+    const { screen } = await renderEditorPanel('<p>Download me</p>');
+    await screen.getByRole('button', { name: 'Code' }).click();
+    await screen.getByRole('button', { name: 'Download HTML' }).click();
+    await screen.getByRole('tab', { name: 'React Email' }).click();
+    await screen.getByRole('button', { name: 'Download React Email' }).click();
+    expect(
+      click.mock.contexts.map((link) => (link as HTMLAnchorElement).download)
+    ).toEqual(['email.html', 'email.jsx']);
+    const [html, source] = await Promise.all(
+      createObjectURL.mock.calls.map(([blob]) => (blob as Blob).text())
+    );
+    expect(html).toMatch(/^<!DOCTYPE html/i);
+    expect(html).toContain('Download me');
+    expect(source).toContain('export default function Email()');
+  });
+
   it('previews variable samples while keeping placeholders in the code', async () => {
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')

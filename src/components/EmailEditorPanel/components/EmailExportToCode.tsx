@@ -1,15 +1,68 @@
 import { use, useEffect, useRef, useState } from 'react';
-import { MdCheck, MdContentCopy } from 'react-icons/md';
+import { MdCheck, MdContentCopy, MdDownload } from 'react-icons/md';
 import { Button } from '@/ui/Button';
 import { Stack } from '@/ui/Stack';
 import { Tabs } from '@/ui/Tabs';
 
 const FORMATS = [
-  { label: 'HTML', copyLabel: 'Copy HTML' },
-  { label: 'Plain text', copyLabel: 'Copy plain text' },
-  { label: 'React Email', copyLabel: 'Copy React Email' },
+  {
+    label: 'HTML',
+    copyLabel: 'Copy HTML',
+    downloadLabel: 'Download HTML',
+    fileName: 'email.html',
+    mimeType: 'text/html',
+  },
+  {
+    label: 'Plain text',
+    copyLabel: 'Copy plain text',
+    downloadLabel: 'Download plain text',
+    fileName: 'email.txt',
+    mimeType: 'text/plain',
+  },
+  {
+    label: 'React Email',
+    copyLabel: 'Copy React Email',
+    downloadLabel: 'Download React Email',
+    fileName: 'email.jsx',
+    mimeType: 'text/plain',
+  },
 ];
 
+// Download button component for exporting email content as a file
+const DownloadButton = ({
+  content,
+  label,
+  fileName,
+  mimeType,
+}: {
+  content: string;
+  label: string;
+  fileName: string;
+  mimeType: string;
+}) => {
+  const handleDownload = () => {
+    const url = URL.createObjectURL(
+      new Blob([content], { type: `${mimeType};charset=utf-8` })
+    );
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  return (
+    <Button
+      variant="ghost"
+      aria-label={label}
+      title={label}
+      onClick={handleDownload}
+    >
+      <MdDownload />
+    </Button>
+  );
+};
+
+// Copy button component for copying email content to the clipboard
 const CopyButton = ({ content, label }: { content: string; label: string }) => {
   const copiedTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [copied, setCopied] = useState(false);
@@ -43,6 +96,7 @@ const CopyButton = ({ content, label }: { content: string; label: string }) => {
   );
 };
 
+// Component
 export const EmailExportToCode = ({
   html,
   text,
@@ -65,7 +119,15 @@ export const EmailExportToCode = ({
             setFormat(index);
           }}
         />
-        <CopyButton content={content} label={FORMATS[format].copyLabel} />
+        <Stack className="flex-row items-center gap-1">
+          <DownloadButton
+            content={content}
+            label={FORMATS[format].downloadLabel}
+            fileName={FORMATS[format].fileName}
+            mimeType={FORMATS[format].mimeType}
+          />
+          <CopyButton content={content} label={FORMATS[format].copyLabel} />
+        </Stack>
       </Stack>
       <Stack className="relative flex-1">
         <div className="absolute h-full w-full overflow-auto">
