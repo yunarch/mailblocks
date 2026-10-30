@@ -251,6 +251,7 @@ export const EmailEditor = ({
                             pos={context.nodePos.pos}
                           />
                           <EmailEditorInspectorBlockActions
+                            nodeType={context.nodeType}
                             nodePos={context.nodePos.pos}
                           />
                           {context.nodeType === 'image' ? (

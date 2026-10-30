@@ -101,20 +101,18 @@ export const EmailEditorInspectorVariables = () => {
 
   // Render
   return (
-    <div data-re-inspector-section="" data-has-title="">
-      <div data-re-inspector-section-header="">
-        <button
-          type="button"
-          data-re-inspector-section-toggle=""
-          onClick={() => {
-            setCollapsed((value) => !value);
-          }}
-        >
-          <span data-re-inspector-text="">Variables</span>
-        </button>
-      </div>
+    <div className="flex flex-col gap-2 border-b border-gray-200 py-4 last:border-b-0 dark:border-white/10">
+      <button
+        type="button"
+        className="cursor-pointer self-start text-xs font-semibold"
+        onClick={() => {
+          setCollapsed((value) => !value);
+        }}
+      >
+        Variables
+      </button>
       {!collapsed && (
-        <div data-re-inspector-section-body="" className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2">
           <form
             className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-center gap-1.5"
             onSubmit={(event) => {
