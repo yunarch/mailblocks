@@ -10,6 +10,59 @@ updates:
       day: sunday
       time: '12:00'
       timezone: 'Europe/Madrid'
+    groups:
+      types:
+        patterns:
+          - '@types/*'
+        exclude-patterns:
+          - '@types/react*'
+      tools:
+        patterns:
+          - 'husky'
+          - 'prettier*'
+          - 'oxfmt'
+          - 'oxlint'
+          - 'eslint*'
+          - 'rimraf'
+          - 'knip'
+          - 'typescript'
+          - 'caniemail'
+          - 'dompurify'
+      build-tools:
+        patterns:
+          - 'vite*'
+          - '@vitejs/*'
+      react:
+        patterns:
+          - 'react*'
+          - '@types/react*'
+        exclude-patterns:
+          - 'react-hook-form'
+      testing:
+        patterns:
+          - 'vitest*'
+          - '@vitest/*'
+          - 'playwright'
+          - '@playwright/*'
+      ui-libraries:
+        patterns:
+          - 'clsx'
+          - 'styled-components'
+          - 'tailwindcss'
+          - 'tailwind-*'
+          - '@tailwindcss/*'
+          - 'framer-motion'
+      tanstack:
+        patterns:
+          - '@tanstack/*'
+      validation:
+        patterns:
+          - 'zod'
+          - 'react-hook-form'
+          - '@hookform/resolvers'
+      visx:
+        patterns:
+          - '@visx/*'
   - package-ecosystem: 'github-actions'
     directory: '/'
     cooldown:
