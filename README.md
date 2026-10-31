@@ -63,7 +63,7 @@ Mailblocks runs entirely in the browser, which comes with some trade-offs and li
 
 ### Is it free? Is my content sent anywhere?
 
-Mailblocks is free to use. Your content is never sent to a server: editing, linting, and image uploads all happen in your browser. The app is hosted on GitHub Pages, so GitHub's own hosting policies apply. If you'd rather avoid that, clone the repository and [run it locally](#run-locally) or host it yourself.
+Mailblocks is free to use. Your content is never sent to a server: editing, linting, and image uploads all happen in your browser. The app is hosted on GitHub Pages, so GitHub's own hosting policies apply and uses cookie-free [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) for traffic and performance metrics. If you'd rather avoid that, clone the repository and [run it locally](#run-locally) or host it yourself.
 
 ### Is my work saved?
 

@@ -96,6 +96,8 @@ jobs:
         run: bun install --frozen-lockfile
       - name: 🏗️ Build
         run: bun run build
+        env:
+          VITE_CLOUDFLARE_ANALYTICS_TOKEN: ${{ vars.VITE_CLOUDFLARE_ANALYTICS_TOKEN }}
       - name: ⚙️ Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
       - name: 📤 Upload artifact
