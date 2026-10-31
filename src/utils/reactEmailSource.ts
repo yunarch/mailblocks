@@ -83,6 +83,7 @@ const NODES_WITH_INCREMENTED_CHILD_DEPTH = new Set([
 ]);
 const FORWARD_REF = Symbol.for('react.forward_ref');
 const MEMO = Symbol.for('react.memo');
+const LAZY = Symbol.for('react.lazy');
 const MAX_LINE_LENGTH = 80;
 const INDENT = '  ';
 const IDENTIFIER = /^[A-Za-z_$][\w$]*$/;
@@ -210,6 +211,8 @@ function composeEmailElement(editor: Editor): ReactElement {
  * @param props - The props to render it with.
  * @returns What the component renders, or `undefined` when it can't be
  * rendered outside React.
+ * @throws {PromiseLike<unknown>} When the component is a `lazy` component that
+ * hasn't loaded yet.
  */
 function renderComponent(
   type: unknown,
@@ -219,6 +222,8 @@ function renderComponent(
     $$typeof?: symbol;
     render?: (props: unknown, ref: null) => ReactNode;
     type?: unknown;
+    _init?: (payload: unknown) => unknown;
+    _payload?: unknown;
   };
   if (typeof type === 'function') {
     return (type as (props: unknown) => ReactNode)(props);
@@ -229,7 +234,23 @@ function renderComponent(
   if (exotic.$$typeof === MEMO) {
     return createElement(exotic.type as ComponentType, props);
   }
+  if (exotic.$$typeof === LAZY && exotic._init) {
+    // Throws the loading promise until the component has loaded, like Suspense expects.
+    return createElement(exotic._init(exotic._payload) as ComponentType, props);
+  }
   return undefined;
+}
+
+/**
+ * @param value - The value to check.
+ * @returns Whether the value is a promise-like object.
+ */
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { then?: unknown }).then === 'function'
+  );
 }
 
 /**
@@ -518,13 +539,10 @@ function printNode(node: SourceNode, indent: string): string[] {
 }
 
 /**
- * Generates the React Email source code of the email in the editor.
- *
- * @param editor - The editor instance.
+ * @param email - The email element.
  * @returns A TSX module exporting the email as a React Email component.
  */
-export function composeReactEmailSource(editor: Editor) {
-  const email = composeEmailElement(editor);
+function printSource(email: ReactNode) {
   const imports = new Set<string>();
   const nodes = toSourceNodes(email, imports, renderToStaticMarkup);
   const body = nodes.flatMap((node) => printNode(node, INDENT.repeat(3)));
@@ -538,4 +556,24 @@ export function composeReactEmailSource(editor: Editor) {
     '}',
     '',
   ].join('\n');
+}
+
+/**
+ * Generates the React Email source code of the email in the editor.
+ *
+ * @param editor - The editor instance.
+ * @returns A TSX module exporting the email as a React Email component.
+ * @throws {Error} When the email contains content that can't be exported.
+ */
+export async function composeReactEmailSource(editor: Editor) {
+  const email = composeEmailElement(editor);
+  for (;;) {
+    try {
+      return printSource(email);
+    } catch (error) {
+      // A `lazy` component is still loading; wait for it and try again.
+      if (!isThenable(error)) throw error;
+      await error;
+    }
+  }
 }

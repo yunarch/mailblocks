@@ -13,6 +13,7 @@ import {
   createElement,
   forwardRef,
   Fragment,
+  lazy,
   memo,
   type ComponentType,
   type CSSProperties,
@@ -104,7 +105,7 @@ function compileEmail(source: string): ComponentType {
  * by the editor.
  */
 async function renderBoth(editor: Editor) {
-  const Email = compileEmail(composeReactEmailSource(editor));
+  const Email = compileEmail(await composeReactEmailSource(editor));
   const [actual, expected] = await Promise.all([
     ReactEmail.render(createElement(Email)),
     composeReactEmail({ editor }),
@@ -126,7 +127,7 @@ describe('composeReactEmailSource', () => {
     const { editor } = await renderEditorPanel(
       '<h1>Title</h1><p>Hello <strong>{{name}}</strong> &amp; <a href="https://example.com/?a=1&b=2">friends</a> <x></p>'
     );
-    const source = composeReactEmailSource(editor);
+    const source = await composeReactEmailSource(editor);
     expect(source).toMatch(
       /^import \{ [^}]*\bBody\b[^}]*\bHtml\b[^}]*\} from 'react-email';\n/
     );
@@ -154,7 +155,7 @@ describe('composeReactEmailSource', () => {
       <pre><code class="language-ts">const a = '} {';</code></pre>
       <p>Line one<br>Line two</p>
     `);
-    const source = composeReactEmailSource(editor);
+    const source = await composeReactEmailSource(editor);
     for (const component of [
       'Button',
       'CodeBlock',
@@ -189,7 +190,7 @@ describe('composeReactEmailSource without the app', () => {
       paragraph(text('Bold and italic', 'bold', 'italic')),
       paragraph(),
     ]);
-    const source = composeReactEmailSource(editor);
+    const source = await composeReactEmailSource(editor);
     expect(source).toContain('name="x-apple-disable-message-reformatting"');
     const { actual, expected } = await renderBoth(editor);
     expect(actual).toEqual(expected);
@@ -210,7 +211,7 @@ describe('composeReactEmailSource without the app', () => {
       [{ type: 'plainNode' }, paragraph(text('Kept', 'plainMark'))],
       [plainNode, plainMark]
     );
-    const source = composeReactEmailSource(editor);
+    const source = await composeReactEmailSource(editor);
     expect(source).toContain('Kept');
     const { actual, expected } = await renderBoth(editor);
     expect(actual).toEqual(expected);
@@ -224,6 +225,12 @@ describe('composeReactEmailSource without the app', () => {
     // eslint-disable-next-line react/no-forward-ref
     const RefBox = forwardRef<HTMLSpanElement, { style: CSSProperties }>(
       (props, ref) => createElement('span', { ...props, ref })
+    );
+    const LazyBox = lazy(() =>
+      Promise.resolve({
+        default: ({ title }: { title: string }) =>
+          createElement('p', { title }, 'Lazy'),
+      })
     );
     const editor = createEditor(
       [{ type: 'customBlock' }],
@@ -244,12 +251,13 @@ describe('composeReactEmailSource without the app', () => {
               'aria-checked': false,
               style: { '--brand': 'red', color: 'red' },
             }),
-            createElement(RefBox, { style: {} })
+            createElement(RefBox, { style: {} }),
+            createElement(LazyBox, { title: 'Loaded' })
           )
         ),
       ]
     );
-    const source = composeReactEmailSource(editor);
+    const source = await composeReactEmailSource(editor);
     expect(source).toMatch(/\sdisabled(?:\s|$)/m);
     expect(source).toContain("'--brand': 'red'");
     expect(source).toContain("data-list={['a', 1]}");
@@ -257,6 +265,7 @@ describe('composeReactEmailSource without the app', () => {
     expect(source).toContain('hidden={false}');
     expect(source).toContain('aria-checked={false}');
     expect(source).toContain('<span />');
+    expect(source).toContain('<p title="Loaded">');
     const { actual, expected } = await renderBoth(editor);
     expect(actual).toEqual(expected);
   });
@@ -264,12 +273,12 @@ describe('composeReactEmailSource without the app', () => {
   it.each([
     ['a context provider', () => createElement(createContext(null), null)],
     ['a promise', () => Promise.resolve('Later') as unknown as ReactNode],
-  ])('fails on content it cannot export, such as %s', (_, render) => {
+  ])('fails on content it cannot export, such as %s', async (_, render) => {
     const editor = createEditor(
       [{ type: 'customBlock' }],
       [createBlock(render)]
     );
-    expect(() => composeReactEmailSource(editor)).toThrow(
+    await expect(composeReactEmailSource(editor)).rejects.toThrow(
       'The email contains content that cannot be exported'
     );
   });

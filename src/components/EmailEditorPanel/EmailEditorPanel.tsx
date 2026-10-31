@@ -37,9 +37,11 @@ function exportEmail(ref: EmailEditorRef) {
       const { text } = await email;
       return text;
     })(),
-    reactEmail: new Promise<string>((resolve) => {
-      resolve(ref.editor ? composeReactEmailSource(ref.editor) : '');
-    }),
+    reactEmail: (async () => {
+      if (!ref.editor) return '';
+      const content = await composeReactEmailSource(ref.editor);
+      return content;
+    })(),
   };
 }
 
