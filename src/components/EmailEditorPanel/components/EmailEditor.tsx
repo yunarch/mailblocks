@@ -21,6 +21,8 @@ import type { EmailTemplate } from '@/types/templates';
 import type { ViewportSize } from '@/types/viewports';
 import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
+import { EmailEditorAiDesignerButton } from './EmailEditorAiDesignerButton';
+import { EmailEditorImportHtmlButton } from './EmailEditorImportHtmlButton';
 import { EmailEditorInspectedNodeHighlight } from './EmailEditorInspectedNodeHighlight';
 import { EmailEditorInspectorBlockActions } from './EmailEditorInspectorBlockActions';
 import { EmailEditorInspectorDocument } from './EmailEditorInspectorDocument';
@@ -182,7 +184,7 @@ export const EmailEditor = ({
         <div
           className={cx(
             'mailblocks-edit-grid',
-            'flex-1 h-full grid grid-cols-[minmax(0,1fr)_auto]'
+            'relative flex-1 h-full grid grid-cols-[minmax(0,1fr)_auto]'
           )}
           style={{
             '--mailblocks-canvas-width': `${viewportWidth}px`,
@@ -274,6 +276,15 @@ export const EmailEditor = ({
               </Inspector.Root>
             </ResizablePanel>
           </ReactEmailEditor>
+          {/* Placed over the canvas column, on the artboard label row */}
+          <div className="pointer-events-none absolute inset-x-0 top-1.5 col-start-1 col-end-2 row-start-1 pr-2">
+            <Stack className="mx-auto w-(--mailblocks-canvas-width) max-w-full flex-row justify-end">
+              <Stack className="pointer-events-auto flex-row items-center gap-1 rounded-md bg-gray-100 dark:bg-neutral-900">
+                <EmailEditorImportHtmlButton />
+                <EmailEditorAiDesignerButton />
+              </Stack>
+            </Stack>
+          </div>
         </div>
       </div>
     </Stack>

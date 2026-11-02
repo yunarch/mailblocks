@@ -48,7 +48,8 @@ body,
   display: block;
   width: var(--mailblocks-canvas-width);
   margin: 0 auto;
-  padding: 12px 0 6px;
+  /* Tall enough for the editor toolbar that sits on this row */
+  padding: 15px 0 10px;
   color: var(--mailblocks-hint);
   font-size: 11px;
   transition: width 200ms ease;

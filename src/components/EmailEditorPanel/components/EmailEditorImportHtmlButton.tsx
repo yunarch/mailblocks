@@ -23,7 +23,7 @@ function pickHtmlFile(onFile: (file: File) => void) {
 }
 
 // Component
-export const EmailImportHtml = () => {
+export const EmailEditorImportHtmlButton = () => {
   const { selectTemplate } = useAppContext();
   const [open, setOpen] = useState(false);
   const [html, setHtml] = useState('');
