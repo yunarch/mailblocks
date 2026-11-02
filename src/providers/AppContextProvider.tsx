@@ -7,7 +7,6 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { AiDesign } from '@/extensions/ai/design';
 import type { EmailTemplate } from '@/types/templates';
 import type { EmailVariable } from '@/types/variables';
 import type { SetValue } from '@/utils/helpers';
@@ -26,8 +25,6 @@ type AppContextType = {
   setEmailContent: SetValue<string>;
   variables: EmailVariable[];
   setVariables: SetValue<EmailVariable[]>;
-  aiDesign: AiDesign | null;
-  setAiDesign: SetValue<AiDesign | null>;
   pendingTemplate: EmailTemplate | null;
   isDirty: boolean;
   selectTemplate: (template: EmailTemplate) => void;
@@ -51,7 +48,6 @@ export const AppContextProvider = ({
   );
   const [emailContent, setEmailContent] = useState(selectedTemplate.content);
   const [variables, setVariables] = useState<EmailVariable[]>([]); // Sample values, plus variables added before they are used in the email.
-  const [aiDesign, setAiDesign] = useState<AiDesign | null>(null); // The last design the AI applied, so it can be refined.
   const [pendingTemplate, setPendingTemplate] = useState<EmailTemplate | null>(
     null
   );
@@ -65,7 +61,6 @@ export const AppContextProvider = ({
     setSelectedTemplate(template);
     setEmailContent(template.content);
     setVariables([]);
-    setAiDesign(null);
     setIsDirty(false);
   }, []);
   const selectTemplate = useCallback(
@@ -104,8 +99,6 @@ export const AppContextProvider = ({
       setEmailContent,
       variables,
       setVariables,
-      aiDesign,
-      setAiDesign,
       pendingTemplate,
       emailContent,
       isDirty,
@@ -121,7 +114,6 @@ export const AppContextProvider = ({
       templatesDrawerOpen,
       selectedTemplate,
       variables,
-      aiDesign,
       pendingTemplate,
       emailContent,
       isDirty,

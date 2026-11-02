@@ -137,6 +137,7 @@ export const EmailEditorPanel = () => {
         <Stack className={isEditing ? 'flex-1' : 'hidden'}>
           <EmailEditor
             editorRef={editorRef}
+            isEditing={isEditing}
             viewportWidth={activeViewport.width}
             onReady={handleEditorReady}
           />
