@@ -46,6 +46,24 @@ describe('useAiEngine', () => {
       .toEqual({ status: 'download' });
   });
 
+  it('ignores a cache check that finishes after becoming inactive', async () => {
+    const cached = Promise.withResolvers<boolean>();
+    vi.mocked(aiEngine.isModelCached).mockReturnValue(cached.promise);
+    const { result, rerender, act } = await renderHook(
+      (active?: boolean) => useAiEngine(active ?? false),
+      { initialProps: false }
+    );
+    await rerender(true);
+    await expect.poll(() => aiEngine.isModelCached).toHaveBeenCalledOnce();
+    await rerender(false);
+    await act(async () => {
+      cached.resolve(true);
+      await cached.promise;
+    });
+    expect(result.current.state).toEqual({ status: 'checking' });
+    expect(aiEngine.loadEngine).not.toHaveBeenCalled();
+  });
+
   it('loads a model stored in the browser without asking', async () => {
     vi.mocked(aiEngine.isModelCached).mockResolvedValue(true);
     const { result } = await renderHook(() => useAiEngine(true));
@@ -95,5 +113,17 @@ describe('useAiEngine', () => {
       await result.current.load();
     });
     expect(result.current.state).toEqual({ status: 'ready', engine });
+  });
+
+  it('reports a useful message when loading rejects with a non-Error value', async () => {
+    vi.mocked(aiEngine.loadEngine).mockRejectedValue('device lost');
+    const { result, act } = await renderHook(() => useAiEngine(false));
+    await act(async () => {
+      await result.current.load();
+    });
+    expect(result.current.state).toEqual({
+      status: 'error',
+      message: 'The model failed to load.',
+    });
   });
 });

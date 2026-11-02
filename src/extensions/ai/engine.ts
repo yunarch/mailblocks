@@ -3,8 +3,8 @@ import type { MLCEngineInterface } from '@mlc-ai/web-llm';
 export type EngineProgress = { progress: number; text: string };
 
 // Small instruct model (~1 GB download). The f16 build needs the `shader-f16` GPU feature.
-const MODEL_F16 = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
-const MODEL_F32 = 'Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
+export const MODEL_F16 = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC';
+export const MODEL_F32 = 'Qwen2.5-1.5B-Instruct-q4f32_1-MLC';
 
 // Shared by every caller, so the model is only loaded once per page.
 const session: {

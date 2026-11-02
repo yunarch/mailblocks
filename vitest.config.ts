@@ -31,6 +31,7 @@ export default defineConfig({
         'src/**/__tests__/**',
         'src/**/*.{test,spec}.{ts,tsx}',
         'src/main.tsx',
+        'src/extensions/ai/engine.worker.ts',
         'src/utils/templates.ts',
       ],
     },
