@@ -29,7 +29,6 @@ export const EmailDesignerAiDrawer = ({
   onClose: () => void;
 }) => {
   const { editorRef, variables, selectedTemplate } = useAppContext();
-  // Tagged with its template, so loading another template starts a new conversation.
   const [conversation, setConversation] = useState<
     (AiConversation & { templateId: string }) | null
   >(null);
@@ -40,7 +39,6 @@ export const EmailDesignerAiDrawer = ({
   };
   const [prompt, setPrompt] = useState('');
   const [busy, setBusy] = useState(false);
-  // The prompt being answered, shown in the chat until it becomes a turn (or with its error).
   const [pending, setPending] = useState<PendingPrompt | null>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -53,10 +51,8 @@ export const EmailDesignerAiDrawer = ({
     const text = prompt.trim();
     const editor = editorRef.current?.editor;
     if (state.status !== 'ready' || busy || !text || !editor) return;
-    // Later turns are dropped, so the conversation continues from the restored one.
-    const kept = turns.slice(0, current + 1);
-    // The editor is the source of truth, so manual edits are part of what the model changes.
-    const before = readEmailDesign(getEmailBody(editor));
+    const kept = turns.slice(0, current + 1); // Later turns are dropped, so the conversation continues from the restored one.
+    const before = readEmailDesign(getEmailBody(editor)); // The editor is the source of truth, so manual edits are part of what the model changes.
     setBusy(true);
     setPending({ prompt: text });
     setPrompt('');
@@ -95,8 +91,7 @@ export const EmailDesignerAiDrawer = ({
       setPrompt(text);
     } finally {
       setBusy(false);
-      // Send becomes Stop while generating, so focus would otherwise be lost.
-      promptRef.current?.focus();
+      promptRef.current?.focus(); // Send becomes Stop while generating, so focus would otherwise be lost.
     }
   };
   const restore = (index: number) => {
