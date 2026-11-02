@@ -1,7 +1,7 @@
-import type { Editor } from '@tiptap/core';
+import { createNodeFromContent, type Editor, type Range } from '@tiptap/core';
 import { closeHistory } from '@tiptap/pm/history';
 import { Fragment } from '@tiptap/pm/model';
-import { NodeSelection, Selection } from '@tiptap/pm/state';
+import { NodeSelection, Selection, TextSelection } from '@tiptap/pm/state';
 
 export type BlockAction = 'moveUp' | 'moveDown' | 'duplicate' | 'delete';
 
@@ -49,6 +49,46 @@ export function getBlockActionsState(
     duplicate: parent.canReplace(index + 1, index + 1, Fragment.from(node)),
     delete: parent.canReplace(index, index + 1),
   };
+}
+
+/**
+ * Inserts a block where the slash command was typed: it replaces the line
+ * when that line is empty, otherwise it goes right after it. The cursor then
+ * moves to the line after the block (created when needed), so blocks can be
+ * chained one after another instead of nesting inside the previous block.
+ *
+ * @param editor - The editor instance.
+ * @param range - The range of the typed slash command.
+ * @param html - The block markup.
+ */
+export function insertBlock(editor: Editor, range: Range, html: string) {
+  editor
+    .chain()
+    .focus()
+    .deleteRange(range)
+    .command(({ tr, state }) => {
+      const { $from } = tr.selection;
+      if (!$from.parent.isTextblock) return false;
+      const content = createNodeFromContent(html, state.schema);
+      const block =
+        content instanceof Fragment ? content : Fragment.from(content);
+      const lineStart = $from.before();
+      const lineEnd = $from.after();
+      const isEmptyLine = $from.parent.content.size === 0;
+      if (isEmptyLine) {
+        tr.replaceWith(lineStart, lineEnd, block);
+      } else {
+        tr.insert(lineEnd, block);
+      }
+      const blockEnd = (isEmptyLine ? lineStart : lineEnd) + block.size;
+      if (!tr.doc.resolve(blockEnd).nodeAfter?.isTextblock) {
+        tr.insert(blockEnd, state.schema.nodes.paragraph.create());
+      }
+      tr.setSelection(TextSelection.create(tr.doc, blockEnd + 1));
+      return true;
+    })
+    .scrollIntoView()
+    .run();
 }
 
 /**

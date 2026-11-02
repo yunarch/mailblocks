@@ -3,9 +3,24 @@ import {
   ImageIcon,
   type SlashCommandItem,
 } from '@react-email/editor/ui';
-import { BLOCK_COMMANDS } from '@/extensions/blocks';
+import { insertBlock } from './blocks/actions';
+import {
+  BLOCKS,
+  DEFAULT_ACCENT,
+  type BlockDefinition,
+} from './blocks/definitions';
 
 // Command definitions
+const BLOCK_COMMANDS: SlashCommandItem[] = Object.values<BlockDefinition>(
+  BLOCKS
+).map(({ defaults, render, ...item }) => ({
+  ...item,
+  category: 'Blocks',
+  command: ({ editor, range }) => {
+    insertBlock(editor, range, render(defaults, DEFAULT_ACCENT));
+  },
+}));
+
 const IMAGE_COMMAND: SlashCommandItem = {
   title: 'Image',
   description: 'Upload an image',
