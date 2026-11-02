@@ -31,12 +31,17 @@ function getLoadedEngine() {
 /**
  * @returns The id of the model build this device can run.
  */
-function getModelId() {
+async function getModelId() {
   session.modelId ??= (async () => {
     const adapter = await navigator.gpu.requestAdapter();
     return adapter?.features.has('shader-f16') ? MODEL_F16 : MODEL_F32;
   })();
-  return session.modelId;
+  try {
+    return await session.modelId;
+  } catch (error) {
+    session.modelId = null;
+    throw error;
+  }
 }
 
 /**
