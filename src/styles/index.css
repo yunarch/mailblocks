@@ -31,8 +31,6 @@ body,
     transparent 1px
   );
   background-size: 16px 16px;
-  border-radius: 8px;
-  padding: 0 24px 32px;
 }
 
 [data-theme='dark'] .mailblocks-workspace {
@@ -40,18 +38,6 @@ body,
   --mailblocks-workspace-dot: rgb(255 255 255 / 0.08);
   --mailblocks-artboard-ring: rgb(255 255 255 / 0.12);
   --mailblocks-hint: var(--color-neutral-500);
-}
-
-/* Artboard label, e.g. "Email · 650px" */
-.mailblocks-workspace::before {
-  content: var(--mailblocks-canvas-label);
-  display: block;
-  width: var(--mailblocks-canvas-width);
-  margin: 0 auto;
-  padding: 12px 0 6px;
-  color: var(--mailblocks-hint);
-  font-size: 11px;
-  transition: width 200ms ease;
 }
 
 .mailblocks-artboard,

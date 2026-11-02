@@ -21,6 +21,9 @@ import type { EmailTemplate } from '@/types/templates';
 import type { ViewportSize } from '@/types/viewports';
 import { ResizablePanel } from '@/ui/ResizablePanel';
 import { Stack } from '@/ui/Stack';
+import { Typography } from '@/ui/Typography';
+import { EmailEditorAiDesignerButton } from './EmailEditorAiDesignerButton';
+import { EmailEditorImportHtmlButton } from './EmailEditorImportHtmlButton';
 import { EmailEditorInspectedNodeHighlight } from './EmailEditorInspectedNodeHighlight';
 import { EmailEditorInspectorBlockActions } from './EmailEditorInspectorBlockActions';
 import { EmailEditorInspectorDocument } from './EmailEditorInspectorDocument';
@@ -182,19 +185,29 @@ export const EmailEditor = ({
         <div
           className={cx(
             'mailblocks-edit-grid',
-            'flex-1 h-full grid grid-cols-[minmax(0,1fr)_auto]'
+            'relative flex-1 h-full grid grid-cols-[minmax(0,1fr)_auto] grid-rows-[auto_minmax(0,1fr)]'
           )}
           style={{
             '--mailblocks-canvas-width': `${viewportWidth}px`,
-            '--mailblocks-canvas-label': `"Email · ${String(viewportWidth)}px"`,
           }}
         >
+          <div className="mailblocks-workspace col-start-1 row-start-1 mr-2 rounded-t-lg">
+            <Stack className="mx-auto h-12 w-(--mailblocks-canvas-width) max-w-full flex-row items-center justify-between gap-2 transition-[width] duration-200">
+              <Typography variant="caption" tone="muted">
+                Email · {viewportWidth}px
+              </Typography>
+              <Stack className="flex-row items-center gap-1">
+                <EmailEditorImportHtmlButton />
+                <EmailEditorAiDesignerButton />
+              </Stack>
+            </Stack>
+          </div>
           <ReactEmailEditor
             key={`${selectedTemplate.id}-1`}
             ref={editorRef}
             className={cx(
               'mailblocks-workspace mailblocks-editor-canvas',
-              'mr-2 overflow-auto'
+              'col-start-1 row-start-2 mr-2 overflow-auto rounded-b-lg px-6 pb-8'
             )}
             content={content}
             extensions={editorExtensions}
@@ -210,7 +223,7 @@ export const EmailEditor = ({
               minSize={260}
               maxSize={getMaxInspectorWidth}
               handleLabel="Resize inspector"
-              className="min-h-0"
+              className="col-start-2 row-span-2 row-start-1 min-h-0"
             >
               <Inspector.Root
                 className={cx(

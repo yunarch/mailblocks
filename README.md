@@ -22,7 +22,7 @@ Powered by [React Email](https://react.email/).
 
 ## Overview
 
-Mailblocks is a browser-based email template editor for developers. Start from a blank starter or one of the [React Email demo templates](https://demo.react.email/), edit the content visually, and get email-ready HTML along with instant feedback on markup issues, email-client support, and spam signals.
+Mailblocks is a browser-based email template editor for developers. Start from a blank starter, one of the [React Email demo templates](https://demo.react.email/), or a design generated with AI from a prompt, edit the content visually, and get email-ready HTML along with instant feedback on markup issues, email-client support, and spam signals.
 
 Everything runs client-side: there's no backend, account, or sign-up.
 
@@ -49,6 +49,7 @@ Mailblocks runs entirely in the browser, which comes with some trade-offs and li
 - **Templates:** Start from a blank starter or one of 60+ [React Email demos](https://demo.react.email/).
 - **HTML import:** Paste or open your own `.html` email.
 - **Variables:** Define placeholders like `{{name}}` with sample values.
+- **AI design:** Generate a new email design from a prompt. Runs locally with WebGPU and requires a one-time model download.
 - **Responsive previews:** Render the email in different viewport sizes and preview it inside a desktop or mobile mail client frame showing its subject.
 - **Export:** Copy/save the email as HTML, plain text, or additionally as a React Email component.
 - **Markup linting:** Catch invalid or insecure URLs, images missing alt text or width, links without readable text, scripts, forms, and external stylesheets, with code locations.
@@ -100,9 +101,17 @@ Sending both HTML and plain-text versions simultaneously, known technically as `
 
 Combining both versions into one email is up to you. Most email services and libraries accept separate `html` and `text` fields and build the `multipart/alternative` message for you.
 
+### How does AI design work?
+
+The AI runs entirely in your browser using WebGPU, so your prompts never leave your device. It needs a browser and device that support WebGPU.
+
+The first time you use it, it will ask to download a small language model (about 1 GB). The model is then stored in your browser, so later uses skip the download.
+
 ### Does it work offline?
 
-Yes. After your first visit, the app is cached in your browser, so you can open it, edit, and lint without a connection. You can also install it as an app from your browser. Remote images, such as those in the bundled templates, still need a connection to load.
+Yes, mostly. After your first visit, the app is cached in your browser, so you can open it, edit, and lint without a connection. You can also install it as an app from your browser. Remote images, such as those in the bundled templates, still need a connection to load.
+
+AI design only works offline if you've already used it online, and if your browser still has the model and AI engine files stored. The AI engine isn't part of the app's offline cache, and browsers can clear stored data when space runs low.
 
 ### Can I send test emails?
 

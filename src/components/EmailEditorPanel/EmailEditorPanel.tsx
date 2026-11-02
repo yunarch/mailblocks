@@ -11,7 +11,6 @@ import { Typography } from '@/ui/Typography';
 import { composeReactEmailSource } from '@/utils/reactEmailSource';
 import { EmailEditor } from './components/EmailEditor';
 import { EmailExportToCode } from './components/EmailExportToCode';
-import { EmailImportHtml } from './components/EmailImportHtml';
 import { EmailPreview } from './components/EmailPreview';
 
 const MODES = [
@@ -103,22 +102,19 @@ export const EmailEditorPanel = () => {
         </ButtonGroup>
         <Stack className="flex-row items-center gap-3">
           {mode === 'editor' && (
-            <>
-              <Switch
-                checked={preview}
-                title="Show the rendered email instead of the editor"
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <MdOutlineRemoveRedEye />
-                    Preview
-                  </span>
-                }
-                onChange={(checked) => {
-                  changeView(mode, checked);
-                }}
-              />
-              <EmailImportHtml />
-            </>
+            <Switch
+              checked={preview}
+              title="Show the rendered email instead of the editor"
+              label={
+                <span className="flex items-center gap-1.5">
+                  <MdOutlineRemoveRedEye />
+                  Preview
+                </span>
+              }
+              onChange={(checked) => {
+                changeView(mode, checked);
+              }}
+            />
           )}
           <ButtonGroup activeItem={MODES.findIndex((m) => m.id === mode)}>
             {MODES.map(({ id, label, Icon }) => (

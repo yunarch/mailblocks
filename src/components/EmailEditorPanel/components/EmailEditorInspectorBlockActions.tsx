@@ -10,7 +10,7 @@ import {
   getBlockActionsState,
   runBlockAction,
   type BlockAction,
-} from '@/extensions/blockActions';
+} from '@/extensions/blocks/actions';
 import { Button } from '@/ui/Button';
 
 // Constants

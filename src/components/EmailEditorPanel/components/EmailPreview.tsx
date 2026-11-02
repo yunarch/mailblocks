@@ -98,10 +98,9 @@ export const EmailPreview = ({
   return (
     <Stack className="relative flex-1">
       <div
-        className="mailblocks-workspace absolute inset-0 overflow-auto"
+        className="mailblocks-workspace absolute inset-0 overflow-auto rounded-lg px-6 pb-8"
         style={{
           '--mailblocks-canvas-width': `${String(canvasWidth)}px`,
-          '--mailblocks-canvas-label': 'none',
         }}
       >
         <div

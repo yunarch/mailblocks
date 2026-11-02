@@ -15,7 +15,7 @@ const VARIABLE_PATTERN = /\{\{\s*(?<name>[\w.]+)\s*\}\}/g;
  * @param value - The text to escape.
  * @returns The text safe to insert into HTML content and attribute values.
  */
-function escapeHtml(value: string): string {
+export function escapeHtml(value: string): string {
   return value
     .replaceAll('&', '&amp;')
     .replaceAll('<', '&lt;')

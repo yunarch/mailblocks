@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyVariables,
   countVariables,
+  escapeHtml,
   findCodeLocation,
   findVariableRanges,
   formatBytes,
@@ -9,7 +10,27 @@ import {
   getCodeLocation,
   isLocalhostUrl,
   removeVariableFromText,
+  sanitizeVariableName,
 } from '../helpers';
+
+describe('escapeHtml', () => {
+  it('escapes markup and both quote styles', () => {
+    expect(escapeHtml(`<a href="x" title='y'>Tom & Jerry</a>`)).toBe(
+      '&lt;a href=&quot;x&quot; title=&#39;y&#39;&gt;Tom &amp; Jerry&lt;/a&gt;'
+    );
+  });
+
+  it('escapes ampersands of existing entities only once', () => {
+    expect(escapeHtml('&lt;')).toBe('&amp;lt;');
+  });
+});
+
+describe('sanitizeVariableName', () => {
+  it('keeps only the characters a placeholder name can contain', () => {
+    expect(sanitizeVariableName('user.first_name2')).toBe('user.first_name2');
+    expect(sanitizeVariableName(' first-name {{x}}!')).toBe('firstnamex');
+  });
+});
 
 describe('countVariables', () => {
   it('counts placeholders across texts in order of first appearance', () => {

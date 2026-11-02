@@ -45,7 +45,8 @@
     "react-email": "6.11.6",
     "@react-email/editor": "1.7.18",
     "caniemail": "2.0.2",
-    "dompurify": "3.4.17"
+    "dompurify": "3.4.17",
+    "@mlc-ai/web-llm": "0.2.87"
   },
   "devDependencies": {
     "@yunarch/config-web": "0.10.1",

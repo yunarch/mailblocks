@@ -15,6 +15,8 @@ export default defineConfig({
       manifest: false, // Uses the existing public/manifest.json.
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        // The in-browser AI engine (~6 MB, twice) is only fetched when someone uses it.
+        globIgnores: ['**/engine.worker-*.js', '**/lib-*.js'],
         // The bundled templates make the main chunk over 5 MB, above Workbox's 2 MiB default.
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
       },
