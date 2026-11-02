@@ -135,12 +135,10 @@ function prepareTemplateContent(template: EmailTemplate, content: string) {
 // Component
 export const EmailEditor = ({
   editorRef,
-  isEditing,
   viewportWidth,
   onReady,
 }: {
   editorRef: React.RefObject<EmailEditorRef | null>;
-  isEditing: boolean;
   viewportWidth: ViewportSize['width'];
   onReady?: (ref: EmailEditorRef) => void;
 }) => {
@@ -200,7 +198,7 @@ export const EmailEditor = ({
               </Typography>
               <Stack className="flex-row items-center gap-1">
                 <EmailEditorImportHtmlButton />
-                <EmailEditorAiDesignerButton isEditing={isEditing} />
+                <EmailEditorAiDesignerButton />
               </Stack>
             </Stack>
           </div>
