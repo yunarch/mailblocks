@@ -42,8 +42,13 @@ export const AppHeader = () => {
             <Typography as="h1" variant="body" className="font-semibold">
               Mailblocks
             </Typography>
+            <Divider
+              aria-hidden="true"
+              orientation="vertical"
+              className="mt-0.5 h-3 bg-gray-500 dark:bg-neutral-500"
+            />
             <Typography variant="bodySm" tone="muted">
-              | Email template editor for developers
+              Email template editor for developers
             </Typography>
           </Stack>
           <Stack
