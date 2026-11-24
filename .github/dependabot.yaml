@@ -38,6 +38,7 @@ updates:
           - '@types/react*'
         exclude-patterns:
           - 'react-hook-form'
+          - 'react-email'
       testing:
         patterns:
           - 'vitest*'
@@ -63,6 +64,10 @@ updates:
       visx:
         patterns:
           - '@visx/*'
+      react-email:
+        patterns:
+          - 'react-email'
+          - '@react-email/*'
   - package-ecosystem: 'github-actions'
     directory: '/'
     cooldown:
